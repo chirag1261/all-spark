@@ -46,4 +46,6 @@ export interface Booking {
   status: "PENDING" | "CONFIRMED" | "FAILED";
   customerEmail: string;
   createdAt: number;
+  ticketId?: string; // set once on confirmation, stable across verify replays
+  emailSent?: boolean;
 }

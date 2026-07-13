@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { confirmSeats, getBooking, releaseSeats, saveBooking } from "@/lib/store";
+import { generateTicketId, ticketQrDataUrl } from "@/lib/ticket";
+import { sendTicketEmail } from "@/lib/email";
 
 /**
  * POST /api/verify
@@ -43,13 +45,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unknown order" }, { status: 404 });
   }
 
-  // Idempotency: verifying the same successful payment twice returns the same result.
+  // Idempotency: verifying the same successful payment twice returns the
+  // same booking and the SAME ticket — and does not resend the email.
   if (booking.status === "CONFIRMED") {
     return NextResponse.json({
       status: "CONFIRMED",
       bookingId: booking.bookingId,
+      ticketId: booking.ticketId,
+      qrDataUrl: booking.ticketId ? await ticketQrDataUrl(booking, booking.ticketId) : null,
       seats: booking.seatIds,
       amount: booking.amount,
+      emailSent: booking.emailSent ?? false,
     });
   }
 
@@ -70,12 +76,29 @@ export async function POST(req: NextRequest) {
   }
 
   confirmSeats(booking.showId, booking.seatIds, orderId);
-  saveBooking({ ...booking, status: "CONFIRMED", razorpayPaymentId: paymentId });
+
+  // ---- Ticket generation ----
+  const ticketId = generateTicketId();
+  const confirmed = {
+    ...booking,
+    status: "CONFIRMED" as const,
+    razorpayPaymentId: paymentId,
+    ticketId,
+  };
+  saveBooking(confirmed);
+
+  // Email failure must never fail a paid booking — the ticket is still
+  // shown on screen and the response says the email didn't go out.
+  const email = await sendTicketEmail(confirmed, ticketId);
+  saveBooking({ ...confirmed, emailSent: email.sent });
 
   return NextResponse.json({
     status: "CONFIRMED",
     bookingId: booking.bookingId,
+    ticketId,
+    qrDataUrl: await ticketQrDataUrl(confirmed, ticketId),
     seats: booking.seatIds,
     amount: booking.amount,
+    emailSent: email.sent,
   });
 }

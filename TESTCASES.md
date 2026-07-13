@@ -70,14 +70,26 @@ Every scenario that can break the browse → seats → pay → confirm flow, gro
 | 6.2 | Release called on a CONFIRMED booking | 409 rejected — paid seats can never be un-booked this way | Handled |
 | 6.3 | Release called twice | Second call is a harmless no-op on already-freed locks | Handled |
 
-## 7. Infrastructure & state
+## 7. Ticket generation & email delivery
 
 | # | Test case | Expected behaviour | Status |
 |---|---|---|---|
-| 7.1 | Dev server hot-reload mid-booking | Store lives on `globalThis` — locks/bookings survive HMR | Handled |
-| 7.2 | Server restart between order and verify | In-memory booking lost → verify 404s after a *successful payment* | **Prod-gap** — persistent DB |
-| 7.3 | Multiple server instances / serverless (Vercel) | Each instance has its own memory — locks don't propagate → double booking | **Prod-gap** — shared Redis/DB |
-| 7.4 | Two verifies for the same order race each other | Both read PENDING → both confirm. Same result (idempotent output), but prod needs an atomic compare-and-set | Handled-ish (single-threaded Node event loop makes the window tiny) |
+| 7.1 | SMTP not configured | Booking still confirms; UI says "Email delivery is unavailable — save the ticket below" and shows ticket + QR on screen | Handled |
+| 7.2 | SMTP configured but send fails (bad password, provider down, recipient rejected) | `sendTicketEmail` catches, booking stays CONFIRMED, `emailSent:false` returned; ticket shown on screen | Handled |
+| 7.3 | Verify replayed after confirmation | Same `ticketId` returned, identical QR regenerated, email **not** resent | Handled |
+| 7.4 | Two bookings get the same ticket ID | 12 chars from a 32-symbol crypto-random alphabet ≈ 2^60 space — collision practically impossible | Handled |
+| 7.5 | Ticket forged by guessing IDs | IDs are unguessable; but QR payload is client-verifiable only — gate scanner must check against the server | **Prod-gap** — signed QR (HMAC) + scanner API |
+| 7.6 | Email goes to spam / wrong address typed by user | Ticket always shown on screen as fallback; no address verification exists | **Prod-gap** — OTP-verify the email or require login |
+| 7.7 | Slow SMTP server delays the verify response | Email is awaited in the request path; a hung SMTP connection stalls confirmation UI | **Prod-gap** — queue email in a background job |
+
+## 8. Infrastructure & state
+
+| # | Test case | Expected behaviour | Status |
+|---|---|---|---|
+| 8.1 | Dev server hot-reload mid-booking | Store lives on `globalThis` — locks/bookings survive HMR | Handled |
+| 8.2 | Server restart between order and verify | In-memory booking lost → verify 404s after a *successful payment* | **Prod-gap** — persistent DB |
+| 8.3 | Multiple server instances / serverless (Vercel) | Each instance has its own memory — locks don't propagate → double booking | **Prod-gap** — shared Redis/DB |
+| 8.4 | Two verifies for the same order race each other | Both read PENDING → both confirm and may generate two ticket IDs / send two emails. Prod needs an atomic compare-and-set on status | Handled-ish (single-threaded Node event loop makes the window tiny) |
 
 ## How to exercise these in Razorpay test mode
 

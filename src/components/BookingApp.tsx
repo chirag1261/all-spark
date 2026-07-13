@@ -14,6 +14,10 @@ type View =
       movie: Movie;
       show: Show;
       bookingId: string;
+      ticketId: string | null;
+      qrDataUrl: string | null;
+      emailSent: boolean;
+      email: string;
       seats: string[];
       amount: number;
     };
@@ -190,6 +194,10 @@ export default function BookingApp() {
                 movie,
                 show,
                 bookingId: verifyData.bookingId,
+                ticketId: verifyData.ticketId ?? null,
+                qrDataUrl: verifyData.qrDataUrl ?? null,
+                emailSent: verifyData.emailSent ?? false,
+                email,
                 seats: verifyData.seats,
                 amount: verifyData.amount,
               });
@@ -356,8 +364,26 @@ export default function BookingApp() {
               ✓
             </div>
             <h1 className="text-2xl font-bold mb-1">Booking confirmed!</h1>
-            <p className="text-zinc-400 text-sm mb-8">A confirmation was sent to your email.</p>
+            <p className="text-zinc-400 text-sm mb-8">
+              {view.emailSent
+                ? `Your ticket was emailed to ${view.email}.`
+                : "Email delivery is unavailable — save the ticket below."}
+            </p>
             <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 text-left space-y-3">
+              {view.qrDataUrl && (
+                <div className="flex flex-col items-center gap-2 pb-3 border-b border-zinc-800">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={view.qrDataUrl}
+                    alt={`Ticket QR ${view.ticketId ?? ""}`}
+                    className="w-44 h-44 rounded-lg bg-white p-1.5"
+                  />
+                  {view.ticketId && (
+                    <p className="font-mono text-lg tracking-wider">{view.ticketId}</p>
+                  )}
+                  <p className="text-xs text-zinc-500">Show this QR at the theatre gate</p>
+                </div>
+              )}
               <Row label="Booking ID" value={view.bookingId} mono />
               <Row label="Movie" value={view.movie.title} />
               <Row
