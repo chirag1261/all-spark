@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BookMyShow Clone — Next.js + Razorpay
 
-## Getting Started
+A single-page movie-ticket booking app modeled on BookMyShow: browse movies → pick a showtime → select seats → pay via Razorpay → get a booking confirmation.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Next.js 16** (App Router) · React 19 · TypeScript · Tailwind CSS 4
+- **Razorpay** Checkout.js on the client, `razorpay` Node SDK on the server
+- In-memory store for seat locks & bookings (stand-in for a DB + Redis)
+
+## Setup
+
+1. Get **test-mode** API keys from the [Razorpay dashboard](https://dashboard.razorpay.com/app/website-app-settings/api-keys) (they start with `rzp_test_`).
+2. Put them in `.env.local`:
+
+   ```
+   RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxxxx
+   RAZORPAY_KEY_SECRET=your_key_secret
+   ```
+
+3. Run:
+
+   ```bash
+   npm install
+   npm run dev
+   ```
+
+4. Open http://localhost:3000. In test mode, pay with card `4111 1111 1111 1111`, any future expiry, any CVV, OTP `1234` — or use the "success"/"failure" test UPI IDs.
+
+## Payment flow (what happens where)
+
+```
+Client                          Server                        Razorpay
+  │  POST /api/orders             │                              │
+  │  {showId, seatIds, email} ──▶ │ validate + LOCK seats (8m)   │
+  │                               │ compute amount server-side   │
+  │                               │ orders.create ─────────────▶ │
+  │  ◀── {orderId, amount, keyId} │                              │
+  │  Checkout.js opens ─────────────────────────────────────────▶│
+  │  ◀────────────────── payment_id + signature (on success) ────│
+  │  POST /api/verify ──────────▶ │ HMAC-SHA256 verify           │
+  │                               │ seats locked → BOOKED        │
+  │  ◀── booking confirmed        │                              │
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Key safety properties:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Amount is computed on the server** from seat tiers — the client never sends a price.
+- **Signature verification** (`HMAC_SHA256(order_id|payment_id, key_secret)`, timing-safe compare) is the only thing that confirms a booking.
+- **Seats are locked before payment** and released on failure/dismissal; locks expire after 8 minutes.
+- **Verification is idempotent** — replaying a successful verify returns the same booking.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Endpoints
 
-## Learn More
+| Route | Method | Purpose |
+|---|---|---|
+| `/api/orders` | POST | Validate selection, lock seats, create Razorpay order |
+| `/api/verify` | POST | Verify payment signature, confirm booking |
+| `/api/release` | POST | Release locked seats when checkout is dismissed |
+| `/api/seats` | GET | Booked + locked seats for a show |
 
-To learn more about Next.js, take a look at the following resources:
+## Known demo limitations
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- The store is in-memory: bookings vanish on server restart, and it won't work across multiple server instances. Production needs a DB with transactions (or Redis `SET NX` locks) and Razorpay **webhooks** as the source of truth for payment success (the browser `handler` alone can be lost if the tab closes mid-payment).
+- No auth — email is free-form.
+- Shows/seat layouts are static mock data.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See [TESTCASES.md](./TESTCASES.md) for the full list of flow-breaking test cases.
