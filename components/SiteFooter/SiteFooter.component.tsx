@@ -9,18 +9,20 @@ function currentYear(): number {
 /** Shared public-site footer — brand, quick links and support contact. */
 export default function SiteFooter() {
   return (
-    <footer className="mt-16 border-t border-white/6 bg-[#0d0f12]">
-      <div className="max-w-6xl mx-auto px-4 py-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+    <footer className="mt-16 border-t border-white/6 bg-[#0d0a1f]">
+      <div className="max-w-6xl mx-auto px-4 py-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
         <div className="lg:col-span-2 max-w-sm">
-          <p className="text-xl font-extrabold tracking-tight">
+          <p className="font-heading text-2xl font-semibold tracking-tight">
             Utsav{" "}
-            <span className="text-transparent bg-clip-text bg-linear-to-r from-[#f84464] to-[#ff2e63]">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-[#f5a524] to-[#ffc132]">
               Events
             </span>
           </p>
+          <p className="font-heading text-lg text-[#f5a524]/90 mt-2">॥ संगीत ही ईश्वर है ॥</p>
           <p className="text-sm text-zinc-400 mt-3 leading-relaxed">
-            Book concerts, comedy nights and live events across India — pick your exact seats, pay
-            securely and get an individual QR ticket for every attendee.
+            A Bangalore-based cultural organisation bringing communities together through the
+            timeless power of music and devotion — pick your exact seat, book securely and receive
+            an individual QR ticket for every attendee.
           </p>
         </div>
 
@@ -28,7 +30,7 @@ export default function SiteFooter() {
           <p className="text-xs uppercase tracking-widest text-zinc-500 mb-3">Explore</p>
           <ul className="space-y-2 text-sm text-zinc-400">
             <li>
-              <Link href="/" className="hover:text-zinc-100 transition-colors">
+              <Link href="/events" className="hover:text-zinc-100 transition-colors">
                 All events
               </Link>
             </li>
@@ -40,6 +42,32 @@ export default function SiteFooter() {
             <li>
               <Link href="/contact" className="hover:text-zinc-100 transition-colors">
                 Contact us
+              </Link>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <p className="text-xs uppercase tracking-widest text-zinc-500 mb-3">Legal</p>
+          <ul className="space-y-2 text-sm text-zinc-400">
+            <li>
+              <Link href="/terms" className="hover:text-zinc-100 transition-colors">
+                Terms &amp; Conditions
+              </Link>
+            </li>
+            <li>
+              <Link href="/privacy-policy" className="hover:text-zinc-100 transition-colors">
+                Privacy Policy
+              </Link>
+            </li>
+            <li>
+              <Link href="/refund-policy" className="hover:text-zinc-100 transition-colors">
+                Refund &amp; Cancellation
+              </Link>
+            </li>
+            <li>
+              <Link href="/cookie-policy" className="hover:text-zinc-100 transition-colors">
+                Cookie Policy
               </Link>
             </li>
           </ul>

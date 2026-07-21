@@ -13,14 +13,14 @@ export function ContactScreen() {
         <div className="grid sm:grid-cols-2 gap-4">
           <a
             href="mailto:utsavevents.tech@gmail.com"
-            className="bg-[#16181d] border border-[#24272e] hover:border-[#f84464]/60 hover:-translate-y-0.5 rounded-2xl p-6 transition-all duration-300"
+            className="bg-[#171228] border border-[#2a2450] hover:border-[#f5a524]/60 hover:-translate-y-0.5 rounded-2xl p-6 transition-all duration-300"
           >
             <p className="text-xs uppercase tracking-widest text-zinc-500 mb-1">Email</p>
             <p className="font-semibold wrap-break-word">utsavevents.tech@gmail.com</p>
           </a>
           <a
             href="tel:+919876543210"
-            className="bg-[#16181d] border border-[#24272e] hover:border-[#f84464]/60 hover:-translate-y-0.5 rounded-2xl p-6 transition-all duration-300"
+            className="bg-[#171228] border border-[#2a2450] hover:border-[#f5a524]/60 hover:-translate-y-0.5 rounded-2xl p-6 transition-all duration-300"
           >
             <p className="text-xs uppercase tracking-widest text-zinc-500 mb-1">Phone</p>
             <p className="font-semibold">+91 98765 43210</p>

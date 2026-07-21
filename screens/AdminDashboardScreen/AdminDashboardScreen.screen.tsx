@@ -6,7 +6,13 @@ import AdminEventsPanel, { EventRow } from "@/components/AdminEventsPanel";
 import AdminHeader from "@/components/AdminHeader";
 import InfoTip from "@/components/InfoTip";
 import { hasPermission, requireAdminPage } from "@/lib/auth/admin";
-import { getBookedSeats, listAudit, listBookings, listEvents, sweepStalePending } from "@/lib/db";
+import {
+  getBookedSeatCounts,
+  listAudit,
+  listBookings,
+  listEvents,
+  sweepStalePending,
+} from "@/lib/db";
 import { registrationState, totalSeats } from "@/lib/domain/events";
 import { cloudinaryConfigured } from "@/lib/integrations/cloudinary";
 import { Booking } from "@/types";
@@ -48,25 +54,26 @@ export async function AdminDashboardScreen() {
   const canManageEvents = hasPermission(currentUser, "events");
 
   await sweepStalePending(); // reconcile abandoned checkouts before reporting
-  const events = await listEvents();
-  const bookings = await listBookings();
-  const recentActivity = await listAudit(8);
+  const [events, bookings, recentActivity, soldByEvent] = await Promise.all([
+    listEvents(),
+    listBookings(),
+    listAudit(8),
+    getBookedSeatCounts(),
+  ]);
 
-  const rows: EventRow[] = await Promise.all(
-    events.map(async (event) => {
-      const confirmed = bookings.filter((b) => b.eventId === event.id && b.status === "CONFIRMED");
-      const total = totalSeats(event);
-      const sold = (await getBookedSeats(event.id)).length;
-      return {
-        event,
-        registrationOpen: registrationState(event),
-        registrations: confirmed.length,
-        revenue: confirmed.reduce((sum, b) => sum + b.amount, 0),
-        remaining: total - sold,
-        total,
-      };
-    })
-  );
+  const rows: EventRow[] = events.map((event) => {
+    const confirmed = bookings.filter((b) => b.eventId === event.id && b.status === "CONFIRMED");
+    const total = totalSeats(event);
+    const sold = soldByEvent[event.id] ?? 0;
+    return {
+      event,
+      registrationOpen: registrationState(event),
+      registrations: confirmed.length,
+      revenue: confirmed.reduce((sum, b) => sum + b.amount, 0),
+      remaining: total - sold,
+      total,
+    };
+  });
 
   const totals = {
     registrations: rows.reduce((s, r) => s + r.registrations, 0),

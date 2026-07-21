@@ -109,7 +109,7 @@ function ConfirmDialogView({
       <div className="relative w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl text-center animate-[dialog-in_.15s_ease-out]">
         <div
           className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 ${
-            danger ? "bg-red-500/15 text-red-400" : "bg-[#f84464]/15 text-[#f84464]"
+            danger ? "bg-red-500/15 text-red-400" : "bg-[#f5a524]/15 text-[#f5a524]"
           }`}
         >
           {danger ? (
@@ -133,7 +133,7 @@ function ConfirmDialogView({
             className={`flex-1 text-sm font-semibold px-4 py-2.5 rounded-lg shadow-lg transition-colors ${
               danger
                 ? "bg-red-600 hover:bg-red-500 text-white shadow-red-600/20"
-                : "bg-[#f84464] hover:bg-[#e03a58] text-white shadow-[#f84464]/20"
+                : "bg-[#f5a524] hover:bg-[#d98c1f] text-white shadow-[#f5a524]/20"
             }`}
           >
             {confirmLabel}

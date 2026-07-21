@@ -1,123 +1,105 @@
-import {
-  Armchair,
-  ArrowRight,
-  type LucideIcon,
-  RefreshCcw,
-  ShieldCheck,
-  Ticket,
-} from "lucide-react";
+import { HeartHandshake, type LucideIcon, Music, Sparkles } from "lucide-react";
 
 /**
- * Static, informative marketing sections for the public homepage: a "why book
- * with us" trust strip and a "how it works" walkthrough. Purely presentational
- * — no data dependencies — so they render on both the featured-event and plain
- * event-list variants of the landing page.
+ * Devotional marketing sections for the public homepage, mirroring
+ * utsavevents.live: an "About Utsav Events" intro, a "Why Attend" trio, and a
+ * closing call-to-action. Purely presentational — renders on both the
+ * featured-event and plain event-list variants of the landing page.
  */
 
-const TRUST: { icon: LucideIcon; title: string; body: string }[] = [
+const WHY: { icon: LucideIcon; title: string; body: string }[] = [
   {
-    icon: ShieldCheck,
-    title: "Secure payments",
-    body: "Every payment runs through Razorpay with bank-grade encryption. We never see your card details.",
+    icon: Music,
+    title: "A Master of Devotion",
+    body: "Voices that carry decades of bhakti tradition — each bhajan a prayer, each note a blessing that resonates long after the evening ends.",
   },
   {
-    icon: Ticket,
-    title: "Individual QR tickets",
-    body: "Each attendee gets their own scannable QR ticket — no confusion at the gate, no sharing one code.",
+    icon: HeartHandshake,
+    title: "A Sacred Gathering",
+    body: "Join thousands of devotees in a shared moment of spiritual connection. Not just a concert — a community coming together in reverence and joy.",
   },
   {
-    icon: Armchair,
-    title: "Pick your exact seat",
-    body: "See the full seat map and choose where you sit. What you select is what you get.",
-  },
-  {
-    icon: RefreshCcw,
-    title: "Easy refunds",
-    body: "Plans change. Cancellations are refunded to your original payment method within 5–7 working days.",
-  },
-];
-
-const STEPS = [
-  { n: 1, title: "Discover", body: "Browse concerts, comedy nights and live events near you." },
-  {
-    n: 2,
-    title: "Pick your seats",
-    body: "Open the seat map and select a seat for each attendee.",
-  },
-  {
-    n: 3,
-    title: "Pay securely",
-    body: "Check out in seconds with Razorpay — UPI, cards or netbanking.",
-  },
-  {
-    n: 4,
-    title: "Show your QR",
-    body: "Get an instant QR ticket by email and on-screen. Flash it at the gate.",
+    icon: Sparkles,
+    title: "An Unforgettable Evening",
+    body: "From the fragrance of flowers to the warmth of diyas, every detail is crafted to transport you into a world of divine celebration.",
   },
 ];
 
 export default function HomeInfoSections() {
   return (
     <>
-      {/* Why book with us */}
-      <section className="max-w-6xl mx-auto px-4 py-16">
-        <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2 flex items-center gap-3">
-          <span className="w-8 h-1 rounded-full bg-linear-to-r from-[#f84464] to-[#ff2e63] inline-block" />
-          Why book with Utsav Events
-        </h2>
-        <p className="text-zinc-400 mb-8 max-w-2xl">
-          Thousands of fans trust us to get them through the gate — here&apos;s what you can count
-          on.
-        </p>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {TRUST.map((f) => {
-            const Icon = f.icon;
-            return (
-              <div
-                key={f.title}
-                className="bg-[#16181d] border border-[#24272e] rounded-2xl p-6 hover:border-[#f84464]/40 hover:-translate-y-1 transition-all duration-300"
-              >
-                <div className="w-11 h-11 rounded-xl bg-[#f84464]/10 text-[#f84464] flex items-center justify-center mb-4">
-                  <Icon className="w-5 h-5" aria-hidden="true" />
-                </div>
-                <h3 className="font-bold mb-1.5">{f.title}</h3>
-                <p className="text-sm text-zinc-400 leading-relaxed">{f.body}</p>
-              </div>
-            );
-          })}
+      {/* About Utsav Events */}
+      <section className="max-w-6xl mx-auto px-4 py-20 grid lg:grid-cols-2 gap-12 items-center">
+        <div className="relative">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/utsav/audience.jpg"
+            alt="Devotees gathered in celebration"
+            className="rounded-3xl w-full aspect-4/3 object-cover border border-[#2a2450] shadow-[0_24px_60px_rgba(0,0,0,0.5)]"
+          />
+          <div className="absolute inset-0 rounded-3xl ring-1 ring-inset ring-[#f5a524]/10" />
+        </div>
+        <div>
+          <p className="font-heading text-[#f5a524] text-lg mb-2">About Utsav Events</p>
+          <h2 className="font-heading text-3xl sm:text-5xl font-semibold leading-tight mb-5">
+            Sacred experiences in music &amp; devotion
+          </h2>
+          <p className="text-zinc-300/90 leading-relaxed text-lg">
+            Utsav Events is a Bangalore-based cultural organisation dedicated to bringing
+            communities together through the timeless power of music and devotion. We curate sacred
+            experiences that honour tradition, uplift the spirit, and create lasting memories for
+            every devotee who walks through our doors.
+          </p>
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="border-y border-white/6 bg-[#16181d]/40">
-        <div className="max-w-6xl mx-auto px-4 py-16">
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2 flex items-center gap-3">
-            <span className="w-8 h-1 rounded-full bg-linear-to-r from-[#f84464] to-[#ff2e63] inline-block" />
-            How it works
-          </h2>
-          <p className="text-zinc-400 mb-8 max-w-2xl">
-            From browsing to the gate in four easy steps.
-          </p>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {STEPS.map((s, i) => (
-              <div
-                key={s.n}
-                className="relative bg-[#0d0f12] border border-[#24272e] rounded-2xl p-6"
-              >
-                <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-linear-to-r from-[#f84464] to-[#ff2e63] text-white font-bold text-sm mb-4">
-                  {s.n}
-                </span>
-                <h3 className="font-bold mb-1.5">{s.title}</h3>
-                <p className="text-sm text-zinc-400 leading-relaxed">{s.body}</p>
-                {i < STEPS.length - 1 && (
-                  <ArrowRight
-                    className="hidden lg:block absolute top-9 -right-2.5 w-5 h-5 text-zinc-700"
-                    aria-hidden="true"
-                  />
-                )}
-              </div>
-            ))}
+      {/* Why Attend */}
+      <section className="border-y border-white/6 bg-[#171228]/40">
+        <div className="max-w-6xl mx-auto px-4 py-20">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <p className="font-heading text-[#f5a524] text-lg mb-1">Why Attend</p>
+            <h2 className="font-heading text-3xl sm:text-5xl font-semibold">
+              An experience that touches the soul
+            </h2>
           </div>
+          <div className="grid sm:grid-cols-3 gap-6">
+            {WHY.map((f) => {
+              const Icon = f.icon;
+              return (
+                <div
+                  key={f.title}
+                  className="text-center bg-[#0d0a1f]/60 border border-[#2a2450] rounded-3xl p-8 hover:border-[#f5a524]/40 hover:-translate-y-1 transition-all duration-300"
+                >
+                  <div className="w-14 h-14 rounded-full bg-[#f5a524]/10 text-[#f5a524] flex items-center justify-center mx-auto mb-5">
+                    <Icon className="w-6 h-6" aria-hidden="true" />
+                  </div>
+                  <h3 className="font-heading text-2xl font-semibold mb-2">{f.title}</h3>
+                  <p className="text-sm text-zinc-400 leading-relaxed">{f.body}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Closing CTA */}
+      <section className="relative overflow-hidden">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/utsav/artist.jpg"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-[#0d0a1f]/85" />
+        <div className="relative max-w-3xl mx-auto px-4 py-24 text-center">
+          <h2 className="font-heading text-3xl sm:text-5xl font-semibold mb-4">
+            Be part of a divine evening
+          </h2>
+          <p className="text-zinc-300 text-lg leading-relaxed">
+            Seats are limited. Reserve yours today and join a gathering of hearts united in
+            devotion.
+          </p>
         </div>
       </section>
     </>

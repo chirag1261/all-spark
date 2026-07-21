@@ -45,7 +45,7 @@ function toLocalInput(iso: string): string {
 }
 
 const inputCls =
-  "w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#f84464]";
+  "w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#f5a524]";
 
 export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
   const router = useRouter();
@@ -500,7 +500,7 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
                   onClick={() => setSeatingMode(m)}
                   className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
                     seatingMode === m
-                      ? "bg-[#f84464] text-white"
+                      ? "bg-[#f5a524] text-white"
                       : "text-zinc-400 hover:text-zinc-200"
                   }`}
                 >
@@ -526,7 +526,7 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
                       { name: "", priceInr: "", rows: "2", seatsPerRow: "12" },
                     ])
                   }
-                  className="ml-auto text-sm text-[#f84464] hover:underline"
+                  className="ml-auto text-sm text-[#f5a524] hover:underline"
                 >
                   + Add category
                 </button>
@@ -615,7 +615,7 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
             <button
               type="button"
               onClick={() => setFaqs((prev) => [...prev, { question: "", answer: "" }])}
-              className="ml-auto text-sm text-[#f84464] hover:underline"
+              className="ml-auto text-sm text-[#f5a524] hover:underline"
             >
               + Add FAQ
             </button>
@@ -664,7 +664,7 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
               type="checkbox"
               checked={published}
               onChange={(e) => setPublished(e.target.checked)}
-              className="w-4 h-4 accent-[#f84464]"
+              className="w-4 h-4 accent-[#f5a524]"
             />
             <label htmlFor="published" className="text-sm">
               <span className="font-medium">Published</span>
@@ -677,7 +677,7 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
               type="checkbox"
               checked={featured}
               onChange={(e) => setFeatured(e.target.checked)}
-              className="w-4 h-4 accent-[#f84464]"
+              className="w-4 h-4 accent-[#f5a524]"
             />
             <label htmlFor="featured" className="text-sm">
               <span className="font-medium">Featured</span>
@@ -693,7 +693,7 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
           <button
             type="submit"
             disabled={busy || uploading !== null}
-            className="bg-[#f84464] hover:bg-[#e03a58] disabled:opacity-40 rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+            className="bg-[#f5a524] hover:bg-[#d98c1f] disabled:opacity-40 rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
           >
             {busy ? "Saving…" : event ? "Save changes" : "Create event"}
           </button>

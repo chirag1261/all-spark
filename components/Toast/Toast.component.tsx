@@ -79,7 +79,7 @@ function ToastView({
       aria-live="polite"
     >
       <div
-        className={`pointer-events-auto flex items-center gap-3 max-w-sm rounded-2xl border px-4 py-3 shadow-[0_16px_40px_rgba(0,0,0,0.45)] backdrop-blur-md bg-[#16181d]/95 animate-[dialog-in_.18s_ease-out] ${
+        className={`pointer-events-auto flex items-center gap-3 max-w-sm rounded-2xl border px-4 py-3 shadow-[0_16px_40px_rgba(0,0,0,0.45)] backdrop-blur-md bg-[#171228]/95 animate-[dialog-in_.18s_ease-out] ${
           success ? "border-emerald-500/30" : "border-red-500/30"
         }`}
       >

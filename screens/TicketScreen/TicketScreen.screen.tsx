@@ -26,8 +26,8 @@ export async function TicketScreen({ ticketId }: { ticketId: string }) {
     <div className="min-h-screen text-zinc-100">
       <SiteHeader />
       <main className="max-w-md mx-auto px-4 py-10">
-        <div className="relative bg-[#16181d] border border-[#24272e] rounded-3xl overflow-hidden shadow-[0_24px_60px_rgba(0,0,0,0.5)]">
-          <div className="bg-linear-to-r from-[#f84464] to-[#ff2e63] px-6 py-5">
+        <div className="relative bg-[#171228] border border-[#2a2450] rounded-3xl overflow-hidden shadow-[0_24px_60px_rgba(0,0,0,0.5)]">
+          <div className="bg-linear-to-r from-[#f5a524] to-[#ffc132] px-6 py-5">
             <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/70 mb-1">
               Event ticket
             </p>
@@ -47,7 +47,7 @@ export async function TicketScreen({ ticketId }: { ticketId: string }) {
               <img
                 src={qrDataUrl}
                 alt={`Ticket QR ${ticket.ticketId}`}
-                className="w-48 h-48 rounded-2xl bg-white p-2 shadow-[0_0_40px_rgba(248,68,100,0.15)]"
+                className="w-48 h-48 rounded-2xl bg-white p-2 shadow-[0_0_40px_rgba(245,165,36,0.15)]"
               />
               <p className="font-mono text-lg tracking-[0.2em] mt-1">{ticket.ticketId}</p>
               <p className="text-xs text-zinc-500">Show this QR at the venue gate</p>
@@ -56,9 +56,9 @@ export async function TicketScreen({ ticketId }: { ticketId: string }) {
 
           {/* Perforation between the QR stub and the details */}
           <div className="relative flex items-center px-6 py-4" aria-hidden="true">
-            <span className="absolute -left-3 w-6 h-6 rounded-full bg-[#0d0f12] border border-[#24272e]" />
+            <span className="absolute -left-3 w-6 h-6 rounded-full bg-[#0d0a1f] border border-[#2a2450]" />
             <span className="flex-1 border-t-2 border-dashed border-[#2b2f37]" />
-            <span className="absolute -right-3 w-6 h-6 rounded-full bg-[#0d0f12] border border-[#24272e]" />
+            <span className="absolute -right-3 w-6 h-6 rounded-full bg-[#0d0a1f] border border-[#2a2450]" />
           </div>
 
           <div className="px-6 pb-6 space-y-3">
@@ -86,7 +86,7 @@ export async function TicketScreen({ ticketId }: { ticketId: string }) {
         </div>
 
         <p className="text-center mt-8">
-          <Link href="/" className="text-sm text-[#f84464] hover:underline">
+          <Link href="/" className="text-sm text-[#f5a524] hover:underline">
             Browse events →
           </Link>
         </p>

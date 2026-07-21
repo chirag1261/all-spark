@@ -13,16 +13,34 @@ import { Pool } from "pg";
 const g = globalThis as typeof globalThis & { __pgPool?: Pool; __pgReady?: Promise<void> };
 
 function createPool(): Pool {
-  const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) {
+  const raw = process.env.DATABASE_URL;
+  if (!raw) {
     throw new Error(
       "DATABASE_URL is not set. Point it at a Postgres instance, e.g. " +
         "postgres://user:pass@localhost:5432/utsavevents — see .env.example."
     );
   }
+
+  // TLS is governed by the explicit `ssl` option below. Hosted providers (Neon,
+  // etc.) hand you a URL with `?sslmode=require`, which recent `pg` versions warn
+  // about (they now alias require→verify-full). Strip it to silence that warning
+  // while keeping SSL on whenever the URL asked for it or DATABASE_SSL=true.
+  let connectionString = raw;
+  let urlWantsSsl = false;
+  try {
+    const url = new URL(raw);
+    const mode = url.searchParams.get("sslmode");
+    urlWantsSsl = mode !== null && mode !== "disable";
+    url.searchParams.delete("sslmode");
+    connectionString = url.toString();
+  } catch {
+    /* not a parseable URL — use it verbatim */
+  }
+
+  const useSsl = process.env.DATABASE_SSL === "true" || urlWantsSsl;
   return new Pool({
     connectionString,
-    ssl: process.env.DATABASE_SSL === "true" ? { rejectUnauthorized: false } : undefined,
+    ssl: useSsl ? { rejectUnauthorized: false } : undefined,
   });
 }
 

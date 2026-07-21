@@ -13,3 +13,8 @@ export * from "./HomeScreen";
 export * from "./LoginScreen";
 export * from "./MyBookingScreen";
 export * from "./TicketScreen";
+export * from "./PrivacyPolicyScreen";
+export * from "./TermsScreen";
+export * from "./RefundPolicyScreen";
+export * from "./CookiePolicyScreen";
+export * from "./EventsScreen";
