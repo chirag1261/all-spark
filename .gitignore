@@ -24,6 +24,9 @@
 .DS_Store
 *.pem
 
+# local data (legacy JSON store — contains PII/credential hashes, never commit)
+/data/
+
 # debug
 npm-debug.log*
 yarn-debug.log*

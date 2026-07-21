@@ -1,0 +1,159 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   The Entertainment Hub — design tokens
+   Deep slate/charcoal canvas, neon coral-red accents, bold clean sans-serif.
+--------------------------------------------------------------------------- */
+:root {
+  --background: #0d0f12; /* deep slate/charcoal */
+  --foreground: #f8f9fa; /* crisp off-white */
+  --surface: #16181d; /* raised cards */
+  --surface-2: #1d2026; /* hover / inset */
+  --edge: #24272e; /* minimalist borders */
+  --accent: #f84464; /* energetic neon coral-red */
+  --accent-hot: #ff2e63; /* hover/glow flavor */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background:
+    radial-gradient(1200px 500px at 50% -220px, rgba(248, 68, 100, 0.09), transparent 70%),
+    var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  letter-spacing: -0.011em;
+}
+
+h1,
+h2,
+h3 {
+  letter-spacing: -0.025em;
+}
+
+/* Thin, unobtrusive scrollbars for carousels/tables */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #33363e transparent;
+}
+*::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #33363e;
+  border-radius: 999px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ---------------------------------------------------------------------------
+   Motion system
+--------------------------------------------------------------------------- */
+
+/* Route transition — applied by src/app/template.tsx on every navigation */
+.page-transition {
+  animation: page-in 0.4s cubic-bezier(0.21, 1.02, 0.73, 1) both;
+}
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.995);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+/* Hero media crossfade (auto-playing carousel) */
+@keyframes hero-fade {
+  from {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Slow drifting zoom for the active hero frame */
+@keyframes ken-burns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.07);
+  }
+}
+
+/* Neon pulse for "Filling Fast" style tags */
+@keyframes neon-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(248, 68, 100, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 14px 2px rgba(248, 68, 100, 0.35);
+  }
+}
+
+/* Admin right-drawer entrance (referenced as animate-[slide-in_.2s_ease-out]) */
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Confirm dialog entrance (referenced as animate-[dialog-in_.15s_ease-out] / fade-in) */
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Accessibility: kill decorative motion for users who ask for less of it */
+@media (prefers-reduced-motion: reduce) {
+  .page-transition,
+  .hero-frame,
+  .hero-frame-active {
+    animation: none !important;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Hero frame helpers (used by HeroMedia) */
+.hero-frame {
+  animation: hero-fade 0.9s ease-out both;
+}
+.hero-frame-active {
+  animation: hero-fade 0.9s ease-out both, ken-burns 7s linear 0.9s both;
+}

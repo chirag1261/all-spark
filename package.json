@@ -1,30 +1,38 @@
 {
-  "name": "bookmyshow-clone",
+  "name": "all-spark",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "format": "prettier --write \"{app,components,screens,hooks,lib,utils,constants,types}/**/*.{ts,tsx}\""
   },
   "dependencies": {
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.25.0",
     "next": "16.2.10",
     "nodemailer": "^9.0.3",
+    "pg": "^8.22.0",
     "qrcode": "^1.5.4",
     "razorpay": "^2.9.6",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/node": "^20",
     "@types/nodemailer": "^8.0.1",
+    "@types/pg": "^8.20.0",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
+    "prettier": "^3.9.5",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
