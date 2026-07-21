@@ -29,3 +29,5 @@ export * from "./Toast";
 export * from "./UserForm";
 export * from "./WhatsAppShare";
 export * from "./LayoutEditor";
+export * from "./Loader";
+export * from "./PolicyPage";

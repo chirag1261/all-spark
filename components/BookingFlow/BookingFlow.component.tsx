@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Check } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { MAX_SEATS_PER_BOOKING } from "@/constants";
 import { seatPrice } from "@/lib/domain/events";
@@ -11,6 +12,7 @@ import { EventItem } from "@/types";
 import { formatDateIST, inr } from "@/utils";
 
 import BackLink from "../BackLink";
+import Loader from "../Loader";
 import SeatMap from "../SeatMap";
 import { useToast } from "../Toast";
 
@@ -60,8 +62,12 @@ export default function BookingFlow({ event, customer }: Props) {
   // seatId -> attendee name; the first seat defaults to the purchaser's name
   const [attendeeNames, setAttendeeNames] = useState<Record<string, string>>({});
   const [paying, setPaying] = useState(false);
+  // True from the moment payment succeeds until the tickets are confirmed and
+  // we've navigated / rendered them — drives the full-screen loader.
+  const [finalizing, setFinalizing] = useState(false);
   const { showToast, toast } = useToast();
   const [confirmed, setConfirmed] = useState<Confirmation | null>(null);
+  const router = useRouter();
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const refreshSeats = useCallback(async () => {
@@ -175,12 +181,14 @@ export default function BookingFlow({ event, customer }: Props) {
         description: `Seats ${selectedSeats.join(", ")}`,
         order_id: data.orderId,
         prefill: data.prefill,
-        theme: { color: "#f84464" },
+        theme: { color: "#f5a524" },
         handler: async (resp: {
           razorpay_order_id: string;
           razorpay_payment_id: string;
           razorpay_signature: string;
         }) => {
+          // Payment went through — cover the verify + redirect with a loader.
+          setFinalizing(true);
           try {
             const verifyRes = await fetch("/api/verify", {
               method: "POST",
@@ -189,13 +197,21 @@ export default function BookingFlow({ event, customer }: Props) {
             });
             const verifyData = await verifyRes.json();
             if (verifyRes.ok && verifyData.status === "CONFIRMED") {
+              const tickets: TicketView[] = verifyData.tickets ?? [];
+              // Single ticket → straight to its ticket screen. Multiple → show
+              // the all-tickets confirmation (each attendee's QR at once).
+              if (tickets.length === 1) {
+                router.push(`/ticket/${encodeURIComponent(tickets[0].ticketId)}`);
+                return; // keep the loader up through navigation (no setPaying)
+              }
               setConfirmed({
                 bookingId: verifyData.bookingId,
-                tickets: verifyData.tickets ?? [],
+                tickets,
                 emailSent: verifyData.emailSent ?? false,
                 amount: verifyData.amount,
               });
             } else {
+              setFinalizing(false);
               showToast(
                 verifyData.error ??
                   "Payment verification failed. If money was deducted it will be auto-refunded.",
@@ -204,6 +220,7 @@ export default function BookingFlow({ event, customer }: Props) {
               refreshSeats();
             }
           } catch {
+            setFinalizing(false);
             showToast("Could not verify payment — check My Bookings before retrying.", "error");
           } finally {
             setPaying(false);
@@ -268,7 +285,7 @@ export default function BookingFlow({ event, customer }: Props) {
                 <p className="font-mono text-xs text-zinc-500 mt-1 wrap-break-word">{t.ticketId}</p>
                 <Link
                   href={`/ticket/${t.ticketId}`}
-                  className="inline-block mt-2 text-sm text-[#f84464] hover:underline"
+                  className="inline-block mt-2 text-sm text-[#f5a524] hover:underline"
                 >
                   View / share ticket
                 </Link>
@@ -293,7 +310,7 @@ export default function BookingFlow({ event, customer }: Props) {
           </Link>
           <Link
             href="/"
-            className="flex-1 bg-[#f84464] hover:bg-[#e03a58] rounded-lg px-5 py-3 font-semibold text-sm transition-colors"
+            className="flex-1 bg-[#f5a524] hover:bg-[#d98c1f] rounded-lg px-5 py-3 font-semibold text-sm transition-colors"
           >
             Browse more events
           </Link>
@@ -306,6 +323,7 @@ export default function BookingFlow({ event, customer }: Props) {
 
   return (
     <div>
+      {finalizing && <Loader fullscreen label="Payment successful — preparing your tickets…" />}
       <BackLink href={`/events/${event.id}`} className="mb-4">
         Back to event
       </BackLink>
@@ -351,7 +369,7 @@ export default function BookingFlow({ event, customer }: Props) {
                     required
                     minLength={2}
                     maxLength={80}
-                    className="flex-1 min-w-0 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#f84464]"
+                    className="flex-1 min-w-0 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#f5a524]"
                   />
                 </div>
               ))}
@@ -373,7 +391,7 @@ export default function BookingFlow({ event, customer }: Props) {
           <button
             onClick={pay}
             disabled={paying || selected.size === 0}
-            className="bg-[#f84464] hover:bg-[#e03a58] disabled:opacity-40 disabled:cursor-not-allowed rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+            className="bg-[#f5a524] hover:bg-[#d98c1f] disabled:opacity-40 disabled:cursor-not-allowed rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
           >
             {paying ? "Processing…" : selected.size > 0 ? `Pay ${inr(totalAmount)}` : "Pay"}
           </button>

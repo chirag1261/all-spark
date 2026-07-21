@@ -284,28 +284,30 @@ async function seedFeaturedVenueIfAbsent(): Promise<void> {
 
   const now = Date.now();
   const day = 24 * 60 * 60 * 1000;
-  const startsAt = new Date(now + 21 * day);
-  startsAt.setHours(18, 30, 0, 0);
-
-  const img = (photo: string) =>
-    `https://images.unsplash.com/photo-${photo}?w=1600&q=80&auto=format&fit=crop`;
+  // Rudrotsav — 16 August 2026, 6:30 PM IST (12:00 UTC ~ 18:00 IST; set 13:00 UTC = 18:30 IST).
+  const startsAt = new Date("2026-08-16T13:00:00.000Z");
 
   const event: EventItem = {
     id,
-    title: "Dr. Babu Jagajeevanram Bhavan Auditorium",
+    title: "Rudrotsav",
     description:
-      "A grand two-tier auditorium — a 1,298-seat lower floor and a 498-seat balcony. Pick your exact seat across Premium, Standard and Economy tiers.",
-    venue: "Dr. Babu Jagajeevanram Bhavan Auditorium",
-    city: "",
+      "Experience the divine resonance of bhajans as the legendary Gajendra Pratap Singh fills the evening with soul-stirring melodies. A gathering of hearts united in devotion.\n\nGajendra Pratap Singh — Renowned Bhajan Singer, whose voice carries decades of bhakti tradition.",
+    venue: "Dr. Babu Jagjivanram Bhavan",
+    city: "Bangalore",
     startsAt: startsAt.toISOString(),
     registrationOpensAt: new Date(now - day).toISOString(),
     registrationClosesAt: startsAt.toISOString(),
-    imageUrl: "",
-    tagline: "Reserved seating · 1,608 seats on sale",
-    gallery: [img("1503095396549-807759245b35"), img("1470229722913-7c0e2dbbafd3")],
+    imageUrl: "/utsav/hero.jpg",
+    tagline: "A Divine Bhajan Evening",
+    gallery: ["/utsav/hero.jpg", "/utsav/artist.jpg", "/utsav/audience.jpg"],
     featured: true,
-    poster: posterForIndex(2),
+    poster: posterForIndex(0),
     faqs: [
+      {
+        question: "Who is performing?",
+        answer:
+          "Gajendra Pratap Singh, a renowned Bhajan singer whose voice carries decades of bhakti tradition — each bhajan a prayer, each note a blessing.",
+      },
       {
         question: "How is seating arranged?",
         answer:
@@ -313,7 +315,8 @@ async function seedFeaturedVenueIfAbsent(): Promise<void> {
       },
       {
         question: "Are the balcony side seats available?",
-        answer: "The left and right balcony wings are held back for now — only the main blocks are on sale.",
+        answer:
+          "The left and right balcony wings are held back for now — only the main blocks are on sale.",
       },
     ],
     categories: [],
@@ -330,13 +333,21 @@ async function seedFeaturedVenueIfAbsent(): Promise<void> {
   });
 }
 
-/** Seeds example events / the bootstrap admin exactly once, only if those tables are empty. */
+/**
+ * Seeds example events / the bootstrap admin exactly once, only if those tables
+ * are empty. The demo events (Sunburn Arena, Standup Comedy, DevConf) are meant
+ * to make a fresh dev database look real out of the box — set
+ * SEED_DEMO_EVENTS=false on production deploys so a first-run prod database
+ * only ever gets the real venue seed (seedFeaturedVenueIfAbsent), not these.
+ */
 async function seedIfEmpty(): Promise<void> {
   const pool = db();
-  const { rows: eventCountRows } = await pool.query("SELECT COUNT(*)::int AS n FROM events");
-  if (eventCountRows[0].n === 0) {
-    for (const event of seedEventSpecs()) {
-      await insertEventRow(event);
+  if (process.env.SEED_DEMO_EVENTS !== "false") {
+    const { rows: eventCountRows } = await pool.query("SELECT COUNT(*)::int AS n FROM events");
+    if (eventCountRows[0].n === 0) {
+      for (const event of seedEventSpecs()) {
+        await insertEventRow(event);
+      }
     }
   }
 
@@ -505,6 +516,22 @@ export async function getBookedSeats(eventId: string): Promise<string[]> {
     eventId,
   ]);
   return rows.map((r) => r.seat_id);
+}
+
+/**
+ * Booked-seat counts for every event in ONE query. Use this for list/grid views
+ * instead of calling getBookedSeats() per event in a loop — a single aggregate
+ * round-trip instead of N sequential ones (the difference is seconds against a
+ * remote database).
+ */
+export async function getBookedSeatCounts(): Promise<Record<string, number>> {
+  await initOnce();
+  const { rows } = await db().query(
+    "SELECT event_id, COUNT(*)::int AS n FROM booked_seats GROUP BY event_id"
+  );
+  const counts: Record<string, number> = {};
+  for (const r of rows) counts[r.event_id] = r.n;
+  return counts;
 }
 
 export async function getLockedSeats(eventId: string): Promise<string[]> {

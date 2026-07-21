@@ -12,7 +12,7 @@ export default function InfoTip({ text }: { text: string }) {
         tabIndex={0}
         role="img"
         aria-label={text}
-        className="text-zinc-500 flex items-center justify-center cursor-help hover:text-zinc-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#f84464]/40"
+        className="text-zinc-500 flex items-center justify-center cursor-help hover:text-zinc-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#f5a524]/40"
       >
         <Info className="w-4 h-4" aria-hidden="true" />
       </span>

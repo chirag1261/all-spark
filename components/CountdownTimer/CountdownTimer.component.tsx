@@ -80,7 +80,7 @@ function TimeBlock({ value, label, accent }: { value: number; label: string; acc
     <div className="flex flex-col items-center justify-center px-3.5 py-2 sm:px-4 sm:py-2.5 min-w-13 sm:min-w-15 bg-white/5">
       <span
         className={`font-mono text-xl sm:text-2xl font-bold tabular-nums leading-none ${
-          accent ? "text-[#ff6b85]" : "text-white"
+          accent ? "text-[#ffc132]" : "text-white"
         }`}
       >
         {String(value).padStart(2, "0")}

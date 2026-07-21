@@ -82,7 +82,7 @@ export default function AdminEventsPanel({ rows, cloudinaryEnabled }: Props) {
         <h2 className="text-lg font-semibold">Events</h2>
         <button
           onClick={() => setDrawer("new")}
-          className="ml-auto inline-flex items-center gap-1.5 bg-[#f84464] hover:bg-[#e03a58] rounded-lg px-4 py-2 font-semibold text-sm transition-colors"
+          className="ml-auto inline-flex items-center gap-1.5 bg-[#f5a524] hover:bg-[#d98c1f] rounded-lg px-4 py-2 font-semibold text-sm transition-colors"
         >
           <Plus className="w-4 h-4" aria-hidden="true" /> New event
         </button>
@@ -97,7 +97,7 @@ export default function AdminEventsPanel({ rows, cloudinaryEnabled }: Props) {
               onClick={() => setFilter(f)}
               className={`rounded-full px-3.5 py-1.5 text-sm font-medium border transition-colors ${
                 filter === f
-                  ? "bg-[#f84464]/15 border-[#f84464]/50 text-zinc-100"
+                  ? "bg-[#f5a524]/15 border-[#f5a524]/50 text-zinc-100"
                   : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700"
               }`}
             >
@@ -138,7 +138,7 @@ export default function AdminEventsPanel({ rows, cloudinaryEnabled }: Props) {
                         {event.featured && (
                           <span
                             title="This event takes over the public homepage as the featured landing page."
-                            className="ml-2 text-[10px] font-bold uppercase tracking-wide bg-[#f84464]/15 text-[#f84464] px-1.5 py-0.5 rounded cursor-help"
+                            className="ml-2 text-[10px] font-bold uppercase tracking-wide bg-[#f5a524]/15 text-[#f5a524] px-1.5 py-0.5 rounded cursor-help"
                           >
                             Landing page
                           </span>
@@ -286,7 +286,7 @@ function EmptyState({ onCreate }: { onCreate: () => void }) {
       </p>
       <button
         onClick={onCreate}
-        className="inline-flex items-center gap-1.5 bg-[#f84464] hover:bg-[#e03a58] rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
+        className="inline-flex items-center gap-1.5 bg-[#f5a524] hover:bg-[#d98c1f] rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
       >
         <Plus className="w-4 h-4" aria-hidden="true" /> New event
       </button>

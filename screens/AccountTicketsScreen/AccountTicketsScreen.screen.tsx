@@ -18,7 +18,7 @@ export async function AccountTicketsScreen() {
           <p className="text-zinc-500 mb-4">No tickets yet — they appear here after a booking.</p>
           <Link
             href="/"
-            className="inline-block bg-[#f84464] hover:bg-[#e03a58] rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
+            className="inline-block bg-[#f5a524] hover:bg-[#d98c1f] rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
           >
             Browse events
           </Link>
@@ -31,7 +31,7 @@ export async function AccountTicketsScreen() {
               <Link
                 key={t.ticketId}
                 href={`/ticket/${t.ticketId}`}
-                className="bg-zinc-900 border border-zinc-800 hover:border-[#f84464]/60 rounded-2xl p-5 transition-colors"
+                className="bg-zinc-900 border border-zinc-800 hover:border-[#f5a524]/60 rounded-2xl p-5 transition-colors"
               >
                 <p className="font-bold wrap-break-word">{event?.title ?? t.eventId}</p>
                 <p className="text-sm text-zinc-400">
@@ -41,7 +41,7 @@ export async function AccountTicketsScreen() {
                   <span className="wrap-break-word min-w-0">
                     {t.attendeeName} · Seat <strong>{t.seatId}</strong>
                   </span>
-                  <span className="shrink-0 font-mono text-xs text-[#f84464]">{t.ticketId}</span>
+                  <span className="shrink-0 font-mono text-xs text-[#f5a524]">{t.ticketId}</span>
                 </div>
               </Link>
             );

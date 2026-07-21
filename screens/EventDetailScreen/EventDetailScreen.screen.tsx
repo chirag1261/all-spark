@@ -44,7 +44,7 @@ export async function EventDetailScreen({ id }: { id: string }) {
           <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent" />
           <div className="absolute bottom-0 p-4 sm:p-6">
             {event.tagline && (
-              <span className="inline-block text-[11px] font-semibold uppercase tracking-widest text-[#ff8fa3] mb-1 drop-shadow">
+              <span className="inline-block text-[11px] font-semibold uppercase tracking-widest text-[#ffce7a] mb-1 drop-shadow">
                 {event.tagline}
               </span>
             )}
@@ -70,7 +70,7 @@ export async function EventDetailScreen({ id }: { id: string }) {
 
         <div className="grid lg:grid-cols-3 gap-8 mt-8">
           {/* Booking card — first on mobile so the CTA is immediately visible */}
-          <aside className="lg:order-last bg-[#16181d]/90 backdrop-blur border border-[#24272e] rounded-2xl p-5 h-fit shadow-xl lg:sticky lg:top-20">
+          <aside className="lg:order-last bg-[#171228]/90 backdrop-blur border border-[#2a2450] rounded-2xl p-5 h-fit shadow-xl lg:sticky lg:top-20">
             <h2 className="font-semibold mb-4">Tickets</h2>
             <div className="space-y-2 mb-5">
               {tiers.map((tier) => (
@@ -103,7 +103,7 @@ export async function EventDetailScreen({ id }: { id: string }) {
             {bookable ? (
               <Link
                 href={`/events/${event.id}/book`}
-                className="block text-center bg-[#f84464] hover:bg-[#e03a58] rounded-lg px-6 py-3 font-semibold text-sm transition-colors"
+                className="block text-center bg-[#f5a524] hover:bg-[#d98c1f] rounded-lg px-6 py-3 font-semibold text-sm transition-colors"
               >
                 Select seats
               </Link>
@@ -127,7 +127,7 @@ export async function EventDetailScreen({ id }: { id: string }) {
                 <h2 className="text-lg font-semibold mb-3">Gallery</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {event.gallery.map((url, i) => (
-                    <div key={url} className="overflow-hidden rounded-xl border border-[#24272e]">
+                    <div key={url} className="overflow-hidden rounded-xl border border-[#2a2450]">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={url}
@@ -190,7 +190,7 @@ export async function EventDetailScreen({ id }: { id: string }) {
 
 function Fact({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-[#16181d] border border-[#24272e] rounded-xl px-4 py-3">
+    <div className="bg-[#171228] border border-[#2a2450] rounded-xl px-4 py-3">
       <p className="text-[11px] uppercase tracking-widest text-zinc-500 mb-1">{label}</p>
       <p className="text-sm font-semibold wrap-break-word">{value}</p>
     </div>
@@ -200,7 +200,7 @@ function Fact({ label, value }: { label: string; value: string }) {
 function GoodToKnow({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
   return (
     <li className="flex items-start gap-3 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3">
-      <Icon className="w-5 h-5 shrink-0 text-[#f84464]" aria-hidden="true" />
+      <Icon className="w-5 h-5 shrink-0 text-[#f5a524]" aria-hidden="true" />
       <span className="text-sm text-zinc-300 leading-relaxed">{text}</span>
     </li>
   );

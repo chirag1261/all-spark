@@ -14,7 +14,7 @@ interface Props {
 
 const clone = (l: EventLayout): EventLayout => JSON.parse(JSON.stringify(l));
 const inputCls =
-  "bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-sm outline-none focus:border-[#f84464]";
+  "bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-sm outline-none focus:border-[#f5a524]";
 
 /**
  * Structured builder for a rich multi-section seating layout. Everything the
@@ -63,7 +63,7 @@ export default function LayoutEditor({ value, onChange }: Props) {
           <button
             type="button"
             onClick={addSection}
-            className="inline-flex items-center gap-1 text-xs bg-[#f84464] hover:bg-[#e03a58] rounded-lg px-3 py-1.5 font-semibold"
+            className="inline-flex items-center gap-1 text-xs bg-[#f5a524] hover:bg-[#d98c1f] rounded-lg px-3 py-1.5 font-semibold"
           >
             <Plus className="w-3.5 h-3.5" /> Section
           </button>
@@ -270,7 +270,7 @@ function RowEditor({
           type="checkbox"
           checked={Boolean(row.blocked)}
           onChange={(e) => patch((d) => (d.blocked = e.target.checked || undefined))}
-          className="accent-[#f84464]"
+          className="accent-[#f5a524]"
         />
         Block row
       </label>

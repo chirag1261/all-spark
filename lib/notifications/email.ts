@@ -1,24 +1,29 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
 import { getEvent } from "@/lib/db";
 import { ticketQrDataUrl } from "@/lib/domain/tickets";
 import { Booking, TicketRecord } from "@/types";
 import { inr } from "@/utils";
 
+/**
+ * Resend (https://resend.com) instead of raw SMTP: it authenticates with an
+ * API key over HTTPS, so there's no IP/location-based login risk-flagging the
+ * way Gmail SMTP does when called from a serverless platform's rotating
+ * outbound IPs (Vercel, etc.) — see the 534 "WebLoginRequired" failures that
+ * motivated this switch.
+ */
 export function emailConfigured(): boolean {
-  return Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
+  return Boolean(process.env.RESEND_API_KEY);
 }
 
-function transporter() {
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT ?? 587),
-    secure: Number(process.env.SMTP_PORT ?? 587) === 465,
-    auth: { user: process.env.SMTP_USER!, pass: process.env.SMTP_PASS! },
-  });
+function client(): Resend {
+  return new Resend(process.env.RESEND_API_KEY);
 }
 
-const FROM = () => process.env.EMAIL_FROM ?? `"Utsav Events" <${process.env.SMTP_USER}>`;
+// Falls back to Resend's own onboarding sender until a domain is verified —
+// see https://resend.com/domains. Set EMAIL_FROM once utsavevents.tech (or
+// whatever domain) is verified, so mail comes from your own address.
+const FROM = () => process.env.EMAIL_FROM ?? "Utsav Events <onboarding@resend.dev>";
 
 const eventDate = (iso: string) =>
   new Date(iso).toLocaleString("en-IN", {
@@ -37,7 +42,7 @@ export async function sendOtpEmail(to: string, code: string): Promise<{ sent: bo
     return { sent: true }; // dev delivery — the server console is the inbox
   }
   try {
-    await transporter().sendMail({
+    const { error } = await client().emails.send({
       from: FROM(),
       to,
       subject: `${code} is your Utsav Events verification code`,
@@ -54,6 +59,10 @@ export async function sendOtpEmail(to: string, code: string): Promise<{ sent: bo
           </div>
         </div>`,
     });
+    if (error) {
+      console.error("OTP email failed:", error);
+      return { sent: false };
+    }
     return { sent: true };
   } catch (err) {
     console.error("OTP email failed:", err);
@@ -88,17 +97,16 @@ export async function sendTicketEmail(
     for (let i = 0; i < tickets.length; i++) {
       const t = tickets[i];
       const qrDataUrl = await ticketQrDataUrl(t, booking);
+      // Also attached as a downloadable file, in addition to being shown inline below.
       attachments.push({
         filename: `${t.ticketId}.png`,
-        content: qrDataUrl.split(",")[1],
-        encoding: "base64" as const,
-        cid: `ticket-qr-${i}`,
+        content: Buffer.from(qrDataUrl.split(",")[1], "base64"),
       });
       const ticketUrl = `${origin}/ticket/${encodeURIComponent(t.ticketId)}`;
       ticketBlocksHtml.push(`
         <div style="border:1px solid #3f3f46;border-radius:12px;padding:16px;margin:12px 0;text-align:center">
           <p style="margin:0 0 4px;font-weight:bold">${t.attendeeName} · Seat ${t.seatId}</p>
-          <img src="cid:ticket-qr-${i}" alt="Ticket QR ${t.ticketId}" width="160" height="160" style="border-radius:8px;background:#fff;padding:6px"/>
+          <img src="${qrDataUrl}" alt="Ticket QR ${t.ticketId}" width="160" height="160" style="border-radius:8px;background:#fff;padding:6px"/>
           <p style="font-family:monospace;font-size:15px;letter-spacing:1px;margin:8px 0 4px">${t.ticketId}</p>
           <a href="${ticketUrl}" style="font-size:13px;color:#f84464">View / share this ticket</a>
         </div>`);
@@ -109,7 +117,7 @@ export async function sendTicketEmail(
 
     const amountInr = inr(booking.amount);
 
-    await transporter().sendMail({
+    const { error } = await client().emails.send({
       from: FROM(),
       to: booking.customerEmail,
       subject: `🎟️ Your ${tickets.length > 1 ? `${tickets.length} tickets` : "ticket"} — ${event?.title ?? "Event"}`,
@@ -143,6 +151,10 @@ export async function sendTicketEmail(
         </div>`,
       attachments,
     });
+    if (error) {
+      console.error("Ticket email failed:", error);
+      return { sent: false, error: error.message };
+    }
     return { sent: true };
   } catch (err) {
     console.error("Ticket email failed:", err);

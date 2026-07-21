@@ -34,8 +34,8 @@ export default function AccountTabs({ active }: { active: string }) {
             ref={isActive ? activeRef : undefined}
             className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium border transition-all duration-200 ${
               isActive
-                ? "bg-linear-to-r from-[#f84464] to-[#ff2e63] border-transparent text-white shadow-lg shadow-[#f84464]/25"
-                : "bg-[#16181d] border-[#24272e] text-zinc-400 hover:text-zinc-100 hover:border-zinc-600"
+                ? "bg-linear-to-r from-[#f5a524] to-[#ffc132] border-transparent text-white shadow-lg shadow-[#f5a524]/25"
+                : "bg-[#171228] border-[#2a2450] text-zinc-400 hover:text-zinc-100 hover:border-zinc-600"
             }`}
           >
             {tab.label}
