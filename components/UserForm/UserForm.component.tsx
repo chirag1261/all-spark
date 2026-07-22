@@ -16,10 +16,15 @@ interface Props {
   onDone: () => void;
 }
 
-const PERMISSION_LABELS: Record<AdminPermission, { label: string; hint: string }> = {
+const PERMISSION_LABELS: Partial<Record<AdminPermission, { label: string; hint: string }>> = {
   events: { label: "Events", hint: "Create, edit, publish and delete events" },
   bookings: { label: "Bookings", hint: "View bookings, export CSV, cancel pending ones" },
-  refunds: { label: "Refunds", hint: "Issue refunds for confirmed bookings" },
+};
+
+const ROLE_LABELS: Record<AdminRole, string> = {
+  admin: "Admin",
+  super_admin: "Super admin",
+  gate_controller: "Gate staff",
 };
 
 const inputCls =
@@ -31,7 +36,11 @@ export default function UserForm({ user, currentUserId, onDone }: Props) {
   const { showToast, toast } = useToast();
   const [name, setName] = useState(user?.name ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
+  const [phone, setPhone] = useState(user?.phone ?? "");
   const [password, setPassword] = useState("");
+  // On edit the password field stays hidden until "Reset password" is clicked,
+  // so routine edits never touch the credential. On create it's always shown.
+  const [resetting, setResetting] = useState(!user);
   const [role, setRole] = useState<AdminRole>(user?.role ?? "admin");
   const [permissions, setPermissions] = useState<AdminPermission[]>(user?.permissions ?? []);
   const [busy, setBusy] = useState(false);
@@ -50,7 +59,7 @@ export default function UserForm({ user, currentUserId, onDone }: Props) {
       return showToast("Password must be at least 8 characters", "error");
 
     setBusy(true);
-    const payload: Record<string, unknown> = { name, email, role, permissions };
+    const payload: Record<string, unknown> = { name, email, phone, role, permissions };
     if (password) payload.password = password;
 
     try {
@@ -124,34 +133,60 @@ export default function UserForm({ user, currentUserId, onDone }: Props) {
           />
         </div>
         <div>
-          <Label>{user ? "New password (leave blank to keep current)" : "Password"}</Label>
+          <Label>Phone (optional)</Label>
           <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            minLength={8}
-            required={!user}
-            autoComplete="new-password"
+            type="tel"
+            value={phone ?? ""}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="+91 98765 43210"
             className={inputCls}
           />
+        </div>
+        <div>
+          <Label>{user ? "Password" : "Password"}</Label>
+          {resetting ? (
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              minLength={8}
+              required={!user}
+              autoComplete="new-password"
+              placeholder={user ? "Set a new password (min 8 chars)" : ""}
+              className={inputCls}
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setResetting(true)}
+              className="w-full rounded-lg border border-zinc-800 px-4 py-2.5 text-sm text-zinc-400 hover:text-zinc-200 hover:border-zinc-700 transition-colors"
+            >
+              Reset password
+            </button>
+          )}
+          {user && resetting && (
+            <p className="text-xs text-zinc-600 mt-1.5">
+              Share the new password with the user directly — they aren&apos;t emailed.
+            </p>
+          )}
         </div>
 
         <div>
           <Label>Role</Label>
-          <div className="flex gap-3">
-            {(["admin", "super_admin"] as const).map((r) => (
+          <div className="flex gap-2">
+            {(["admin", "super_admin", "gate_controller"] as const).map((r) => (
               <button
                 key={r}
                 type="button"
                 onClick={() => setRole(r)}
                 disabled={isSelf && user?.role === "super_admin"}
-                className={`flex-1 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                className={`flex-1 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
                   role === r
                     ? "border-[#d99a45] bg-[#d99a45]/10 text-zinc-100"
                     : "border-zinc-800 text-zinc-400 hover:text-zinc-200"
                 }`}
               >
-                {r === "super_admin" ? "Super admin" : "Admin"}
+                {ROLE_LABELS[r]}
               </button>
             ))}
           </div>
@@ -178,8 +213,8 @@ export default function UserForm({ user, currentUserId, onDone }: Props) {
                     className="w-4 h-4 mt-0.5 accent-[#d99a45]"
                   />
                   <span className="text-sm">
-                    <span className="font-medium">{PERMISSION_LABELS[p].label}</span>
-                    <span className="block text-xs text-zinc-500">{PERMISSION_LABELS[p].hint}</span>
+                    <span className="font-medium">{PERMISSION_LABELS[p]?.label}</span>
+                    <span className="block text-xs text-zinc-500">{PERMISSION_LABELS[p]?.hint}</span>
                   </span>
                 </label>
               ))}
@@ -189,6 +224,12 @@ export default function UserForm({ user, currentUserId, onDone }: Props) {
         {role === "super_admin" && (
           <p className="text-xs text-zinc-600">
             Super admins have every permission and can manage other admin users.
+          </p>
+        )}
+        {role === "gate_controller" && (
+          <p className="text-xs text-zinc-600">
+            Gate staff can only open the entry scanner to check in tickets — the rest of the
+            admin is hidden from them.
           </p>
         )}
 

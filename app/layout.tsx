@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Lato } from "next/font/google";
 
+import RouteLoaderProvider from "@/components/RouteLoader";
+
 import "./globals.css";
 
 // Body — clean, readable sans (matches utsavevents.live)
@@ -30,7 +32,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${lato.variable} ${cormorant.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <RouteLoaderProvider>{children}</RouteLoaderProvider>
+      </body>
     </html>
   );
 }

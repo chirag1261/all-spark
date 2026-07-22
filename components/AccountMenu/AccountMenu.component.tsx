@@ -4,9 +4,11 @@ import { useEffect, useRef, useState } from "react";
 
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+
+import { useIdleLogout } from "@/lib/hooks/useIdleLogout";
 
 import { useConfirm } from "../ConfirmDialog";
+import { useRouteLoader } from "../RouteLoader";
 
 const MENU = [
   { href: "/account", label: "My Account" },
@@ -20,7 +22,7 @@ const MENU = [
 export default function AccountMenu({ name }: { name: string }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
+  const routeLoader = useRouteLoader();
   const { confirm, dialog } = useConfirm();
 
   useEffect(() => {
@@ -48,10 +50,16 @@ export default function AccountMenu({ name }: { name: string }) {
       tone: "danger",
     });
     if (!ok) return;
+    routeLoader.show("Signing out…");
     await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
-    router.push("/");
-    router.refresh();
+    routeLoader.navigate("/", "Signing out…");
   };
+
+  useIdleLogout(async () => {
+    routeLoader.show("Signing out…");
+    await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+    routeLoader.navigate("/login?reason=idle", "Signing out…");
+  });
 
   return (
     <div ref={rootRef} className="relative">

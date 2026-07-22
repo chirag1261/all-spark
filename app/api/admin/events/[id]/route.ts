@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getCurrentAdmin, hasPermission } from "@/lib/auth/admin";
-import { audit, deleteEvent, getBookedSeats, getEvent, updateEvent } from "@/lib/db";
+import { audit, deleteEvent, getBookedSeats, getEvent, listEvents, updateEvent } from "@/lib/db";
 import { isValidSeatId, validateEventInput } from "@/lib/domain/events";
 
 /** GET /api/admin/events/[id] */
@@ -38,6 +38,18 @@ export async function PUT(req: NextRequest, ctx: RouteContext<"/api/admin/events
   const parsed = validateEventInput(body);
   if (!parsed.ok) {
     return NextResponse.json({ error: parsed.error }, { status: 400 });
+  }
+
+  // Prevent un-featuring the only featured event (home page would be empty).
+  if (existing.featured && !parsed.value.featured) {
+    const allEvents = await listEvents();
+    const otherFeatured = allEvents.some((e) => e.id !== id && e.featured);
+    if (!otherFeatured) {
+      return NextResponse.json(
+        { error: "At least one event must be featured as the landing page. Feature another event first." },
+        { status: 409 }
+      );
+    }
   }
 
   // Shrinking the seat map must never orphan already-sold seats.

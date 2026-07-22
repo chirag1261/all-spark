@@ -555,73 +555,73 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
                 </button>
               </div>
               {categories.map((cat, i) => (
-            <div
-              key={i}
-              className="grid grid-cols-2 sm:grid-cols-[1fr_120px_90px_110px_32px] gap-3 items-end bg-zinc-900 border border-zinc-800 rounded-xl p-3"
-            >
-              <div>
-                <Label>Name</Label>
-                <input
-                  value={cat.name}
-                  onChange={(e) => setCategory(i, { name: e.target.value })}
-                  placeholder="VIP"
-                  required
-                  className={inputCls}
-                />
-              </div>
-              <div>
-                <Label>Price (₹)</Label>
-                <input
-                  type="number"
-                  min={1}
-                  step="0.01"
-                  value={cat.priceInr}
-                  onChange={(e) => setCategory(i, { priceInr: e.target.value })}
-                  required
-                  className={inputCls}
-                />
-              </div>
-              <div>
-                <Label>Rows</Label>
-                <input
-                  type="number"
-                  min={1}
-                  max={MAX_TOTAL_ROWS}
-                  value={cat.rows}
-                  onChange={(e) => setCategory(i, { rows: e.target.value })}
-                  required
-                  className={inputCls}
-                />
-              </div>
-              <div>
-                <Label>Seats/row</Label>
-                <input
-                  type="number"
-                  min={1}
-                  max={40}
-                  value={cat.seatsPerRow}
-                  onChange={(e) => setCategory(i, { seatsPerRow: e.target.value })}
-                  required
-                  className={inputCls}
-                />
-              </div>
-              <button
-                type="button"
-                onClick={() => setCategories((prev) => prev.filter((_, idx) => idx !== i))}
-                disabled={categories.length === 1}
-                aria-label="Remove category"
-                className="h-10 inline-flex items-center text-zinc-500 hover:text-red-400 disabled:opacity-30"
-              >
-                <X className="w-4 h-4" aria-hidden="true" />
-              </button>
-            </div>
+                <div
+                  key={i}
+                  className="grid grid-cols-2 sm:grid-cols-[1fr_120px_90px_110px_32px] gap-3 items-end bg-zinc-900 border border-zinc-800 rounded-xl p-3"
+                >
+                  <div>
+                    <Label>Name</Label>
+                    <input
+                      value={cat.name}
+                      onChange={(e) => setCategory(i, { name: e.target.value })}
+                      placeholder="VIP"
+                      required
+                      className={inputCls}
+                    />
+                  </div>
+                  <div>
+                    <Label>Price (₹)</Label>
+                    <input
+                      type="number"
+                      min={1}
+                      step="0.01"
+                      value={cat.priceInr}
+                      onChange={(e) => setCategory(i, { priceInr: e.target.value })}
+                      required
+                      className={inputCls}
+                    />
+                  </div>
+                  <div>
+                    <Label>Rows</Label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={MAX_TOTAL_ROWS}
+                      value={cat.rows}
+                      onChange={(e) => setCategory(i, { rows: e.target.value })}
+                      required
+                      className={inputCls}
+                    />
+                  </div>
+                  <div>
+                    <Label>Seats/row</Label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={40}
+                      value={cat.seatsPerRow}
+                      onChange={(e) => setCategory(i, { seatsPerRow: e.target.value })}
+                      required
+                      className={inputCls}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCategories((prev) => prev.filter((_, idx) => idx !== i))}
+                    disabled={categories.length === 1}
+                    aria-label="Remove category"
+                    className="h-10 inline-flex items-center text-zinc-500 hover:text-red-400 disabled:opacity-30"
+                  >
+                    <X className="w-4 h-4" aria-hidden="true" />
+                  </button>
+                </div>
               ))}
             </>
           )}
           <div>
             <Label>
-              Blocked seats — extra ad-hoc holds on top of any layout blocking
-              (comma-separated, e.g. {seatingMode === "layout" ? "LWR-C10, BAL-A5" : "A1, A2, B5"})
+              Blocked seats — extra ad-hoc holds on top of any layout blocking (comma-separated,
+              e.g. {seatingMode === "layout" ? "LWR-C10, BAL-A5" : "A1, A2, B5"})
             </Label>
             <input
               value={blockedInput}

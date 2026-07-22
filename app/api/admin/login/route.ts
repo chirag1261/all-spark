@@ -48,6 +48,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Incorrect email or password" }, { status: 401 });
   }
 
+  // Only surfaced after correct credentials, so it doesn't reveal which
+  // emails exist. Deactivated accounts can't hold a session.
+  if (!user.active) {
+    return NextResponse.json(
+      { error: "This account has been deactivated. Contact a super admin." },
+      { status: 403 }
+    );
+  }
+
   await updateAdminUser(user.id, { lastLoginAt: Date.now() });
 
   const res = NextResponse.json({

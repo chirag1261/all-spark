@@ -20,7 +20,9 @@ export async function EventsScreen() {
         <p className="font-heading text-[#d99a45] text-lg">Discover</p>
         <h1 className="font-heading text-3xl sm:text-5xl font-semibold mb-8">All Events</h1>
         {events.length === 0 ? (
-          <p className="text-zinc-500 py-16 text-center">No events are on sale right now — check back soon.</p>
+          <p className="text-zinc-500 py-16 text-center">
+            No events are on sale right now — check back soon.
+          </p>
         ) : (
           <EventList events={events} remaining={remaining} title="Upcoming events" />
         )}

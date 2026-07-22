@@ -2,9 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Check } from "lucide-react";
+import { Check, Users } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 import { MAX_SEATS_PER_BOOKING } from "@/constants";
 import { seatPrice } from "@/lib/domain/events";
@@ -12,7 +11,9 @@ import { EventItem } from "@/types";
 import { formatDateIST, inr } from "@/utils";
 
 import BackLink from "../BackLink";
+import Confetti from "../Confetti";
 import Loader from "../Loader";
+import { useRouteLoader } from "../RouteLoader";
 import SeatMap from "../SeatMap";
 import { useToast } from "../Toast";
 
@@ -67,7 +68,7 @@ export default function BookingFlow({ event, customer }: Props) {
   const [finalizing, setFinalizing] = useState(false);
   const { showToast, toast } = useToast();
   const [confirmed, setConfirmed] = useState<Confirmation | null>(null);
-  const router = useRouter();
+  const routeLoader = useRouteLoader();
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const refreshSeats = useCallback(async () => {
@@ -201,7 +202,12 @@ export default function BookingFlow({ event, customer }: Props) {
               // Single ticket → straight to its ticket screen. Multiple → show
               // the all-tickets confirmation (each attendee's QR at once).
               if (tickets.length === 1) {
-                router.push(`/ticket/${encodeURIComponent(tickets[0].ticketId)}`);
+                // Hand off to the global buffer loader so the overlay persists
+                // through the redirect and the ticket page's own render.
+                routeLoader.navigate(
+                  `/ticket/${encodeURIComponent(tickets[0].ticketId)}`,
+                  "Preparing your ticket…"
+                );
                 return; // keep the loader up through navigation (no setPaying)
               }
               setConfirmed({
@@ -252,7 +258,8 @@ export default function BookingFlow({ event, customer }: Props) {
   if (confirmed) {
     return (
       <div className="max-w-lg mx-auto text-center py-12">
-        <div className="w-16 h-16 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center justify-center mx-auto mb-5">
+        <Confetti />
+        <div className="tick-pop w-16 h-16 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center justify-center mx-auto mb-5">
           <Check className="w-8 h-8" aria-hidden="true" />
         </div>
         <h1 className="text-2xl font-bold mb-1">Booking confirmed!</h1>
@@ -350,14 +357,17 @@ export default function BookingFlow({ event, customer }: Props) {
       <div className="sticky bottom-0 mt-6 bg-zinc-900 border border-zinc-800 rounded-xl p-4 space-y-3">
         {selectedSeats.length > 0 && (
           <div>
-            <p className="text-xs uppercase tracking-wide text-zinc-500 mb-2">
-              Attendee for each seat{" "}
-              {selectedSeats.length > 1 && "— every person gets their own QR ticket"}
+            <p className="flex items-center gap-1.5 text-xs uppercase tracking-wide text-zinc-500 mb-2.5">
+              <Users className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+              Attendee for each seat
+              {selectedSeats.length > 1 && (
+                <span className="normal-case text-zinc-600">— every person gets their own QR ticket</span>
+              )}
             </p>
-            <div className="grid sm:grid-cols-2 gap-2">
+            <div className="grid sm:grid-cols-2 gap-2.5">
               {selectedSeats.map((seatId, i) => (
-                <div key={seatId} className="flex items-center gap-2">
-                  <span className="w-12 shrink-0 text-center text-xs font-mono bg-zinc-800 rounded-md py-2.5">
+                <div key={seatId} className="flex items-center gap-2.5">
+                  <span className="h-10 shrink-0 flex items-center justify-center whitespace-nowrap text-[11px] font-mono font-semibold tracking-wide text-[#e8bd6b] bg-[#d99a45]/10 border border-[#d99a45]/25 rounded-lg px-3">
                     {seatId}
                   </span>
                   <input
@@ -369,7 +379,7 @@ export default function BookingFlow({ event, customer }: Props) {
                     required
                     minLength={2}
                     maxLength={80}
-                    className="flex-1 min-w-0 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#d99a45]"
+                    className="h-10 flex-1 min-w-0 bg-zinc-950 border border-zinc-800 rounded-lg px-3 text-sm outline-none focus:border-[#d99a45] transition-colors"
                   />
                 </div>
               ))}

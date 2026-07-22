@@ -52,8 +52,30 @@ export async function ensureTicketsForBooking(booking: Booking): Promise<TicketR
 }
 
 /**
- * QR payload a scanner at the venue gate would verify — one per attendee.
+ * Short HMAC over a ticket id — proves a scanned QR was issued by us, not
+ * hand-crafted. Mirrors `releaseToken` below (same secret, same slice length).
+ * The DB lookup is the hard gate; this just adds authenticity to the QR.
+ */
+export function ticketToken(ticketId: string): string {
+  return crypto
+    .createHmac("sha256", sessionSecret())
+    .update(`ticket:${ticketId}`)
+    .digest("hex")
+    .slice(0, 16);
+}
+
+/** Constant-time check of a QR's `sig` against the expected ticket token. */
+export function verifyTicketToken(ticketId: string, sig: string): boolean {
+  const expected = ticketToken(ticketId);
+  const a = Buffer.from(sig, "utf8");
+  const b = Buffer.from(expected, "utf8");
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+/**
+ * QR payload a scanner at the venue gate verifies — one per attendee.
  * Deterministic for a ticket, so regenerating on a replay yields the same QR.
+ * `sig` authenticates the ticket id (see `ticketToken`).
  */
 export function ticketQrPayload(ticket: TicketRecord, booking: Booking): string {
   return JSON.stringify({
@@ -63,6 +85,7 @@ export function ticketQrPayload(ticket: TicketRecord, booking: Booking): string 
     seat: ticket.seatId,
     name: ticket.attendeeName,
     p: booking.razorpayPaymentId,
+    sig: ticketToken(ticket.ticketId),
   });
 }
 

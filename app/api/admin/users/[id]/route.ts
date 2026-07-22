@@ -75,6 +75,7 @@ export async function PUT(req: NextRequest, ctx: RouteContext<"/api/admin/users/
   const updated = await updateAdminUser(id, {
     name: parsed.value.name,
     email: parsed.value.email,
+    phone: parsed.value.phone,
     role: parsed.value.role,
     permissions: parsed.value.permissions,
     ...(parsed.value.password ? { passwordHash: hashPassword(parsed.value.password) } : {}),

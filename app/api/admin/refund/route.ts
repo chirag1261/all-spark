@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import Razorpay from "razorpay";
 
-import { getCurrentAdmin, hasPermission } from "@/lib/auth/admin";
+import { getCurrentAdmin } from "@/lib/auth/admin";
 import { audit, getBooking, saveBooking, unbookSeats } from "@/lib/db";
+import { logger } from "@/lib/logger";
 import { inr } from "@/utils";
 
 /**
@@ -15,8 +16,8 @@ import { inr } from "@/utils";
 export async function POST(req: NextRequest) {
   const user = await getCurrentAdmin();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (!hasPermission(user, "refunds")) {
-    return NextResponse.json({ error: "Missing refunds permission" }, { status: 403 });
+  if (user.role !== "super_admin") {
+    return NextResponse.json({ error: "Only super admins can issue refunds" }, { status: 403 });
   }
 
   const keyId = process.env.RAZORPAY_KEY_ID;
@@ -60,10 +61,12 @@ export async function POST(req: NextRequest) {
       booking.bookingId,
       `Refunded ${inr(booking.amount)} to ${booking.customerEmail} (seats ${booking.seatIds.join(", ")})`
     );
+    logger.be.info("Refund issued", { bookingId: booking.bookingId, amount: booking.amount, refundId: refund.id });
 
     return NextResponse.json({ refunded: true, refundId: refund.id });
   } catch (err) {
     console.error("Refund failed:", err);
+    logger.be.error("Refund failed", { bookingId: body.orderId, err: String(err) });
     const msg =
       (err as { error?: { description?: string } })?.error?.description ??
       "Refund failed at the payment gateway";

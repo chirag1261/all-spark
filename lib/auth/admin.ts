@@ -48,22 +48,45 @@ function verifySessionToken(token: string | undefined): { userId: string } | nul
 }
 
 /** The authenticated admin user for this request, or null. Re-reads the
- *  live user record so edits/deletes/permission changes apply immediately. */
+ *  live user record so edits/deletes/permission changes apply immediately.
+ *  A deactivated account resolves to null — logged out everywhere at once. */
 export async function getCurrentAdmin(): Promise<AdminUser | null> {
   const store = await cookies();
   const session = verifySessionToken(store.get(ADMIN_COOKIE)?.value);
   if (!session) return null;
-  return (await getAdminUserById(session.userId)) ?? null;
+  const user = (await getAdminUserById(session.userId)) ?? null;
+  if (!user || !user.active) return null;
+  return user;
 }
 
 export function hasPermission(user: AdminUser, permission: AdminPermission): boolean {
   return user.role === "super_admin" || user.permissions.includes(permission);
 }
 
+/** Every authenticated admin (super, admin, and gate staff) may scan tickets. */
+export function canScan(user: AdminUser): boolean {
+  return (
+    user.role === "super_admin" || user.role === "admin" || user.role === "gate_controller"
+  );
+}
+
+/** Gate controllers are scanner-only — used to hide/redirect the rest of the admin. */
+export function isGateOnly(user: AdminUser): boolean {
+  return user.role === "gate_controller";
+}
+
 /** Page guard: bounces unauthenticated visitors to login, otherwise returns the user. */
 export async function requireAdminPage(): Promise<AdminUser> {
   const user = await getCurrentAdmin();
   if (!user) redirect("/admin/login");
+  return user;
+}
+
+/** Guard for the main admin (dashboard, events, bookings, users): like
+ *  requireAdminPage but redirects scanner-only gate staff to the scanner. */
+export async function requireDashboardPage(): Promise<AdminUser> {
+  const user = await requireAdminPage();
+  if (isGateOnly(user)) redirect("/admin/scan");
   return user;
 }
 

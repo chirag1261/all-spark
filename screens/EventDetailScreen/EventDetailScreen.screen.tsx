@@ -2,10 +2,10 @@ import { ExternalLink, Lock, type LucideIcon, RefreshCcw, Ticket, Timer } from "
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { BOOKMYSHOW_LOGO_URL } from "@/constants";
 import BackLink from "@/components/BackLink";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
+import { BOOKMYSHOW_LOGO_URL } from "@/constants";
 import { getBookedSeats, getEvent } from "@/lib/db";
 import { minPrice, registrationState, ticketTiers, totalSeats } from "@/lib/domain/events";
 import { formatDateIST, inr } from "@/utils";

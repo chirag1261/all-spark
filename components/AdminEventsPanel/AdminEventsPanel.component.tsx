@@ -44,16 +44,16 @@ function lifecycleOf(row: EventRow, now: number): Exclude<Filter, "all"> {
   return "live";
 }
 
-/** Events table; create/edit happens in a slide-over drawer on the right. */
+/** Events table. Viewing + updating live here (edit opens a slide-over drawer);
+ *  creating a new event is its own screen at /admin/events/new. */
 export default function AdminEventsPanel({ rows, cloudinaryEnabled }: Props) {
-  // null = closed, "new" = create, otherwise the event id being edited
+  // The id of the event being edited, or null when the drawer is closed.
   const [drawer, setDrawer] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
   // Captured once at mount — "past vs upcoming" only needs coarse accuracy and
   // must stay stable across renders (calling Date.now() in render is impure).
   const [now] = useState(() => Date.now());
-  const editing =
-    drawer && drawer !== "new" ? rows.find((r) => r.event.id === drawer)?.event : undefined;
+  const editing = drawer ? rows.find((r) => r.event.id === drawer)?.event : undefined;
 
   // Close on Escape.
   useEffect(() => {
@@ -80,12 +80,12 @@ export default function AdminEventsPanel({ rows, cloudinaryEnabled }: Props) {
     <>
       <div className="flex items-center gap-4 mb-4">
         <h2 className="text-lg font-semibold">Events</h2>
-        <button
-          onClick={() => setDrawer("new")}
+        <Link
+          href="/admin/events/new"
           className="ml-auto inline-flex items-center gap-1.5 bg-[#d99a45] hover:bg-[#bf863a] rounded-lg px-4 py-2 font-semibold text-sm transition-colors"
         >
           <Plus className="w-4 h-4" aria-hidden="true" /> New event
-        </button>
+        </Link>
       </div>
 
       {/* Lifecycle filter tabs */}
@@ -109,7 +109,7 @@ export default function AdminEventsPanel({ rows, cloudinaryEnabled }: Props) {
       )}
 
       {rows.length === 0 ? (
-        <EmptyState onCreate={() => setDrawer("new")} />
+        <EmptyState />
       ) : visibleRows.length === 0 ? (
         <p className="text-zinc-500 border border-dashed border-zinc-800 rounded-xl px-4 py-10 text-center text-sm">
           No {FILTER_LABELS[filter].toLowerCase()} to show.
@@ -207,7 +207,7 @@ export default function AdminEventsPanel({ rows, cloudinaryEnabled }: Props) {
           />
           <div className="absolute inset-y-0 right-0 w-full max-w-2xl bg-zinc-950 border-l border-zinc-800 shadow-2xl flex flex-col animate-[slide-in_.2s_ease-out]">
             <div className="flex items-center gap-3 px-6 h-16 border-b border-zinc-800 shrink-0">
-              <h2 className="font-bold text-lg">{editing ? "Edit event" : "New event"}</h2>
+              <h2 className="font-bold text-lg">Edit event</h2>
               {editing && <span className="text-xs text-zinc-500 truncate">{editing.title}</span>}
               <button
                 onClick={() => setDrawer(null)}
@@ -275,7 +275,7 @@ function StatusBadge({
   );
 }
 
-function EmptyState({ onCreate }: { onCreate: () => void }) {
+function EmptyState() {
   return (
     <div className="border border-dashed border-zinc-800 rounded-2xl px-6 py-14 text-center">
       <Mic className="w-10 h-10 mx-auto mb-3 text-zinc-500" aria-hidden="true" />
@@ -284,12 +284,12 @@ function EmptyState({ onCreate }: { onCreate: () => void }) {
         Launch your first standup comedy night or music concert — add the details, seating and
         pricing, then publish it to the public site.
       </p>
-      <button
-        onClick={onCreate}
+      <Link
+        href="/admin/events/new"
         className="inline-flex items-center gap-1.5 bg-[#d99a45] hover:bg-[#bf863a] rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
       >
         <Plus className="w-4 h-4" aria-hidden="true" /> New event
-      </button>
+      </Link>
     </div>
   );
 }

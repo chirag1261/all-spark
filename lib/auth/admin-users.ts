@@ -3,6 +3,7 @@ import { ADMIN_PERMISSIONS, AdminPermission, AdminRole, AdminUserPublic } from "
 export interface AdminUserInput {
   name?: unknown;
   email?: unknown;
+  phone?: unknown;
   password?: unknown;
   role?: unknown;
   permissions?: unknown;
@@ -11,6 +12,7 @@ export interface AdminUserInput {
 export interface ValidatedAdminUser {
   name: string;
   email: string;
+  phone: string | null;
   password: string | null; // null when omitted on an update (keep existing hash)
   role: AdminRole;
   permissions: AdminPermission[];
@@ -35,11 +37,20 @@ export function validateAdminUserInput(
   const email = str(body.email).toLowerCase();
   if (!email || !EMAIL_RE.test(email)) return { ok: false, error: "A valid email is required" };
 
+  // Optional contact number — kept as-typed, lightly bounded. Not used for auth.
+  const phoneRaw = str(body.phone);
+  if (phoneRaw && !/^[+\d][\d\s-]{5,19}$/.test(phoneRaw)) {
+    return { ok: false, error: "Enter a valid phone number" };
+  }
+  const phone = phoneRaw || null;
+
   const role = str(body.role);
-  if (role !== "super_admin" && role !== "admin") {
-    return { ok: false, error: 'role must be "super_admin" or "admin"' };
+  if (role !== "super_admin" && role !== "admin" && role !== "gate_controller") {
+    return { ok: false, error: 'role must be "super_admin", "admin" or "gate_controller"' };
   }
 
+  // Only regular admins carry a scoped permission list. Super admins have all;
+  // gate controllers have none (scanner-only).
   let permissions: AdminPermission[] = [];
   if (role === "admin") {
     if (body.permissions !== undefined) {
@@ -65,7 +76,7 @@ export function validateAdminUserInput(
     return { ok: false, error: "Password is required" };
   }
 
-  return { ok: true, value: { name, email, password, role, permissions } };
+  return { ok: true, value: { name, email, phone, password, role, permissions } };
 }
 
 export function toPublicUser<T extends { passwordHash: string }>(user: T): Omit<T, "passwordHash"> {
