@@ -45,7 +45,7 @@ export function useConfirm() {
 
   // Portal to <body> — a fixed-position dialog rendered as a descendant of
   // ANY ancestor with backdrop-blur/filter/transform (both SiteHeader and
-  // AdminHeader use backdrop-blur) gets pinned to that ancestor's box
+  // AdminShell topbar uses backdrop-blur) gets pinned to that ancestor's box
   // instead of the viewport, per the CSS containing-block spec. Escaping
   // to <body> sidesteps that regardless of where useConfirm() is called from.
   const dialog =

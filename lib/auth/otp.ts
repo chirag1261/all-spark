@@ -1,12 +1,12 @@
 import crypto from "crypto";
 
+import { sessionSecret } from "@/lib/auth/secret";
 import {
   bumpOtpAttempts,
   consumeOtpChallenge,
   createOtpChallenge,
   getLiveOtpChallenge,
 } from "@/lib/db";
-import { sessionSecret } from "@/lib/auth/secret";
 import { sendOtpEmail } from "@/lib/notifications/email";
 import { sendSms } from "@/lib/notifications/sms";
 import { OtpChannel } from "@/types";

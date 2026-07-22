@@ -23,7 +23,11 @@ const inputCls =
  * live capacity readout derived from the same `buildVenue` the app renders from.
  */
 export default function LayoutEditor({ value, onChange }: Props) {
-  const venue = buildVenue({ layout: value, categories: [], blockedSeats: [] } as unknown as EventItem);
+  const venue = buildVenue({
+    layout: value,
+    categories: [],
+    blockedSeats: [],
+  } as unknown as EventItem);
   const physical = venue.seats.length;
 
   const mutate = (fn: (draft: EventLayout) => void) => {
@@ -123,7 +127,13 @@ function SectionCard({
         <input
           value={section.id}
           onChange={(e) =>
-            patch((d) => (d.id = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8)))
+            patch(
+              (d) =>
+                (d.id = e.target.value
+                  .toUpperCase()
+                  .replace(/[^A-Z0-9]/g, "")
+                  .slice(0, 8))
+            )
           }
           placeholder="CODE"
           title="Seat-id prefix (letters/digits)"
@@ -144,7 +154,10 @@ function SectionCard({
         <p className="text-[11px] uppercase tracking-widest text-zinc-500 mb-1.5">Price tiers</p>
         <div className="flex flex-wrap gap-2">
           {section.tiers.map((tier, ti) => (
-            <div key={ti} className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1">
+            <div
+              key={ti}
+              className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1"
+            >
               <input
                 value={tier.name}
                 onChange={(e) =>
@@ -183,7 +196,11 @@ function SectionCard({
             type="button"
             onClick={() =>
               patch((d) =>
-                d.tiers.push({ id: `t_${d.tiers.length + 1}_${Date.now() % 1000}`, name: "Tier", price: 50000 })
+                d.tiers.push({
+                  id: `t_${d.tiers.length + 1}_${Date.now() % 1000}`,
+                  name: "Tier",
+                  price: 50000,
+                })
               )
             }
             className="inline-flex items-center gap-1 text-xs border border-zinc-700 hover:border-zinc-500 rounded-lg px-2.5 py-1 text-zinc-300"
@@ -278,7 +295,10 @@ function RowEditor({
       <span className="text-zinc-700">·</span>
 
       {row.segments.map((seg, gi) => (
-        <div key={gi} className="flex items-center gap-1 bg-zinc-950 border border-zinc-800 rounded px-1.5 py-0.5">
+        <div
+          key={gi}
+          className="flex items-center gap-1 bg-zinc-950 border border-zinc-800 rounded px-1.5 py-0.5"
+        >
           <input
             type="number"
             min={1}
@@ -310,7 +330,9 @@ function RowEditor({
           <button
             type="button"
             onClick={() =>
-              patch((d) => (d.segments[gi] = { ...d.segments[gi], blocked: !d.segments[gi].blocked }))
+              patch(
+                (d) => (d.segments[gi] = { ...d.segments[gi], blocked: !d.segments[gi].blocked })
+              )
             }
             title={seg.blocked ? "Blocked — click to unblock" : "On sale — click to block"}
             className={`text-xs px-1 rounded ${seg.blocked ? "text-red-400" : "text-zinc-600 hover:text-zinc-400"}`}

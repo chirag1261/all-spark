@@ -131,22 +131,27 @@ export interface PaymentLogEntry {
   at: number;
 }
 
-export type AdminRole = "super_admin" | "admin";
+export type AdminRole = "super_admin" | "admin" | "gate_controller";
 
 /** Scoped capabilities assignable to non-super-admin users. Super admins
- *  implicitly have all of them and can't be restricted. */
-export type AdminPermission = "events" | "bookings" | "refunds";
+ *  implicitly have all of them and can't be restricted. Gate controllers
+ *  carry none — they can only reach the entry scanner. */
+export type AdminPermission = "events" | "bookings";
 
-export const ADMIN_PERMISSIONS: AdminPermission[] = ["events", "bookings", "refunds"];
+export const ADMIN_PERMISSIONS: AdminPermission[] = ["events", "bookings"];
 
 export interface AdminUser {
   id: string;
   name: string;
   email: string;
+  /** Optional contact number (gate staff coordination); not used for auth. */
+  phone?: string | null;
   /** scrypt-derived, stored as "saltHex:hashHex" — never the plaintext. */
   passwordHash: string;
   role: AdminRole;
   permissions: AdminPermission[]; // ignored for super_admin (implicitly all)
+  /** Deactivated accounts can't sign in and are logged out everywhere. */
+  active: boolean;
   createdAt: number;
   updatedAt: number;
   lastLoginAt?: number;
@@ -190,6 +195,10 @@ export interface TicketRecord {
   seatId: string;
   attendeeName: string;
   createdAt: number;
+  /** Venue entry check-in — set the first time the QR is scanned at the gate. */
+  scannedAt?: number | null;
+  scannedBy?: string | null; // admin user id who scanned
+  scannedByName?: string | null; // their name, denormalized for display
 }
 
 // ---------- Customer accounts (public site users) ----------

@@ -1,5 +1,7 @@
 import { Pool } from "pg";
 
+import { logger } from "@/lib/logger";
+
 /**
  * Shared Postgres connection pool + one-time schema bootstrap.
  *
@@ -131,6 +133,9 @@ const SCHEMA = `
     updated_at BIGINT NOT NULL,
     last_login_at BIGINT
   );
+  -- Added after initial release; backfills existing deployments.
+  ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS phone TEXT;
+  ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS active BOOLEAN NOT NULL DEFAULT true;
 
   CREATE TABLE IF NOT EXISTS customers (
     id TEXT PRIMARY KEY,
@@ -166,6 +171,11 @@ const SCHEMA = `
     created_at BIGINT NOT NULL
   );
   CREATE INDEX IF NOT EXISTS tickets_booking_id_idx ON tickets (booking_id);
+  -- Venue entry check-in, added after initial release.
+  ALTER TABLE tickets ADD COLUMN IF NOT EXISTS scanned_at BIGINT;
+  ALTER TABLE tickets ADD COLUMN IF NOT EXISTS scanned_by TEXT;
+  ALTER TABLE tickets ADD COLUMN IF NOT EXISTS scanned_by_name TEXT;
+  CREATE INDEX IF NOT EXISTS tickets_event_id_idx ON tickets (event_id);
 
   ALTER TABLE bookings ADD COLUMN IF NOT EXISTS customer_id TEXT;
   ALTER TABLE bookings ADD COLUMN IF NOT EXISTS attendees JSONB NOT NULL DEFAULT '[]';
@@ -173,7 +183,13 @@ const SCHEMA = `
 `;
 
 async function ensureSchema(): Promise<void> {
-  await pool().query(SCHEMA);
+  try {
+    await pool().query(SCHEMA);
+    logger.server.info("DB schema ready");
+  } catch (err) {
+    logger.server.error("DB schema bootstrap failed", { err: String(err) });
+    throw err;
+  }
 }
 
 /** Runs the schema bootstrap exactly once per process, memoizing the promise. */

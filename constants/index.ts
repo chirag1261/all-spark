@@ -17,7 +17,11 @@ export const BOOKMYSHOW_LOGO_URL =
   "https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,h_40/utsav-events/bookmyshow-logo";
 
 /** Validates an upload's format + size. Returns an error message, or null if OK. */
-export function validateImageUpload(file: { name: string; type: string; size: number }): string | null {
+export function validateImageUpload(file: {
+  name: string;
+  type: string;
+  size: number;
+}): string | null {
   const okType =
     (ALLOWED_IMAGE_TYPES as readonly string[]).includes(file.type) ||
     /\.(webp|avif)$/i.test(file.name);

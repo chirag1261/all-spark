@@ -12,5 +12,5 @@ export default async function Page({ searchParams }: PageProps<"/login">) {
   // Already signed in? Straight through.
   if (await getCurrentCustomer()) redirect(next);
 
-  return <LoginScreen next={next} />;
+  return <LoginScreen next={next} idleExpired={sp.reason === "idle"} />;
 }

@@ -3,6 +3,7 @@ import type { PoolClient } from "pg";
 
 import { hashPassword } from "@/lib/auth/password";
 import { blockedSeatIds, posterForIndex } from "@/lib/domain/events";
+import { logger } from "@/lib/logger";
 import { BABU_JAGAJEEVANRAM_LAYOUT } from "@/lib/domain/venues";
 import {
   AdminUser,
@@ -57,6 +58,7 @@ async function withTransaction<T>(fn: (client: PoolClient) => Promise<T>): Promi
     return result;
   } catch (err) {
     await client.query("ROLLBACK");
+    logger.db.error("Transaction rolled back", { err: String(err) });
     throw err;
   } finally {
     client.release();
@@ -120,9 +122,12 @@ function rowToAdminUser(r: any): AdminUser {
     id: r.id,
     name: r.name,
     email: r.email,
+    phone: r.phone ?? null,
     passwordHash: r.password_hash,
     role: r.role,
     permissions: r.permissions,
+    // Backfill: rows created before the column existed default to active.
+    active: r.active == null ? true : Boolean(r.active),
     createdAt: Number(r.created_at),
     updatedAt: Number(r.updated_at),
     lastLoginAt: r.last_login_at != null ? Number(r.last_login_at) : undefined,
@@ -267,6 +272,7 @@ function seedAdminUserSpec(): AdminUser | null {
     passwordHash: hashPassword(password),
     role: "super_admin",
     permissions: [],
+    active: true,
     createdAt: now,
     updatedAt: now,
   };
@@ -298,9 +304,14 @@ async function seedFeaturedVenueIfAbsent(): Promise<void> {
     startsAt: startsAt.toISOString(),
     registrationOpensAt: new Date(now - day).toISOString(),
     registrationClosesAt: startsAt.toISOString(),
-    imageUrl: "https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,w_1920/utsav-events/hero",
+    imageUrl:
+      "https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,w_1920/utsav-events/hero",
     tagline: "A Divine Bhajan Evening",
-    gallery: ["https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,w_1920/utsav-events/hero", "https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,w_1600/utsav-events/artist", "https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,w_1600/utsav-events/audience"],
+    gallery: [
+      "https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,w_1920/utsav-events/hero",
+      "https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,w_1600/utsav-events/artist",
+      "https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,w_1600/utsav-events/audience",
+    ],
     featured: true,
     poster: posterForIndex(0),
     faqs: [
@@ -753,15 +764,18 @@ export async function logPaymentEvent(
 async function insertAdminUserRow(user: AdminUser, client?: PoolClient): Promise<void> {
   await (client ?? db()).query(
     `INSERT INTO admin_users (
-      id, name, email, password_hash, role, permissions, created_at, updated_at, last_login_at
-    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+      id, name, email, phone, password_hash, role, permissions,
+      active, created_at, updated_at, last_login_at
+    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
     [
       user.id,
       user.name,
       user.email,
+      user.phone ?? null,
       user.passwordHash,
       user.role,
       JSON.stringify(user.permissions),
+      user.active ?? true,
       user.createdAt,
       user.updatedAt,
       user.lastLoginAt ?? null,
@@ -813,21 +827,45 @@ export async function updateAdminUser(
 
   await db().query(
     `UPDATE admin_users SET
-      name=$2, email=$3, password_hash=$4, role=$5, permissions=$6,
-      updated_at=$7, last_login_at=$8
+      name=$2, email=$3, phone=$4, password_hash=$5, role=$6, permissions=$7,
+      active=$8, updated_at=$9, last_login_at=$10
      WHERE id=$1`,
     [
       id,
       merged.name,
       merged.email,
+      merged.phone ?? null,
       merged.passwordHash,
       merged.role,
       JSON.stringify(merged.permissions),
+      merged.active ?? true,
       merged.updatedAt,
       merged.lastLoginAt ?? null,
     ]
   );
   return merged;
+}
+
+/** Flip an admin account active/inactive without touching anything else. */
+export async function setAdminUserActive(
+  id: string,
+  active: boolean
+): Promise<AdminUser | undefined> {
+  await initOnce();
+  const { rows } = await db().query(
+    "UPDATE admin_users SET active=$2, updated_at=$3 WHERE id=$1 RETURNING *",
+    [id, active, Date.now()]
+  );
+  return rows[0] ? rowToAdminUser(rows[0]) : undefined;
+}
+
+/** Count active super admins — used to protect the last one from lockout. */
+export async function countActiveSuperAdmins(): Promise<number> {
+  await initOnce();
+  const { rows } = await db().query(
+    "SELECT COUNT(*)::int AS n FROM admin_users WHERE role = 'super_admin' AND active = true"
+  );
+  return rows[0].n;
 }
 
 export async function deleteAdminUser(id: string): Promise<void> {
@@ -990,6 +1028,9 @@ function rowToTicket(r: any): TicketRecord {
     seatId: r.seat_id,
     attendeeName: r.attendee_name,
     createdAt: Number(r.created_at),
+    scannedAt: r.scanned_at != null ? Number(r.scanned_at) : null,
+    scannedBy: r.scanned_by ?? null,
+    scannedByName: r.scanned_by_name ?? null,
   };
 }
 
@@ -1017,6 +1058,50 @@ export async function listTicketsForBooking(bookingId: string): Promise<TicketRe
     [bookingId]
   );
   return rows.map(rowToTicket);
+}
+
+/**
+ * Atomically mark a ticket as checked in at the gate. The `scanned_at IS NULL`
+ * guard makes this a no-op on an already-scanned ticket even under a double-scan
+ * race — returns the updated record on success, or `undefined` if it was already
+ * scanned (or doesn't exist).
+ */
+export async function checkInTicket(
+  ticketId: string,
+  byId: string,
+  byName: string
+): Promise<TicketRecord | undefined> {
+  await initOnce();
+  const { rows } = await db().query(
+    `UPDATE tickets SET scanned_at=$2, scanned_by=$3, scanned_by_name=$4
+     WHERE ticket_id=$1 AND scanned_at IS NULL RETURNING *`,
+    [ticketId, Date.now(), byId, byName]
+  );
+  return rows[0] ? rowToTicket(rows[0]) : undefined;
+}
+
+/** All tickets for an event (attendance list), newest-scanned surfaced first. */
+export async function listTicketsForEvent(eventId: string): Promise<TicketRecord[]> {
+  await initOnce();
+  const { rows } = await db().query(
+    "SELECT * FROM tickets WHERE event_id = $1 ORDER BY scanned_at DESC NULLS LAST, seat_id ASC",
+    [eventId]
+  );
+  return rows.map(rowToTicket);
+}
+
+/** Sold (issued tickets) vs. checked-in counts for an event's live dashboard. */
+export async function getAttendanceCounts(
+  eventId: string
+): Promise<{ sold: number; checkedIn: number }> {
+  await initOnce();
+  const { rows } = await db().query(
+    `SELECT COUNT(*)::int AS sold,
+            COUNT(scanned_at)::int AS checked_in
+     FROM tickets WHERE event_id = $1`,
+    [eventId]
+  );
+  return { sold: rows[0]?.sold ?? 0, checkedIn: rows[0]?.checked_in ?? 0 };
 }
 
 export async function listTicketsForCustomer(customerId: string): Promise<TicketRecord[]> {

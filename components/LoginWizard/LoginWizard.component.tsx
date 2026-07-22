@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 
-import { useRouter } from "next/navigation";
-
+import { useRouteLoader } from "../RouteLoader";
 import { useToast } from "../Toast";
 
 /**
@@ -23,7 +22,7 @@ const primaryBtn =
   "w-full bg-linear-to-r from-[#d99a45] to-[#e8bd6b] hover:brightness-110 disabled:opacity-40 rounded-xl px-6 py-2.5 font-semibold text-sm shadow-lg shadow-[#d99a45]/20 transition-all";
 
 export default function LoginWizard({ next }: { next: string }) {
-  const router = useRouter();
+  const routeLoader = useRouteLoader();
   const { showToast, toast } = useToast();
   const [step, setStep] = useState<Step>("identifier");
   const [rawIdentifier, setRawIdentifier] = useState("");
@@ -37,8 +36,8 @@ export default function LoginWizard({ next }: { next: string }) {
   const [notice, setNotice] = useState<string | null>(null);
 
   const finish = () => {
-    router.push(next);
-    router.refresh();
+    // Buffer loader stays up through the redirect + destination render.
+    routeLoader.navigate(next, "Signing you in…");
   };
 
   const api = async (url: string, body: unknown): Promise<Record<string, unknown> | null> => {

@@ -1,11 +1,9 @@
 import { ClipboardList } from "lucide-react";
 
-import AccessDenied from "@/components/AccessDenied";
 import ActivityFeed from "@/components/ActivityFeed";
-import AdminEventsPanel, { EventRow } from "@/components/AdminEventsPanel";
-import AdminHeader from "@/components/AdminHeader";
+import AdminShell from "@/components/AdminShell";
 import InfoTip from "@/components/InfoTip";
-import { hasPermission, requireAdminPage } from "@/lib/auth/admin";
+import { requireDashboardPage } from "@/lib/auth/admin";
 import {
   getBookedSeatCounts,
   listAudit,
@@ -13,8 +11,7 @@ import {
   listEvents,
   sweepStalePending,
 } from "@/lib/db";
-import { registrationState, totalSeats } from "@/lib/domain/events";
-import { cloudinaryConfigured } from "@/lib/integrations/cloudinary";
+import { totalSeats } from "@/lib/domain/events";
 import { Booking } from "@/types";
 import { inr } from "@/utils";
 
@@ -50,8 +47,7 @@ function weekTrends(bookings: Booking[]) {
 }
 
 export async function AdminDashboardScreen() {
-  const currentUser = await requireAdminPage();
-  const canManageEvents = hasPermission(currentUser, "events");
+  const currentUser = await requireDashboardPage();
 
   await sweepStalePending(); // reconcile abandoned checkouts before reporting
   const [events, bookings, recentActivity, soldByEvent] = await Promise.all([
@@ -61,94 +57,75 @@ export async function AdminDashboardScreen() {
     getBookedSeatCounts(),
   ]);
 
-  const rows: EventRow[] = events.map((event) => {
+  // Aggregate totals across all events (event management now lives at /admin/events).
+  const totals = { registrations: 0, revenue: 0, ticketsSold: 0, remaining: 0 };
+  for (const event of events) {
     const confirmed = bookings.filter((b) => b.eventId === event.id && b.status === "CONFIRMED");
-    const total = totalSeats(event);
     const sold = soldByEvent[event.id] ?? 0;
-    return {
-      event,
-      registrationOpen: registrationState(event),
-      registrations: confirmed.length,
-      revenue: confirmed.reduce((sum, b) => sum + b.amount, 0),
-      remaining: total - sold,
-      total,
-    };
-  });
-
-  const totals = {
-    registrations: rows.reduce((s, r) => s + r.registrations, 0),
-    revenue: rows.reduce((s, r) => s + r.revenue, 0),
-    ticketsSold: rows.reduce((s, r) => s + (r.total - r.remaining), 0),
-    remaining: rows.reduce((s, r) => s + r.remaining, 0),
-  };
+    totals.registrations += confirmed.length;
+    totals.revenue += confirmed.reduce((sum, b) => sum + b.amount, 0);
+    totals.ticketsSold += sold;
+    totals.remaining += totalSeats(event) - sold;
+  }
 
   // Week-over-week trends from confirmed-booking timestamps.
   const trends = weekTrends(bookings);
 
   return (
-    <div className="min-h-screen text-zinc-100">
-      <AdminHeader currentUser={currentUser} />
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-1">Dashboard</h1>
-        <p className="text-sm text-zinc-500 mb-8">
-          Live totals across all events. Trends compare the last 7 days with the 7 days before.
-        </p>
+    <AdminShell user={{ name: currentUser.name, role: currentUser.role }}>
+      <h1 className="font-heading text-3xl font-semibold mb-1">Dashboard</h1>
+      <p className="text-sm text-zinc-500 mb-8">
+        Live totals across all events. Trends compare the last 7 days with the 7 days before.
+      </p>
 
-        {/* Totals */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-          <Stat
-            label="Registrations"
-            value={String(totals.registrations)}
-            tip="Confirmed (paid) bookings across every event. Each booking is one purchase, which may cover several seats."
-            trend={trends.registrations}
-          />
-          <Stat
-            label="Revenue"
-            value={inr(totals.revenue)}
-            tip="Total amount collected from confirmed bookings, before any refunds are subtracted."
-            trend={trends.revenue}
-          />
-          <Stat
-            label="Tickets sold"
-            value={String(totals.ticketsSold)}
-            tip="Individual seats sold and currently held by confirmed bookings across all events."
-            trend={trends.ticketsSold}
-          />
-          <Stat
-            label="Seats remaining"
-            value={String(totals.remaining)}
-            tip="Seats still available to sell across all events (total capacity minus sold and blocked seats)."
-          />
-        </div>
+      {/* Totals */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        <Stat
+          label="Registrations"
+          value={String(totals.registrations)}
+          tip="Confirmed (paid) bookings across every event. Each booking is one purchase, which may cover several seats."
+          trend={trends.registrations}
+        />
+        <Stat
+          label="Revenue"
+          value={inr(totals.revenue)}
+          tip="Total amount collected from confirmed bookings, before any refunds are subtracted."
+          trend={trends.revenue}
+        />
+        <Stat
+          label="Tickets sold"
+          value={String(totals.ticketsSold)}
+          tip="Individual seats sold and currently held by confirmed bookings across all events."
+          trend={trends.ticketsSold}
+        />
+        <Stat
+          label="Seats remaining"
+          value={String(totals.remaining)}
+          tip="Seats still available to sell across all events (total capacity minus sold and blocked seats)."
+        />
+      </div>
 
-        {canManageEvents ? (
-          <AdminEventsPanel rows={rows} cloudinaryEnabled={cloudinaryConfigured()} />
-        ) : (
-          <AccessDenied what="view or manage events" />
-        )}
-
-        {/* Audit trail: every admin action touching money, bookings or accounts */}
-        {currentUser.role === "super_admin" && (
-          <section className="mt-12">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              Recent activity
-              <InfoTip text="A running log of admin actions that affect money, bookings or accounts. Click any entry to jump to where it's managed." />
-            </h2>
-            {recentActivity.length > 0 ? (
-              <ActivityFeed entries={recentActivity} />
-            ) : (
-              <div className="border border-dashed border-zinc-800 rounded-xl px-4 py-10 text-center">
-                <ClipboardList className="w-8 h-8 mx-auto mb-2 text-zinc-500" aria-hidden="true" />
-                <p className="text-sm text-zinc-400">No admin activity yet.</p>
-                <p className="text-xs text-zinc-600 mt-1">
-                  Creating events, issuing refunds and managing admins will show up here.
-                </p>
-              </div>
-            )}
-          </section>
-        )}
-      </main>
-    </div>
+      {/* Audit trail: every admin action touching money, bookings or accounts */}
+      {currentUser.role === "super_admin" && (
+        <section className="mt-12">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            Recent activity
+            <InfoTip text="A running log of admin actions that affect money, bookings or accounts. Click any entry to jump to where it's managed." />
+          </h2>
+          {recentActivity.length > 0 ? (
+            <ActivityFeed entries={recentActivity} />
+          ) : (
+            <div className="border border-dashed border-zinc-800 rounded-xl px-4 py-10 text-center">
+              <ClipboardList className="w-8 h-8 mx-auto mb-2 text-zinc-500" aria-hidden="true" />
+              <p className="text-sm text-zinc-400">No admin activity yet.</p>
+              <p className="text-xs text-zinc-600 mt-1">
+                Creating events, issuing refunds and managing admins will show up here.
+              </p>
+            </div>
+          )}
+        </section>
+      )}
+    </AdminShell>
   );
 }
 

@@ -49,9 +49,11 @@ export async function POST(req: NextRequest) {
     id: `usr_${crypto.randomBytes(6).toString("hex")}`,
     name: parsed.value.name,
     email: parsed.value.email,
+    phone: parsed.value.phone,
     passwordHash: hashPassword(parsed.value.password!),
     role: parsed.value.role,
     permissions: parsed.value.permissions,
+    active: true,
     createdAt: now,
     updatedAt: now,
   };

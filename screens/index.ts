@@ -18,3 +18,7 @@ export * from "./TermsScreen";
 export * from "./RefundPolicyScreen";
 export * from "./CookiePolicyScreen";
 export * from "./EventsScreen";
+export * from "./AdminEventsScreen";
+export * from "./AdminEventCreateScreen";
+export * from "./AdminScanScreen";
+export * from "./AdminAttendanceScreen";

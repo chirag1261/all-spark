@@ -35,7 +35,9 @@ export function minPrice(event: EventItem): number {
 
 /** Every seat id currently off-sale (layout blocking + ad-hoc holds). */
 export function blockedSeatIds(event: EventItem): string[] {
-  return buildVenue(event).seats.filter((s) => s.blocked).map((s) => s.id);
+  return buildVenue(event)
+    .seats.filter((s) => s.blocked)
+    .map((s) => s.id);
 }
 
 export function isValidSeatId(event: EventItem, seatId: string): boolean {
@@ -119,7 +121,10 @@ export function validateLayout(
   for (const sRaw of sectionsRaw as Array<Record<string, unknown>>) {
     const name = str(sRaw?.name);
     if (!name) return { ok: false, error: "Every section needs a name" };
-    const id = (str(sRaw?.id) || name).toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
+    const id = (str(sRaw?.id) || name)
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, "")
+      .slice(0, 8);
     if (!id) return { ok: false, error: `Section "${name}" needs a code (letters/digits)` };
     if (seenSectionIds.has(id)) return { ok: false, error: `Duplicate section code "${id}"` };
     seenSectionIds.add(id);
@@ -146,7 +151,8 @@ export function validateLayout(
     if (!Array.isArray(rowsRaw) || rowsRaw.length === 0) {
       return { ok: false, error: `Section "${name}" needs at least one row` };
     }
-    if (rowsRaw.length > 60) return { ok: false, error: `Section "${name}": too many rows (max 60)` };
+    if (rowsRaw.length > 60)
+      return { ok: false, error: `Section "${name}": too many rows (max 60)` };
     const rows: LayoutRow[] = [];
     const seenLabels = new Set<string>();
     for (const rRaw of rowsRaw as Array<Record<string, unknown>>) {

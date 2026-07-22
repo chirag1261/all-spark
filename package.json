@@ -10,6 +10,8 @@
     "format": "prettier --write \"{app,components,screens,hooks,lib,utils,constants,types}/**/*.{ts,tsx}\""
   },
   "dependencies": {
+    "@zxing/browser": "^0.2.1",
+    "@zxing/library": "^0.23.0",
     "clsx": "^2.1.1",
     "lucide-react": "^1.25.0",
     "next": "16.2.10",
