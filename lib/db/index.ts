@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import type { PoolClient } from "pg";
+import { cache } from "react";
 
 import { hashPassword } from "@/lib/auth/password";
 import { blockedSeatIds, posterForIndex } from "@/lib/domain/events";
@@ -88,6 +89,7 @@ function rowToEvent(r: any): EventItem {
     layout: r.layout ?? null,
     blockedSeats: r.blocked_seats,
     bookMyShowUrl: r.bookmyshow_url ?? null,
+    landing: r.landing ?? null,
     published: r.published,
     createdAt: Number(r.created_at),
     updatedAt: Number(r.updated_at),
@@ -336,6 +338,70 @@ async function seedFeaturedVenueIfAbsent(): Promise<void> {
     blockedSeats: [],
     // Placeholder — admin should replace with the real BookMyShow listing URL.
     bookMyShowUrl: "https://in.bookmyshow.com/",
+    landing: {
+      presenter: "Utsav Events Presents",
+      heroKicker: "An Evening of Sacred Devotion",
+      whyAttend: [
+        {
+          title: "A Master of Devotion",
+          body: "Gajendra Pratap Singh's voice carries decades of bhakti tradition — each bhajan a prayer, each note a blessing that resonates long after the evening ends.",
+        },
+        {
+          title: "A Sacred Gathering",
+          body: "Join thousands of devotees in a shared moment of spiritual connection. Rudrotsav is not just a concert — it is a community coming together in reverence and joy.",
+        },
+        {
+          title: "An Unforgettable Evening",
+          body: "From the fragrance of flowers to the warmth of diyas, every detail of Rudrotsav is crafted to transport you into a world of divine celebration.",
+        },
+      ],
+      artist: {
+        name: "Gajendra Pratap Singh",
+        title: "Renowned Bhajan Singer",
+        bio: "Gajendra Pratap Singh is one of India's most beloved bhajan singers, known for his soul-stirring renditions of devotional compositions that span centuries of tradition. With a voice that effortlessly moves between tender intimacy and soaring power, he has performed at temples, sabhas, and cultural gatherings across India and abroad.\n\nHis repertoire draws from the rich traditions of Mirabai, Tulsidas, Surdas, and Kabir — bringing ancient poetry to life with a warmth and authenticity that resonates deeply with audiences of all ages. A performance by Gajendra Pratap Singh is not merely a concert; it is a spiritual experience.",
+        imageUrl:
+          "https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,w_1200/utsav-events/artist",
+        stats: [
+          { value: "25+ Years", label: "of devotional music" },
+          { value: "500+ Concerts", label: "across India & abroad" },
+          { value: "Beloved Voice", label: "of bhakti tradition" },
+        ],
+      },
+      details: [
+        { label: "Date", value: "Sunday, 16th August 2026" },
+        { label: "Time", value: "6:30 PM onwards (Doors open at 6:00 PM)" },
+        { label: "Venue", value: "Dr. Babu Jagjivanram Bhavan" },
+        { label: "Address", value: "Bangalore" },
+        { label: "Entry", value: "By registration only. Seats are limited." },
+        { label: "Dress Code", value: "Traditional attire encouraged" },
+      ],
+      schedule: [
+        { time: "6:00 PM", title: "Doors Open", description: "Welcome and seating" },
+        {
+          time: "6:30 PM",
+          title: "Inaugural Prayers",
+          description: "Invocation and lamp lighting ceremony",
+        },
+        {
+          time: "7:00 PM",
+          title: "Bhajan Sandhya Begins",
+          description: "Gajendra Pratap Singh takes the stage",
+        },
+        { time: "9:30 PM", title: "Intermission", description: "Prasad distribution" },
+        { time: "10:00 PM", title: "Second Session", description: "Continued bhajan recital" },
+        { time: "11:00 PM", title: "Closing Aarti", description: "Collective aarti and blessings" },
+      ],
+      venue: {
+        name: "Dr. Babu Jagjivanram Bhavan",
+        address: "Millers Road, Vasanth Nagar, Bangalore",
+        description:
+          "A premier cultural auditorium in the heart of Bangalore, Dr. Babu Jagjivanram Bhavan has hosted some of the city's most celebrated cultural and devotional events. With excellent acoustics and a warm, welcoming atmosphere, it is the perfect setting for an evening of sacred music.",
+        accessibility:
+          "Easily accessible by metro (Cubbon Park station) and road. Ample parking available nearby.",
+        imageUrl:
+          "https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,w_1200/utsav-events/audience",
+      },
+    },
     published: true,
     createdAt: now,
     updatedAt: now,
@@ -386,8 +452,8 @@ async function insertEventRow(event: EventItem, client?: PoolClient): Promise<vo
     `INSERT INTO events (
       id, title, description, venue, city, starts_at, registration_opens_at,
       registration_closes_at, image_url, tagline, gallery, featured, poster,
-      faqs, categories, layout, blocked_seats, bookmyshow_url, published, created_at, updated_at
-    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)`,
+      faqs, categories, layout, blocked_seats, bookmyshow_url, landing, published, created_at, updated_at
+    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)`,
     [
       event.id,
       event.title,
@@ -407,6 +473,7 @@ async function insertEventRow(event: EventItem, client?: PoolClient): Promise<vo
       event.layout ? JSON.stringify(event.layout) : null,
       JSON.stringify(event.blockedSeats),
       event.bookMyShowUrl ?? null,
+      event.landing ? JSON.stringify(event.landing) : null,
       event.published,
       event.createdAt,
       event.updatedAt,
@@ -431,6 +498,20 @@ export async function listPublishedEvents(): Promise<EventItem[]> {
   const events = await listEvents();
   return events.filter((e) => e.published);
 }
+
+/**
+ * The single featured (landing-page) published event, if any. Wrapped in
+ * React's cache() so the several call sites that need this per page render
+ * (SiteHeader plus the page itself on About/Contact) share one DB round trip
+ * per request instead of querying it twice.
+ */
+export const getFeaturedEvent = cache(async (): Promise<EventItem | undefined> => {
+  await initOnce();
+  const { rows } = await db().query(
+    "SELECT * FROM events WHERE featured = true AND published = true LIMIT 1"
+  );
+  return rows[0] ? rowToEvent(rows[0]) : undefined;
+});
 
 export async function getEvent(id: string): Promise<EventItem | undefined> {
   await initOnce();
@@ -462,7 +543,7 @@ export async function updateEvent(
         registration_opens_at=$7, registration_closes_at=$8, image_url=$9,
         tagline=$10, gallery=$11, featured=$12, poster=$13, faqs=$14,
         categories=$15, layout=$16, blocked_seats=$17, bookmyshow_url=$18,
-        published=$19, updated_at=$20
+        landing=$19, published=$20, updated_at=$21
       WHERE id=$1`,
       [
         id,
@@ -483,6 +564,7 @@ export async function updateEvent(
         merged.layout ? JSON.stringify(merged.layout) : null,
         JSON.stringify(merged.blockedSeats),
         merged.bookMyShowUrl ?? null,
+        merged.landing ? JSON.stringify(merged.landing) : null,
         merged.published,
         merged.updatedAt,
       ]

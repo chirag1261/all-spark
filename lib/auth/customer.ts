@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
 import { sessionSecret } from "@/lib/auth/secret";
 import { getCustomerById } from "@/lib/db";
@@ -41,12 +42,16 @@ function verifyToken(token: string | undefined): { customerId: string } | null {
   return { customerId };
 }
 
-export async function getCurrentCustomer(): Promise<Customer | null> {
+/**
+ * Wrapped in React's cache() — SiteHeader and a page's own auth guard both
+ * call this per request, so dedupe to one DB round trip instead of two.
+ */
+export const getCurrentCustomer = cache(async (): Promise<Customer | null> => {
   const store = await cookies();
   const session = verifyToken(store.get(CUSTOMER_COOKIE)?.value);
   if (!session) return null;
   return (await getCustomerById(session.customerId)) ?? null;
-}
+});
 
 /** Page guard — bounces to /login carrying a safe return path. */
 export async function requireCustomerPage(next: string): Promise<Customer> {

@@ -8,6 +8,7 @@ export * from "./AdminLoginScreen";
 export * from "./AdminUsersScreen";
 export * from "./BookingScreen";
 export * from "./ContactScreen";
+export * from "./AboutScreen";
 export * from "./EventDetailScreen";
 export * from "./HomeScreen";
 export * from "./LoginScreen";

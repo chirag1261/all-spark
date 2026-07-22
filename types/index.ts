@@ -58,6 +58,66 @@ export interface EventFaq {
   answer: string;
 }
 
+// ---------- Rich landing-page content (all optional, admin-editable) ----------
+//
+// Everything below supplements the core event fields to build the full
+// featured-event landing page (presenter line, "why attend" trio, featured
+// artist, event-details logistics, evening schedule, venue block). Stored as a
+// single nullable JSONB `landing` object — sections render only when present.
+
+/** A small headline stat, e.g. "25+ Years" / "of devotional music". */
+export interface LandingStat {
+  value: string;
+  label: string;
+}
+
+/** One "why attend" highlight card. */
+export interface LandingWhyCard {
+  title: string;
+  body: string;
+}
+
+/** One row in the evening schedule timeline. */
+export interface LandingScheduleItem {
+  time: string; // "6:30 PM"
+  title: string;
+  description: string;
+}
+
+/** A label/value logistics row (Date, Time, Venue, Entry, Dress code…). */
+export interface LandingDetail {
+  label: string;
+  value: string;
+}
+
+export interface LandingArtist {
+  name: string;
+  title: string; // "Renowned Bhajan Singer"
+  bio: string; // free text, newlines preserved
+  imageUrl: string;
+  stats: LandingStat[];
+}
+
+export interface LandingVenueInfo {
+  name: string;
+  address: string;
+  description: string;
+  accessibility: string;
+  imageUrl: string;
+}
+
+export interface EventLandingContent {
+  /** Small eyebrow above the hero title, e.g. "Utsav Events Presents". */
+  presenter?: string;
+  /** Short kicker under the presenter, e.g. "A Divine Bhajan Evening". */
+  heroKicker?: string;
+  whyAttend?: LandingWhyCard[];
+  artist?: LandingArtist | null;
+  details?: LandingDetail[];
+  schedule?: LandingScheduleItem[];
+  venue?: LandingVenueInfo | null;
+}
+
 export interface EventItem {
   id: string;
   title: string;
@@ -88,6 +148,8 @@ export interface EventItem {
   /** Optional external BookMyShow listing. When set, the public pages surface a
    *  "also on BookMyShow" option linking here. Admin-controlled. */
   bookMyShowUrl?: string | null;
+  /** Rich landing-page content (artist, schedule, venue, etc.). Admin-editable. */
+  landing?: EventLandingContent | null;
   published: boolean;
   createdAt: number;
   updatedAt: number;

@@ -26,7 +26,7 @@ export async function HomeScreen() {
         <main>
           <EventLanding event={featured} remaining={remaining[featured.id]} />
           {others.length > 0 && (
-            <div className="max-w-6xl mx-auto px-4 py-16">
+            <div className="section-y max-w-6xl mx-auto px-4">
               <EventList events={others} remaining={remaining} title="More events" />
             </div>
           )}
@@ -34,7 +34,7 @@ export async function HomeScreen() {
         </main>
       ) : (
         <main>
-          <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="section-y max-w-6xl mx-auto px-4">
             <EventList events={events} remaining={remaining} />
           </div>
           <HomeInfoSections />

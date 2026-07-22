@@ -35,6 +35,9 @@ interface Props {
   event: EventItem;
   /** The signed-in customer (booking is gated on login server-side). */
   customer: { name: string; email: string | null; phone: string | null };
+  /** Server-fetched seat availability so the map is accurate on first paint. */
+  initialBookedSeats: string[];
+  initialLockedSeats: string[];
 }
 
 declare global {
@@ -56,10 +59,15 @@ function loadRazorpay(): Promise<boolean> {
   });
 }
 
-export default function BookingFlow({ event, customer }: Props) {
+export default function BookingFlow({
+  event,
+  customer,
+  initialBookedSeats,
+  initialLockedSeats,
+}: Props) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [bookedSeats, setBookedSeats] = useState<Set<string>>(new Set());
-  const [lockedSeats, setLockedSeats] = useState<Set<string>>(new Set());
+  const [bookedSeats, setBookedSeats] = useState<Set<string>>(new Set(initialBookedSeats));
+  const [lockedSeats, setLockedSeats] = useState<Set<string>>(new Set(initialLockedSeats));
   // seatId -> attendee name; the first seat defaults to the purchaser's name
   const [attendeeNames, setAttendeeNames] = useState<Record<string, string>>({});
   const [paying, setPaying] = useState(false);
@@ -68,6 +76,8 @@ export default function BookingFlow({ event, customer }: Props) {
   const [finalizing, setFinalizing] = useState(false);
   const { showToast, toast } = useToast();
   const [confirmed, setConfirmed] = useState<Confirmation | null>(null);
+  // Guided checkout journey: pick seats → name attendees → review → pay.
+  const [step, setStep] = useState<"seats" | "attendees" | "summary">("seats");
   const routeLoader = useRouteLoader();
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -120,6 +130,18 @@ export default function BookingFlow({ event, customer }: Props) {
 
   const nameForSeat = (seatId: string, index: number) =>
     attendeeNames[seatId] ?? (index === 0 ? customer.name : "");
+
+  const goToAttendees = () => {
+    if (selected.size === 0) return showToast("Select at least one seat to continue", "error");
+    setStep("attendees");
+  };
+
+  const goToSummary = () => {
+    // Same rule the pay() call enforces — validate here so the summary is complete.
+    const missing = selectedSeats.some((seatId, i) => nameForSeat(seatId, i).trim().length < 2);
+    if (missing) return showToast("Enter a name (2+ characters) for every seat", "error");
+    setStep("summary");
+  };
 
   const pay = async () => {
     if (paying) return;
@@ -341,74 +363,198 @@ export default function BookingFlow({ event, customer }: Props) {
         </span>
       </div>
       <p className="text-xs text-zinc-500 mb-6">
-        Seats are held for 8 minutes once you proceed to pay. Booking as{" "}
-        <span className="text-zinc-300">{customer.name}</span> ({customer.email ?? customer.phone}).
+        Booking as <span className="text-zinc-300">{customer.name}</span> (
+        {customer.email ?? customer.phone}).
       </p>
 
-      <SeatMap
-        event={event}
-        bookedSeats={bookedSeats}
-        lockedSeats={lockedSeats}
-        selected={selected}
-        onToggle={toggleSeat}
-      />
+      <Stepper current={step} />
 
-      {/* Checkout bar */}
-      <div className="sticky bottom-0 mt-6 bg-zinc-900 border border-zinc-800 rounded-xl p-4 space-y-3">
-        {selectedSeats.length > 0 && (
-          <div>
-            <p className="flex items-center gap-1.5 text-xs uppercase tracking-wide text-zinc-500 mb-2.5">
-              <Users className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-              Attendee for each seat
-              {selectedSeats.length > 1 && (
-                <span className="normal-case text-zinc-600">— every person gets their own QR ticket</span>
+      {/* ---- Step 1: choose seats ---- */}
+      {step === "seats" && (
+        <div className="mt-6">
+          <SeatMap
+            event={event}
+            bookedSeats={bookedSeats}
+            lockedSeats={lockedSeats}
+            selected={selected}
+            onToggle={toggleSeat}
+          />
+          <div className="sticky bottom-0 mt-6 bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium">
+                {selected.size > 0 ? (
+                  <>
+                    {selected.size} seat{selected.size > 1 ? "s" : ""} · {inr(totalAmount)}
+                  </>
+                ) : (
+                  "Select your seats"
+                )}
+              </p>
+              {selected.size > 0 && (
+                <p className="text-xs text-zinc-500 truncate">{selectedSeats.join(", ")}</p>
               )}
-            </p>
-            <div className="grid sm:grid-cols-2 gap-2.5">
+            </div>
+            <button
+              onClick={goToAttendees}
+              disabled={selected.size === 0}
+              className="bg-[#d99a45] hover:bg-[#bf863a] disabled:opacity-40 disabled:cursor-not-allowed rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ---- Step 2: attendee names ---- */}
+      {step === "attendees" && (
+        <div className="mt-6 max-w-2xl">
+          <p className="flex items-center gap-1.5 text-xs uppercase tracking-wide text-zinc-500 mb-3">
+            <Users className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            Attendee for each seat
+            {selectedSeats.length > 1 && (
+              <span className="normal-case text-zinc-600">
+                — every person gets their own QR ticket
+              </span>
+            )}
+          </p>
+          <div className="grid sm:grid-cols-2 gap-2.5">
+            {selectedSeats.map((seatId, i) => (
+              <div key={seatId} className="flex items-center gap-2.5">
+                <span className="h-10 shrink-0 flex items-center justify-center whitespace-nowrap text-[11px] font-mono font-semibold tracking-wide text-[#e8bd6b] bg-[#d99a45]/10 border border-[#d99a45]/25 rounded-lg px-3">
+                  {seatId}
+                </span>
+                <input
+                  value={nameForSeat(seatId, i)}
+                  onChange={(e) =>
+                    setAttendeeNames((prev) => ({ ...prev, [seatId]: e.target.value }))
+                  }
+                  placeholder={`Attendee name for ${seatId}`}
+                  required
+                  minLength={2}
+                  maxLength={80}
+                  className="h-10 flex-1 min-w-0 bg-zinc-950 border border-zinc-800 rounded-lg px-3 text-sm outline-none focus:border-[#d99a45] transition-colors"
+                />
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-3 mt-6">
+            <button
+              onClick={() => setStep("seats")}
+              className="rounded-lg border border-zinc-700 px-5 py-2.5 font-semibold text-sm text-zinc-300 hover:text-zinc-100 hover:border-zinc-600 transition-colors"
+            >
+              Back
+            </button>
+            <button
+              onClick={goToSummary}
+              className="flex-1 sm:flex-none bg-[#d99a45] hover:bg-[#bf863a] rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ---- Step 3: review & pay ---- */}
+      {step === "summary" && (
+        <div className="mt-6 max-w-2xl">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+            <div className="px-5 py-4 border-b border-zinc-800">
+              <p className="font-semibold">{event.title}</p>
+              <p className="text-sm text-zinc-400">
+                {event.venue} · {formatDateIST(event.startsAt)}
+              </p>
+            </div>
+            <ul className="divide-y divide-zinc-800/70">
               {selectedSeats.map((seatId, i) => (
-                <div key={seatId} className="flex items-center gap-2.5">
-                  <span className="h-10 shrink-0 flex items-center justify-center whitespace-nowrap text-[11px] font-mono font-semibold tracking-wide text-[#e8bd6b] bg-[#d99a45]/10 border border-[#d99a45]/25 rounded-lg px-3">
+                <li key={seatId} className="flex items-center gap-3 px-5 py-3">
+                  <span className="shrink-0 whitespace-nowrap text-[11px] font-mono font-semibold tracking-wide text-[#e8bd6b] bg-[#d99a45]/10 border border-[#d99a45]/25 rounded-lg px-2.5 py-1">
                     {seatId}
                   </span>
-                  <input
-                    value={nameForSeat(seatId, i)}
-                    onChange={(e) =>
-                      setAttendeeNames((prev) => ({ ...prev, [seatId]: e.target.value }))
-                    }
-                    placeholder={`Attendee name for ${seatId}`}
-                    required
-                    minLength={2}
-                    maxLength={80}
-                    className="h-10 flex-1 min-w-0 bg-zinc-950 border border-zinc-800 rounded-lg px-3 text-sm outline-none focus:border-[#d99a45] transition-colors"
-                  />
-                </div>
+                  <span className="min-w-0 flex-1 truncate text-sm">{nameForSeat(seatId, i)}</span>
+                  <span className="shrink-0 text-sm text-zinc-400">
+                    {inr(seatPrice(event, seatId) ?? 0)}
+                  </span>
+                </li>
               ))}
+            </ul>
+            <div className="px-5 py-4 border-t border-zinc-800 flex items-center justify-between">
+              <span className="text-sm text-zinc-400">
+                Total · {selected.size} seat{selected.size > 1 ? "s" : ""}
+              </span>
+              <span className="text-lg font-bold">{inr(totalAmount)}</span>
             </div>
           </div>
-        )}
-        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-          <div className="flex-1">
-            <p className="text-sm font-medium">
-              {selected.size > 0 ? (
-                <>
-                  {selected.size} seat{selected.size > 1 ? "s" : ""} · {selectedSeats.join(", ")}
-                </>
-              ) : (
-                "Select your seats"
-              )}
-            </p>
+
+          <p className="text-xs text-zinc-500 mt-4">
+            Your seats are held for 8 minutes once you proceed to payment.
+          </p>
+
+          <div className="flex gap-3 mt-5">
+            <button
+              onClick={() => setStep("attendees")}
+              disabled={paying}
+              className="rounded-lg border border-zinc-700 px-5 py-2.5 font-semibold text-sm text-zinc-300 hover:text-zinc-100 hover:border-zinc-600 disabled:opacity-40 transition-colors"
+            >
+              Back
+            </button>
+            <button
+              onClick={pay}
+              disabled={paying || selected.size === 0}
+              className="flex-1 bg-[#d99a45] hover:bg-[#bf863a] disabled:opacity-40 disabled:cursor-not-allowed rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+            >
+              {paying ? "Processing…" : `Proceed to payment · ${inr(totalAmount)}`}
+            </button>
           </div>
-          <button
-            onClick={pay}
-            disabled={paying || selected.size === 0}
-            className="bg-[#d99a45] hover:bg-[#bf863a] disabled:opacity-40 disabled:cursor-not-allowed rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
-          >
-            {paying ? "Processing…" : selected.size > 0 ? `Pay ${inr(totalAmount)}` : "Pay"}
-          </button>
         </div>
-      </div>
+      )}
       {toast}
     </div>
+  );
+}
+
+const STEPS: { key: "seats" | "attendees" | "summary"; label: string }[] = [
+  { key: "seats", label: "Seats" },
+  { key: "attendees", label: "Attendees" },
+  { key: "summary", label: "Review" },
+];
+
+function Stepper({ current }: { current: "seats" | "attendees" | "summary" }) {
+  const currentIdx = STEPS.findIndex((s) => s.key === current);
+  return (
+    <ol className="flex items-center gap-2 sm:gap-3">
+      {STEPS.map((s, i) => {
+        const done = i < currentIdx;
+        const active = i === currentIdx;
+        return (
+          <li key={s.key} className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <span
+              className={`flex items-center gap-2 ${active ? "" : "opacity-70"}`}
+              aria-current={active ? "step" : undefined}
+            >
+              <span
+                className={`w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-xs font-bold ${
+                  done
+                    ? "bg-[#d99a45] text-[#1a1206]"
+                    : active
+                      ? "bg-[#d99a45]/20 text-[#e8bd6b] ring-1 ring-[#d99a45]"
+                      : "bg-zinc-800 text-zinc-500"
+                }`}
+              >
+                {done ? <Check className="w-3.5 h-3.5" aria-hidden="true" /> : i + 1}
+              </span>
+              <span
+                className={`text-sm font-medium ${active ? "text-zinc-100" : "text-zinc-500"}`}
+              >
+                {s.label}
+              </span>
+            </span>
+            {i < STEPS.length - 1 && (
+              <span className="w-4 sm:w-8 h-px bg-zinc-700 shrink-0" aria-hidden="true" />
+            )}
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 

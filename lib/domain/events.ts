@@ -1,7 +1,12 @@
 import { MAX_GALLERY_PHOTOS, MAX_TOTAL_ROWS } from "@/constants";
 import {
   EventItem,
+  EventLandingContent,
   EventLayout,
+  LandingDetail,
+  LandingScheduleItem,
+  LandingStat,
+  LandingWhyCard,
   LayoutRow,
   LayoutSection,
   Seat,
@@ -97,6 +102,7 @@ export interface EventInput {
   layout?: unknown;
   blockedSeats?: unknown;
   bookMyShowUrl?: unknown;
+  landing?: unknown;
   published?: unknown;
 }
 
@@ -200,6 +206,100 @@ export function validateLayout(
     return { ok: false, error: `Layout exceeds the ${MAX_LAYOUT_SEATS}-seat limit` };
   }
   return { ok: true, value: { sections } };
+}
+
+/**
+ * Sanitizes the optional rich landing-page content. Lenient (mirrors faqs):
+ * bad rows are dropped rather than rejected, so a half-filled section never
+ * blocks a save. Returns null when nothing meaningful was provided.
+ */
+export function sanitizeLanding(raw: unknown): EventLandingContent | null {
+  if (typeof raw !== "object" || raw === null) return null;
+  const src = raw as Record<string, unknown>;
+  const str = (v: unknown) => (typeof v === "string" ? v.trim() : "");
+  const rows = (v: unknown): Record<string, unknown>[] =>
+    Array.isArray(v) ? (v as Record<string, unknown>[]) : [];
+
+  const presenter = str(src.presenter);
+  const heroKicker = str(src.heroKicker);
+
+  const whyAttend: LandingWhyCard[] = [];
+  for (const r of rows(src.whyAttend).slice(0, 6)) {
+    const title = str(r.title);
+    const body = str(r.body);
+    if (title || body) whyAttend.push({ title, body });
+  }
+
+  const details: LandingDetail[] = [];
+  for (const r of rows(src.details).slice(0, 12)) {
+    const label = str(r.label);
+    const value = str(r.value);
+    if (label || value) details.push({ label, value });
+  }
+
+  const schedule: LandingScheduleItem[] = [];
+  for (const r of rows(src.schedule).slice(0, 24)) {
+    const time = str(r.time);
+    const title = str(r.title);
+    const description = str(r.description);
+    if (time || title || description) schedule.push({ time, title, description });
+  }
+
+  let artist: EventLandingContent["artist"] = null;
+  if (src.artist && typeof src.artist === "object") {
+    const a = src.artist as Record<string, unknown>;
+    const name = str(a.name);
+    const stats: LandingStat[] = [];
+    for (const r of rows(a.stats).slice(0, 6)) {
+      const value = str(r.value);
+      const label = str(r.label);
+      if (value || label) stats.push({ value, label });
+    }
+    if (name || str(a.bio) || str(a.imageUrl)) {
+      artist = {
+        name,
+        title: str(a.title),
+        bio: str(a.bio),
+        imageUrl: normalizeImageUrl(str(a.imageUrl)),
+        stats,
+      };
+    }
+  }
+
+  let venue: EventLandingContent["venue"] = null;
+  if (src.venue && typeof src.venue === "object") {
+    const v = src.venue as Record<string, unknown>;
+    const name = str(v.name);
+    if (name || str(v.address) || str(v.description)) {
+      venue = {
+        name,
+        address: str(v.address),
+        description: str(v.description),
+        accessibility: str(v.accessibility),
+        imageUrl: normalizeImageUrl(str(v.imageUrl)),
+      };
+    }
+  }
+
+  const hasContent =
+    presenter ||
+    heroKicker ||
+    whyAttend.length ||
+    details.length ||
+    schedule.length ||
+    artist ||
+    venue;
+  if (!hasContent) return null;
+
+  return {
+    ...(presenter ? { presenter } : {}),
+    ...(heroKicker ? { heroKicker } : {}),
+    ...(whyAttend.length ? { whyAttend } : {}),
+    ...(details.length ? { details } : {}),
+    ...(schedule.length ? { schedule } : {}),
+    artist,
+    venue,
+  };
 }
 
 const POSTERS = [
@@ -366,6 +466,7 @@ export function validateEventInput(
       layout,
       blockedSeats,
       bookMyShowUrl,
+      landing: sanitizeLanding(body.landing),
       published: Boolean(body.published),
     },
   };

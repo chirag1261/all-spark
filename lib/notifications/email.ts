@@ -70,6 +70,53 @@ export async function sendOtpEmail(to: string, code: string): Promise<{ sent: bo
   }
 }
 
+/** Where public contact-form messages are delivered. */
+const CONTACT_TO = () => process.env.ADMIN_EMAIL || "utsavevents.tech@gmail.com";
+
+/**
+ * Relays a public "contact us" message to the team inbox. Never throws — the
+ * form should always confirm receipt to the user; delivery failures are logged
+ * server-side only. Returns whether it was actually sent.
+ */
+export async function sendContactMessage(msg: {
+  name: string;
+  email: string;
+  phone?: string;
+  topic?: string;
+  message: string;
+}): Promise<{ sent: boolean }> {
+  const lines = [
+    `Name: ${msg.name}`,
+    `Email: ${msg.email}`,
+    ...(msg.phone ? [`Phone: ${msg.phone}`] : []),
+    ...(msg.topic ? [`Topic: ${msg.topic}`] : []),
+    "",
+    msg.message,
+  ].join("\n");
+
+  if (!emailConfigured()) {
+    console.log(`[email:dev] Contact message:\n${lines}`);
+    return { sent: true }; // dev delivery — the server console is the inbox
+  }
+  try {
+    const { error } = await client().emails.send({
+      from: FROM(),
+      to: CONTACT_TO(),
+      replyTo: msg.email,
+      subject: `Contact form: ${msg.topic || "General enquiry"} — ${msg.name}`,
+      text: lines,
+    });
+    if (error) {
+      console.error("Contact email failed:", error);
+      return { sent: false };
+    }
+    return { sent: true };
+  } catch (err) {
+    console.error("Contact email failed:", err);
+    return { sent: false };
+  }
+}
+
 /**
  * Emails ALL of a booking's tickets — one QR per attendee/seat, each with its
  * own shareable link. Never throws — a failed email must not fail a paid
