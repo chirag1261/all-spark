@@ -1,21 +1,15 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Lato } from "next/font/google";
+import { Roboto } from "next/font/google";
 
 import RouteLoaderProvider from "@/components/RouteLoader";
 
 import "./globals.css";
 
-// Body — clean, readable sans (matches utsavevents.live)
-const lato = Lato({
-  variable: "--font-lato",
-  weight: ["400", "700", "900"],
-  subsets: ["latin"],
-});
-
-// Headings — elegant devotional serif
-const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
-  weight: ["500", "600", "700"],
+// Single site-wide font (client requirement) — used for both body text and
+// headings via the shared --font-roboto variable (see globals.css).
+const roboto = Roboto({
+  variable: "--font-roboto",
+  weight: ["300", "400", "500", "700", "900"],
   subsets: ["latin"],
 });
 
@@ -31,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${lato.variable} ${cormorant.variable} h-full antialiased`}>
+    <html lang="en" className={`${roboto.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <RouteLoaderProvider>{children}</RouteLoaderProvider>
       </body>

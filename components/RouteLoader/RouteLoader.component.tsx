@@ -22,6 +22,11 @@ const RouteLoaderContext = createContext<RouteLoaderApi | null>(null);
 
 // Never let the overlay get stuck if a navigation is cancelled/interrupted.
 const SAFETY_TIMEOUT_MS = 15000;
+// Pages now resolve fast enough (region colocation + request-level query
+// dedup) that the overlay could hide before the icon-cycle animation ever
+// gets a chance to play. Keep it up for at least this long so the animation
+// is always visible, regardless of how quickly the destination actually loads.
+const MIN_VISIBLE_MS = 1000;
 
 /**
  * App-wide "buffer loader". A single blocking overlay shown during slow route
@@ -38,6 +43,7 @@ export default function RouteLoaderProvider({ children }: { children: React.Reac
   const router = useRouter();
   const pathname = usePathname();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const shownAtRef = useRef(0);
 
   const clearTimer = () => {
     if (timerRef.current) {
@@ -54,6 +60,7 @@ export default function RouteLoaderProvider({ children }: { children: React.Reac
 
   const show = useCallback((next?: string) => {
     clearTimer();
+    shownAtRef.current = Date.now();
     setLabel(next);
     setPending(true);
     timerRef.current = setTimeout(() => setPending(false), SAFETY_TIMEOUT_MS);
@@ -68,10 +75,12 @@ export default function RouteLoaderProvider({ children }: { children: React.Reac
     [router, show]
   );
 
-  // Navigation finished once the pathname changes — drop the overlay. Deferred
-  // a tick so the state update isn't synchronous within the effect body.
+  // Navigation finished once the pathname changes — drop the overlay, but not
+  // before it's been visible for at least MIN_VISIBLE_MS (see above).
   useEffect(() => {
-    const t = setTimeout(hide, 0);
+    const elapsed = Date.now() - shownAtRef.current;
+    const remaining = Math.max(0, MIN_VISIBLE_MS - elapsed);
+    const t = setTimeout(hide, remaining);
     return () => clearTimeout(t);
     // Intentionally keyed on pathname only: fire on route change.
     // eslint-disable-next-line react-hooks/exhaustive-deps

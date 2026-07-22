@@ -2,8 +2,8 @@
 
 /* ---------------------------------------------------------------------------
    Utsav Events — devotional design tokens
-   Deep-indigo canvas, saffron-gold accents, elegant serif headings.
-   Mirrors utsavevents.live (Cormorant Garamond + Lato, saffron on indigo).
+   Deep-indigo canvas, saffron-gold accents. Roboto throughout (client's
+   brand consistency requirement) for both body copy and headings.
 --------------------------------------------------------------------------- */
 :root {
   --background: #0d0a1f; /* deep indigo — hsl(249 51% 8%) */
@@ -18,9 +18,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-lato);
-  --font-heading: var(--font-cormorant);
-  --font-mono: var(--font-lato);
+  --font-sans: var(--font-roboto);
+  --font-heading: var(--font-roboto);
+  --font-mono: var(--font-roboto);
 }
 
 body {
@@ -28,13 +28,13 @@ body {
     radial-gradient(1200px 500px at 50% -220px, rgba(217,154,69, 0.1), transparent 70%),
     var(--background);
   color: var(--foreground);
-  font-family: var(--font-lato), system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: var(--font-roboto), system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 h1,
 h2,
 h3 {
-  font-family: var(--font-cormorant), Georgia, serif;
+  font-family: var(--font-roboto), system-ui, -apple-system, "Segoe UI", sans-serif;
   letter-spacing: -0.01em;
 }
 
@@ -117,6 +117,16 @@ h3 {
   }
 }
 
+/* Left-drawer entrance (mobile nav — animate-[slide-in-left_.2s_ease-out]) */
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
 /* Confirm dialog entrance (referenced as animate-[dialog-in_.15s_ease-out] / fade-in) */
 @keyframes dialog-in {
   from {
@@ -135,6 +145,17 @@ h3 {
   }
   to {
     opacity: 1;
+  }
+}
+
+/* Shared landing-page section rhythm — one source of truth so every major
+   section is evenly separated and scales down on mobile. */
+.section-y {
+  padding-block: 3.5rem;
+}
+@media (min-width: 640px) {
+  .section-y {
+    padding-block: 5rem;
   }
 }
 

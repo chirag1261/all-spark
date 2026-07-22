@@ -29,7 +29,7 @@ export default function HomeInfoSections() {
   return (
     <>
       {/* About Utsav Events */}
-      <section className="max-w-6xl mx-auto px-4 py-20 grid lg:grid-cols-2 gap-12 items-center">
+      <section className="section-y max-w-6xl mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center">
         <div className="relative">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -55,7 +55,7 @@ export default function HomeInfoSections() {
 
       {/* Why Attend */}
       <section className="border-y border-white/6 bg-[#171228]/40">
-        <div className="max-w-6xl mx-auto px-4 py-20">
+        <div className="section-y max-w-6xl mx-auto px-4">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <p className="font-heading text-[#d99a45] text-lg mb-1">Why Attend</p>
             <h2 className="font-heading text-3xl sm:text-5xl font-semibold">
@@ -92,7 +92,7 @@ export default function HomeInfoSections() {
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-[#0d0a1f]/85" />
-        <div className="relative max-w-3xl mx-auto px-4 py-24 text-center">
+        <div className="section-y relative max-w-3xl mx-auto px-4 text-center">
           <h2 className="font-heading text-3xl sm:text-5xl font-semibold mb-4">
             Be part of a divine evening
           </h2>

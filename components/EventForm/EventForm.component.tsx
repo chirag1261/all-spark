@@ -13,7 +13,14 @@ import {
 } from "@/constants";
 import { isValidSeatId } from "@/lib/domain/events";
 import { buildVenue } from "@/lib/domain/venue";
-import { EventItem, EventLayout } from "@/types";
+import {
+  EventItem,
+  EventLayout,
+  LandingDetail,
+  LandingScheduleItem,
+  LandingStat,
+  LandingWhyCard,
+} from "@/types";
 
 import { useConfirm } from "../ConfirmDialog";
 import LayoutEditor from "../LayoutEditor";
@@ -86,14 +93,44 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
   const [layout, setLayout] = useState<EventLayout>(event?.layout ?? EMPTY_LAYOUT);
   const [blockedInput, setBlockedInput] = useState(event?.blockedSeats.join(", ") ?? "");
   const [busy, setBusy] = useState(false);
-  const [uploading, setUploading] = useState<"banner" | "gallery" | null>(null);
+  const [uploading, setUploading] = useState<"banner" | "gallery" | "artist" | "venue" | null>(
+    null
+  );
   const bannerFileRef = useRef<HTMLInputElement>(null);
   const galleryFileRef = useRef<HTMLInputElement>(null);
+  const artistFileRef = useRef<HTMLInputElement>(null);
+  const venueFileRef = useRef<HTMLInputElement>(null);
+
+  // ---- Rich landing-page content (all optional) ----
+  const l = event?.landing;
+  const [presenter, setPresenter] = useState(l?.presenter ?? "");
+  const [heroKicker, setHeroKicker] = useState(l?.heroKicker ?? "");
+  const [whyAttend, setWhyAttend] = useState<LandingWhyCard[]>(l?.whyAttend ?? []);
+  const [details, setDetails] = useState<LandingDetail[]>(l?.details ?? []);
+  const [schedule, setSchedule] = useState<LandingScheduleItem[]>(l?.schedule ?? []);
+  const [artistName, setArtistName] = useState(l?.artist?.name ?? "");
+  const [artistTitle, setArtistTitle] = useState(l?.artist?.title ?? "");
+  const [artistBio, setArtistBio] = useState(l?.artist?.bio ?? "");
+  const [artistImageUrl, setArtistImageUrl] = useState(l?.artist?.imageUrl ?? "");
+  const [artistStats, setArtistStats] = useState<LandingStat[]>(l?.artist?.stats ?? []);
+  const [venueName, setVenueName] = useState(l?.venue?.name ?? "");
+  const [venueAddress, setVenueAddress] = useState(l?.venue?.address ?? "");
+  const [venueDescription, setVenueDescription] = useState(l?.venue?.description ?? "");
+  const [venueAccessibility, setVenueAccessibility] = useState(l?.venue?.accessibility ?? "");
+  const [venueImageUrl, setVenueImageUrl] = useState(l?.venue?.imageUrl ?? "");
 
   const setCategory = (i: number, patch: Partial<CategoryDraft>) =>
     setCategories((prev) => prev.map((c, idx) => (idx === i ? { ...c, ...patch } : c)));
   const setFaq = (i: number, patch: Partial<FaqDraft>) =>
     setFaqs((prev) => prev.map((f, idx) => (idx === i ? { ...f, ...patch } : f)));
+  const setWhy = (i: number, patch: Partial<LandingWhyCard>) =>
+    setWhyAttend((prev) => prev.map((x, idx) => (idx === i ? { ...x, ...patch } : x)));
+  const setDetail = (i: number, patch: Partial<LandingDetail>) =>
+    setDetails((prev) => prev.map((x, idx) => (idx === i ? { ...x, ...patch } : x)));
+  const setSched = (i: number, patch: Partial<LandingScheduleItem>) =>
+    setSchedule((prev) => prev.map((x, idx) => (idx === i ? { ...x, ...patch } : x)));
+  const setStat = (i: number, patch: Partial<LandingStat>) =>
+    setArtistStats((prev) => prev.map((x, idx) => (idx === i ? { ...x, ...patch } : x)));
 
   const uploadFile = async (file: File): Promise<string | null> => {
     // Mirror the server's rule for instant feedback (server still enforces it).
@@ -140,6 +177,24 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
     }
     setUploading(null);
     if (galleryFileRef.current) galleryFileRef.current.value = "";
+  };
+
+  const uploadArtist = async (files: FileList | null) => {
+    if (!files?.[0]) return;
+    setUploading("artist");
+    const url = await uploadFile(files[0]);
+    if (url) setArtistImageUrl(url);
+    setUploading(null);
+    if (artistFileRef.current) artistFileRef.current.value = "";
+  };
+
+  const uploadVenue = async (files: FileList | null) => {
+    if (!files?.[0]) return;
+    setUploading("venue");
+    const url = await uploadFile(files[0]);
+    if (url) setVenueImageUrl(url);
+    setUploading(null);
+    if (venueFileRef.current) venueFileRef.current.value = "";
   };
 
   const addGalleryUrl = () => {
@@ -258,6 +313,28 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
         .split(",")
         .map((s) => s.trim().toUpperCase())
         .filter(Boolean),
+      // Rich landing content — the server's sanitizeLanding() drops empties/nulls.
+      landing: {
+        presenter,
+        heroKicker,
+        whyAttend,
+        details,
+        schedule,
+        artist: {
+          name: artistName,
+          title: artistTitle,
+          bio: artistBio,
+          imageUrl: artistImageUrl,
+          stats: artistStats,
+        },
+        venue: {
+          name: venueName,
+          address: venueAddress,
+          description: venueDescription,
+          accessibility: venueAccessibility,
+          imageUrl: venueImageUrl,
+        },
+      },
     };
 
     try {
@@ -629,6 +706,355 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
               placeholder={seatingMode === "layout" ? "LWR-C10" : "A1, A2"}
               className={inputCls}
             />
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-lg font-semibold">Landing page content</h2>
+            <p className="text-xs text-zinc-600">
+              Rich sections shown on the featured-event landing page. Everything here is optional —
+              empty sections are hidden automatically.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-3">
+            <div>
+              <Label>Presenter line</Label>
+              <input
+                value={presenter}
+                onChange={(e) => setPresenter(e.target.value)}
+                placeholder="Utsav Events Presents"
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <Label>Hero kicker</Label>
+              <input
+                value={heroKicker}
+                onChange={(e) => setHeroKicker(e.target.value)}
+                placeholder="An Evening of Sacred Devotion"
+                className={inputCls}
+              />
+            </div>
+          </div>
+
+          {/* Why attend */}
+          <div className="space-y-2 border-t border-zinc-800 pt-4">
+            <div className="flex items-center">
+              <h3 className="text-sm font-semibold text-zinc-300">Why attend</h3>
+              <button
+                type="button"
+                onClick={() => setWhyAttend((prev) => [...prev, { title: "", body: "" }])}
+                className="ml-auto text-sm text-[#d99a45] hover:underline"
+              >
+                + Add card
+              </button>
+            </div>
+            {whyAttend.map((c, i) => (
+              <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 space-y-2">
+                <div className="flex gap-3">
+                  <input
+                    value={c.title}
+                    onChange={(e) => setWhy(i, { title: e.target.value })}
+                    placeholder="Card title"
+                    className={inputCls}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setWhyAttend((prev) => prev.filter((_, idx) => idx !== i))}
+                    aria-label="Remove card"
+                    className="inline-flex items-center text-zinc-500 hover:text-red-400 px-1"
+                  >
+                    <X className="w-4 h-4" aria-hidden="true" />
+                  </button>
+                </div>
+                <textarea
+                  value={c.body}
+                  onChange={(e) => setWhy(i, { body: e.target.value })}
+                  placeholder="Description"
+                  rows={2}
+                  className={inputCls}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Featured artist */}
+          <div className="space-y-3 border-t border-zinc-800 pt-4">
+            <h3 className="text-sm font-semibold text-zinc-300">Featured artist</h3>
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div>
+                <Label>Name</Label>
+                <input
+                  value={artistName}
+                  onChange={(e) => setArtistName(e.target.value)}
+                  placeholder="Gajendra Pratap Singh"
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <Label>Title</Label>
+                <input
+                  value={artistTitle}
+                  onChange={(e) => setArtistTitle(e.target.value)}
+                  placeholder="Renowned Bhajan Singer"
+                  className={inputCls}
+                />
+              </div>
+            </div>
+            <div>
+              <Label>Bio</Label>
+              <textarea
+                value={artistBio}
+                onChange={(e) => setArtistBio(e.target.value)}
+                placeholder="A short biography — blank lines separate paragraphs."
+                rows={4}
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <Label>Artist image</Label>
+              <div className="flex gap-2">
+                <input
+                  value={artistImageUrl}
+                  onChange={(e) => setArtistImageUrl(e.target.value)}
+                  placeholder="https://res.cloudinary.com/…"
+                  className={inputCls}
+                />
+                {cloudinaryEnabled && (
+                  <>
+                    <input
+                      ref={artistFileRef}
+                      type="file"
+                      accept={ALLOWED_IMAGE_ACCEPT}
+                      className="hidden"
+                      onChange={(e) => uploadArtist(e.target.files)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => artistFileRef.current?.click()}
+                      disabled={uploading !== null}
+                      className="shrink-0 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40 rounded-lg px-4 text-sm font-medium transition-colors"
+                    >
+                      {uploading === "artist" ? "Uploading…" : "Upload"}
+                    </button>
+                  </>
+                )}
+              </div>
+              {artistImageUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={artistImageUrl}
+                  alt="Artist preview"
+                  className="mt-2 h-24 rounded-lg object-cover border border-zinc-800"
+                />
+              )}
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center">
+                <Label>Artist stats</Label>
+                <button
+                  type="button"
+                  onClick={() => setArtistStats((prev) => [...prev, { value: "", label: "" }])}
+                  className="ml-auto text-sm text-[#d99a45] hover:underline"
+                >
+                  + Add stat
+                </button>
+              </div>
+              {artistStats.map((s, i) => (
+                <div key={i} className="flex gap-2">
+                  <input
+                    value={s.value}
+                    onChange={(e) => setStat(i, { value: e.target.value })}
+                    placeholder="25+ Years"
+                    className={inputCls}
+                  />
+                  <input
+                    value={s.label}
+                    onChange={(e) => setStat(i, { label: e.target.value })}
+                    placeholder="of devotional music"
+                    className={inputCls}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setArtistStats((prev) => prev.filter((_, idx) => idx !== i))}
+                    aria-label="Remove stat"
+                    className="inline-flex items-center text-zinc-500 hover:text-red-400 px-1"
+                  >
+                    <X className="w-4 h-4" aria-hidden="true" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Event details */}
+          <div className="space-y-2 border-t border-zinc-800 pt-4">
+            <div className="flex items-center">
+              <h3 className="text-sm font-semibold text-zinc-300">Event details</h3>
+              <button
+                type="button"
+                onClick={() => setDetails((prev) => [...prev, { label: "", value: "" }])}
+                className="ml-auto text-sm text-[#d99a45] hover:underline"
+              >
+                + Add detail
+              </button>
+            </div>
+            {details.map((d, i) => (
+              <div key={i} className="flex gap-2">
+                <input
+                  value={d.label}
+                  onChange={(e) => setDetail(i, { label: e.target.value })}
+                  placeholder="Dress code"
+                  className={`${inputCls} sm:max-w-48`}
+                />
+                <input
+                  value={d.value}
+                  onChange={(e) => setDetail(i, { value: e.target.value })}
+                  placeholder="Traditional attire encouraged"
+                  className={inputCls}
+                />
+                <button
+                  type="button"
+                  onClick={() => setDetails((prev) => prev.filter((_, idx) => idx !== i))}
+                  aria-label="Remove detail"
+                  className="inline-flex items-center text-zinc-500 hover:text-red-400 px-1"
+                >
+                  <X className="w-4 h-4" aria-hidden="true" />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Evening schedule */}
+          <div className="space-y-2 border-t border-zinc-800 pt-4">
+            <div className="flex items-center">
+              <h3 className="text-sm font-semibold text-zinc-300">Evening schedule</h3>
+              <button
+                type="button"
+                onClick={() =>
+                  setSchedule((prev) => [...prev, { time: "", title: "", description: "" }])
+                }
+                className="ml-auto text-sm text-[#d99a45] hover:underline"
+              >
+                + Add slot
+              </button>
+            </div>
+            {schedule.map((s, i) => (
+              <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 space-y-2">
+                <div className="flex gap-2">
+                  <input
+                    value={s.time}
+                    onChange={(e) => setSched(i, { time: e.target.value })}
+                    placeholder="6:30 PM"
+                    className={`${inputCls} sm:max-w-32`}
+                  />
+                  <input
+                    value={s.title}
+                    onChange={(e) => setSched(i, { title: e.target.value })}
+                    placeholder="Inaugural Prayers"
+                    className={inputCls}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setSchedule((prev) => prev.filter((_, idx) => idx !== i))}
+                    aria-label="Remove slot"
+                    className="inline-flex items-center text-zinc-500 hover:text-red-400 px-1"
+                  >
+                    <X className="w-4 h-4" aria-hidden="true" />
+                  </button>
+                </div>
+                <input
+                  value={s.description}
+                  onChange={(e) => setSched(i, { description: e.target.value })}
+                  placeholder="Invocation and lamp lighting ceremony"
+                  className={inputCls}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Venue */}
+          <div className="space-y-3 border-t border-zinc-800 pt-4">
+            <h3 className="text-sm font-semibold text-zinc-300">Venue</h3>
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div>
+                <Label>Venue name</Label>
+                <input
+                  value={venueName}
+                  onChange={(e) => setVenueName(e.target.value)}
+                  placeholder="Dr. Babu Jagjivanram Bhavan"
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <Label>Address</Label>
+                <input
+                  value={venueAddress}
+                  onChange={(e) => setVenueAddress(e.target.value)}
+                  placeholder="Millers Road, Vasanth Nagar, Bangalore"
+                  className={inputCls}
+                />
+              </div>
+            </div>
+            <div>
+              <Label>Description</Label>
+              <textarea
+                value={venueDescription}
+                onChange={(e) => setVenueDescription(e.target.value)}
+                placeholder="A premier cultural auditorium in the heart of Bangalore…"
+                rows={3}
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <Label>Accessibility / parking note</Label>
+              <input
+                value={venueAccessibility}
+                onChange={(e) => setVenueAccessibility(e.target.value)}
+                placeholder="Easily accessible by metro and road. Ample parking nearby."
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <Label>Venue image</Label>
+              <div className="flex gap-2">
+                <input
+                  value={venueImageUrl}
+                  onChange={(e) => setVenueImageUrl(e.target.value)}
+                  placeholder="https://res.cloudinary.com/…"
+                  className={inputCls}
+                />
+                {cloudinaryEnabled && (
+                  <>
+                    <input
+                      ref={venueFileRef}
+                      type="file"
+                      accept={ALLOWED_IMAGE_ACCEPT}
+                      className="hidden"
+                      onChange={(e) => uploadVenue(e.target.files)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => venueFileRef.current?.click()}
+                      disabled={uploading !== null}
+                      className="shrink-0 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40 rounded-lg px-4 text-sm font-medium transition-colors"
+                    >
+                      {uploading === "venue" ? "Uploading…" : "Upload"}
+                    </button>
+                  </>
+                )}
+              </div>
+              {venueImageUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={venueImageUrl}
+                  alt="Venue preview"
+                  className="mt-2 h-24 rounded-lg object-cover border border-zinc-800"
+                />
+              )}
+            </div>
           </div>
         </section>
 

@@ -77,6 +77,7 @@ const SCHEMA = `
   -- Added after initial release; backfills existing deployments.
   ALTER TABLE events ADD COLUMN IF NOT EXISTS layout JSONB;
   ALTER TABLE events ADD COLUMN IF NOT EXISTS bookmyshow_url TEXT;
+  ALTER TABLE events ADD COLUMN IF NOT EXISTS landing JSONB;
 
   CREATE TABLE IF NOT EXISTS booked_seats (
     event_id TEXT NOT NULL,

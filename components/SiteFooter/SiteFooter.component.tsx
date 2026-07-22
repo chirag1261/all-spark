@@ -9,7 +9,7 @@ function currentYear(): number {
 /** Shared public-site footer — brand, quick links and support contact. */
 export default function SiteFooter() {
   return (
-    <footer className="mt-16 border-t border-white/6 bg-[#0d0a1f]">
+    <footer className="border-t border-white/6 bg-[#0d0a1f]">
       <div className="max-w-6xl mx-auto px-4 py-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
         <div className="lg:col-span-2 max-w-sm">
           <p className="font-heading text-2xl font-semibold tracking-tight">
@@ -32,6 +32,11 @@ export default function SiteFooter() {
             <li>
               <Link href="/events" className="hover:text-zinc-100 transition-colors">
                 All events
+              </Link>
+            </li>
+            <li>
+              <Link href="/about" className="hover:text-zinc-100 transition-colors">
+                About us
               </Link>
             </li>
             <li>
