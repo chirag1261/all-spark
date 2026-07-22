@@ -18,7 +18,7 @@ interface Props {
 }
 
 const inputCls =
-  "w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#f5a524]";
+  "w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#d99a45]";
 
 export default function ProfileForm({ profile }: Props) {
   const router = useRouter();
@@ -129,7 +129,7 @@ export default function ProfileForm({ profile }: Props) {
         <button
           type="submit"
           disabled={busy || name.trim().length < 2}
-          className="bg-[#f5a524] hover:bg-[#d98c1f] disabled:opacity-40 rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
+          className="bg-[#d99a45] hover:bg-[#bf863a] disabled:opacity-40 rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
         >
           Save profile
         </button>

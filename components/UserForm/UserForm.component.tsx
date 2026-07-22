@@ -23,7 +23,7 @@ const PERMISSION_LABELS: Record<AdminPermission, { label: string; hint: string }
 };
 
 const inputCls =
-  "w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#f5a524]";
+  "w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#d99a45]";
 
 export default function UserForm({ user, currentUserId, onDone }: Props) {
   const router = useRouter();
@@ -147,7 +147,7 @@ export default function UserForm({ user, currentUserId, onDone }: Props) {
                 disabled={isSelf && user?.role === "super_admin"}
                 className={`flex-1 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
                   role === r
-                    ? "border-[#f5a524] bg-[#f5a524]/10 text-zinc-100"
+                    ? "border-[#d99a45] bg-[#d99a45]/10 text-zinc-100"
                     : "border-zinc-800 text-zinc-400 hover:text-zinc-200"
                 }`}
               >
@@ -175,7 +175,7 @@ export default function UserForm({ user, currentUserId, onDone }: Props) {
                     type="checkbox"
                     checked={permissions.includes(p)}
                     onChange={() => togglePermission(p)}
-                    className="w-4 h-4 mt-0.5 accent-[#f5a524]"
+                    className="w-4 h-4 mt-0.5 accent-[#d99a45]"
                   />
                   <span className="text-sm">
                     <span className="font-medium">{PERMISSION_LABELS[p].label}</span>
@@ -196,7 +196,7 @@ export default function UserForm({ user, currentUserId, onDone }: Props) {
           <button
             type="submit"
             disabled={busy}
-            className="bg-[#f5a524] hover:bg-[#d98c1f] disabled:opacity-40 rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+            className="bg-[#d99a45] hover:bg-[#bf863a] disabled:opacity-40 rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
           >
             {busy ? "Saving…" : user ? "Save changes" : "Create user"}
           </button>

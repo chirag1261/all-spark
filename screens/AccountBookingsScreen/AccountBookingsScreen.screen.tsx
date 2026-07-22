@@ -81,7 +81,7 @@ function Empty({ label, cta, href }: { label: string; cta: string; href: string 
       <p className="text-zinc-500 mb-4">{label}</p>
       <Link
         href={href}
-        className="inline-block bg-[#f5a524] hover:bg-[#d98c1f] rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
+        className="inline-block bg-[#d99a45] hover:bg-[#bf863a] rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
       >
         {cta}
       </Link>

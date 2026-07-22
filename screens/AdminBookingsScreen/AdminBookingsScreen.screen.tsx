@@ -75,12 +75,12 @@ export async function AdminBookingsScreen({
             name="q"
             defaultValue={q}
             placeholder="Search attendee name, email, phone, booking or ticket ID…"
-            className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-[#f5a524]"
+            className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-[#d99a45]"
           />
           <select
             name="eventId"
             defaultValue={eventId}
-            className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#f5a524]"
+            className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#d99a45]"
           >
             <option value="">All events</option>
             {events.map((e) => (
@@ -92,7 +92,7 @@ export async function AdminBookingsScreen({
           <select
             name="status"
             defaultValue={status}
-            className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#f5a524]"
+            className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#d99a45]"
           >
             <option value="">All statuses</option>
             {(["CONFIRMED", "PENDING", "FAILED", "REFUNDED"] as const).map((s) => (
@@ -103,7 +103,7 @@ export async function AdminBookingsScreen({
           </select>
           <button
             type="submit"
-            className="bg-[#f5a524] hover:bg-[#d98c1f] rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
+            className="bg-[#d99a45] hover:bg-[#bf863a] rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
           >
             Search
           </button>
@@ -143,7 +143,7 @@ export async function AdminBookingsScreen({
                       {b.ticketId ? (
                         <Link
                           href={`/ticket/${b.ticketId}`}
-                          className="font-mono text-xs text-[#f5a524] hover:underline"
+                          className="font-mono text-xs text-[#d99a45] hover:underline"
                         >
                           {b.ticketId}
                         </Link>

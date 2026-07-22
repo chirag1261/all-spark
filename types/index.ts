@@ -85,6 +85,9 @@ export interface EventItem {
   /** Extra seats the admin has taken off sale ad-hoc (on top of any layout-level
    *  blocking). Shown as sold. */
   blockedSeats: string[];
+  /** Optional external BookMyShow listing. When set, the public pages surface a
+   *  "also on BookMyShow" option linking here. Admin-controlled. */
+  bookMyShowUrl?: string | null;
   published: boolean;
   createdAt: number;
   updatedAt: number;

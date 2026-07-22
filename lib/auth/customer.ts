@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { sessionSecret } from "@/lib/auth/secret";
 import { getCustomerById } from "@/lib/db";
 import { Customer, OtpChannel } from "@/types";
 
@@ -16,17 +17,8 @@ export const CUSTOMER_COOKIE = "customer_session";
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 export const CUSTOMER_SESSION_MAX_AGE = SESSION_TTL_MS / 1000;
 
-function secret(): string {
-  return (
-    process.env.AUTH_SESSION_SECRET ||
-    process.env.ADMIN_SESSION_SECRET ||
-    process.env.ADMIN_PASSWORD ||
-    "dev-secret"
-  );
-}
-
 function sign(payload: string): string {
-  return crypto.createHmac("sha256", secret()).update(payload).digest("hex");
+  return crypto.createHmac("sha256", sessionSecret()).update(payload).digest("hex");
 }
 
 export function createCustomerSessionToken(customerId: string): string {

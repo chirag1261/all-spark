@@ -60,7 +60,7 @@ export default function AccountMenu({ name }: { name: string }) {
         aria-expanded={open}
         className="flex items-center gap-2 text-sm text-zinc-300 hover:text-zinc-100"
       >
-        <span className="w-7 h-7 rounded-full bg-[#f5a524]/20 text-[#f5a524] font-bold text-xs flex items-center justify-center uppercase">
+        <span className="w-7 h-7 rounded-full bg-[#d99a45]/20 text-[#d99a45] font-bold text-xs flex items-center justify-center uppercase">
           {name.trim().charAt(0) || "?"}
         </span>
         <span className="hidden sm:block max-w-28 truncate">{name}</span>

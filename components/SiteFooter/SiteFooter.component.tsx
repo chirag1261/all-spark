@@ -14,11 +14,11 @@ export default function SiteFooter() {
         <div className="lg:col-span-2 max-w-sm">
           <p className="font-heading text-2xl font-semibold tracking-tight">
             Utsav{" "}
-            <span className="text-transparent bg-clip-text bg-linear-to-r from-[#f5a524] to-[#ffc132]">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-[#d99a45] to-[#e8bd6b]">
               Events
             </span>
           </p>
-          <p className="font-heading text-lg text-[#f5a524]/90 mt-2">॥ संगीत ही ईश्वर है ॥</p>
+          <p className="font-heading text-lg text-[#d99a45]/90 mt-2">॥ संगीत ही ईश्वर है ॥</p>
           <p className="text-sm text-zinc-400 mt-3 leading-relaxed">
             A Bangalore-based cultural organisation bringing communities together through the
             timeless power of music and devotion — pick your exact seat, book securely and receive

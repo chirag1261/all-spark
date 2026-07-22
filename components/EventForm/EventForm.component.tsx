@@ -5,7 +5,12 @@ import { useRef, useState } from "react";
 import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { MAX_GALLERY_PHOTOS, MAX_TOTAL_ROWS } from "@/constants";
+import {
+  ALLOWED_IMAGE_ACCEPT,
+  MAX_GALLERY_PHOTOS,
+  MAX_TOTAL_ROWS,
+  validateImageUpload,
+} from "@/constants";
 import { isValidSeatId } from "@/lib/domain/events";
 import { buildVenue } from "@/lib/domain/venue";
 import { EventItem, EventLayout } from "@/types";
@@ -45,7 +50,7 @@ function toLocalInput(iso: string): string {
 }
 
 const inputCls =
-  "w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#f5a524]";
+  "w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#d99a45]";
 
 export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
   const router = useRouter();
@@ -60,6 +65,7 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
   const [opensAt, setOpensAt] = useState(toLocalInput(event?.registrationOpensAt ?? ""));
   const [closesAt, setClosesAt] = useState(toLocalInput(event?.registrationClosesAt ?? ""));
   const [imageUrl, setImageUrl] = useState(event?.imageUrl ?? "");
+  const [bookMyShowUrl, setBookMyShowUrl] = useState(event?.bookMyShowUrl ?? "");
   const [gallery, setGallery] = useState<string[]>(event?.gallery ?? []);
   const [galleryUrl, setGalleryUrl] = useState("");
   const [featured, setFeatured] = useState(event?.featured ?? false);
@@ -90,6 +96,12 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
     setFaqs((prev) => prev.map((f, idx) => (idx === i ? { ...f, ...patch } : f)));
 
   const uploadFile = async (file: File): Promise<string | null> => {
+    // Mirror the server's rule for instant feedback (server still enforces it).
+    const invalid = validateImageUpload({ name: file.name, type: file.type, size: file.size });
+    if (invalid) {
+      showToast(`${file.name}: ${invalid}`, "error");
+      return null;
+    }
     const fd = new FormData();
     fd.append("file", file);
     try {
@@ -226,6 +238,7 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
       registrationOpensAt: opensAt ? new Date(opensAt).toISOString() : "",
       registrationClosesAt: closesAt ? new Date(closesAt).toISOString() : "",
       imageUrl,
+      bookMyShowUrl: bookMyShowUrl.trim(),
       gallery,
       featured,
       published,
@@ -317,6 +330,16 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
             />
           </div>
           <div>
+            <Label>BookMyShow link (optional — shows an “also on BookMyShow” option)</Label>
+            <input
+              type="url"
+              value={bookMyShowUrl}
+              onChange={(e) => setBookMyShowUrl(e.target.value)}
+              placeholder="https://in.bookmyshow.com/events/..."
+              className={inputCls}
+            />
+          </div>
+          <div>
             <Label>Description</Label>
             <textarea
               value={description}
@@ -358,7 +381,7 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
                   <input
                     ref={bannerFileRef}
                     type="file"
-                    accept="image/*"
+                    accept={ALLOWED_IMAGE_ACCEPT}
                     className="hidden"
                     onChange={(e) => uploadBanner(e.target.files)}
                   />
@@ -428,7 +451,7 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
                   <input
                     ref={galleryFileRef}
                     type="file"
-                    accept="image/*"
+                    accept={ALLOWED_IMAGE_ACCEPT}
                     multiple
                     className="hidden"
                     onChange={(e) => uploadGallery(e.target.files)}
@@ -500,7 +523,7 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
                   onClick={() => setSeatingMode(m)}
                   className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
                     seatingMode === m
-                      ? "bg-[#f5a524] text-white"
+                      ? "bg-[#d99a45] text-white"
                       : "text-zinc-400 hover:text-zinc-200"
                   }`}
                 >
@@ -526,7 +549,7 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
                       { name: "", priceInr: "", rows: "2", seatsPerRow: "12" },
                     ])
                   }
-                  className="ml-auto text-sm text-[#f5a524] hover:underline"
+                  className="ml-auto text-sm text-[#d99a45] hover:underline"
                 >
                   + Add category
                 </button>
@@ -615,7 +638,7 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
             <button
               type="button"
               onClick={() => setFaqs((prev) => [...prev, { question: "", answer: "" }])}
-              className="ml-auto text-sm text-[#f5a524] hover:underline"
+              className="ml-auto text-sm text-[#d99a45] hover:underline"
             >
               + Add FAQ
             </button>
@@ -664,7 +687,7 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
               type="checkbox"
               checked={published}
               onChange={(e) => setPublished(e.target.checked)}
-              className="w-4 h-4 accent-[#f5a524]"
+              className="w-4 h-4 accent-[#d99a45]"
             />
             <label htmlFor="published" className="text-sm">
               <span className="font-medium">Published</span>
@@ -677,7 +700,7 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
               type="checkbox"
               checked={featured}
               onChange={(e) => setFeatured(e.target.checked)}
-              className="w-4 h-4 accent-[#f5a524]"
+              className="w-4 h-4 accent-[#d99a45]"
             />
             <label htmlFor="featured" className="text-sm">
               <span className="font-medium">Featured</span>
@@ -693,7 +716,7 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
           <button
             type="submit"
             disabled={busy || uploading !== null}
-            className="bg-[#f5a524] hover:bg-[#d98c1f] disabled:opacity-40 rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+            className="bg-[#d99a45] hover:bg-[#bf863a] disabled:opacity-40 rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
           >
             {busy ? "Saving…" : event ? "Save changes" : "Create event"}
           </button>

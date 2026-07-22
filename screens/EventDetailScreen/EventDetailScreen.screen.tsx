@@ -1,7 +1,8 @@
-import { Lock, type LucideIcon, RefreshCcw, Ticket, Timer } from "lucide-react";
+import { ExternalLink, Lock, type LucideIcon, RefreshCcw, Ticket, Timer } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { BOOKMYSHOW_LOGO_URL } from "@/constants";
 import BackLink from "@/components/BackLink";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
@@ -103,7 +104,7 @@ export async function EventDetailScreen({ id }: { id: string }) {
             {bookable ? (
               <Link
                 href={`/events/${event.id}/book`}
-                className="block text-center bg-[#f5a524] hover:bg-[#d98c1f] rounded-lg px-6 py-3 font-semibold text-sm transition-colors"
+                className="block text-center bg-[#d99a45] hover:bg-[#bf863a] rounded-lg px-6 py-3 font-semibold text-sm transition-colors"
               >
                 Select seats
               </Link>
@@ -111,6 +112,24 @@ export async function EventDetailScreen({ id }: { id: string }) {
               <span className="block text-center bg-zinc-800 text-zinc-500 rounded-lg px-6 py-3 font-semibold text-sm cursor-not-allowed">
                 {soldOut ? "Sold out" : reg === "upcoming" ? "Opening soon" : "Closed"}
               </span>
+            )}
+
+            {event.bookMyShowUrl && (
+              <a
+                href={event.bookMyShowUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 flex items-center justify-center gap-2 bg-[#c4242c] hover:bg-[#a91f26] text-white rounded-lg px-4 py-2.5 font-semibold text-sm transition-colors"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={BOOKMYSHOW_LOGO_URL}
+                  alt="BookMyShow"
+                  className="h-4 w-auto bg-white rounded px-1 py-0.5"
+                />
+                Also on BookMyShow
+                <ExternalLink className="w-4 h-4" aria-hidden="true" />
+              </a>
             )}
           </aside>
 
@@ -200,7 +219,7 @@ function Fact({ label, value }: { label: string; value: string }) {
 function GoodToKnow({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
   return (
     <li className="flex items-start gap-3 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3">
-      <Icon className="w-5 h-5 shrink-0 text-[#f5a524]" aria-hidden="true" />
+      <Icon className="w-5 h-5 shrink-0 text-[#d99a45]" aria-hidden="true" />
       <span className="text-sm text-zinc-300 leading-relaxed">{text}</span>
     </li>
   );

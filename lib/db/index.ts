@@ -85,6 +85,7 @@ function rowToEvent(r: any): EventItem {
     categories: r.categories,
     layout: r.layout ?? null,
     blockedSeats: r.blocked_seats,
+    bookMyShowUrl: r.bookmyshow_url ?? null,
     published: r.published,
     createdAt: Number(r.created_at),
     updatedAt: Number(r.updated_at),
@@ -297,9 +298,9 @@ async function seedFeaturedVenueIfAbsent(): Promise<void> {
     startsAt: startsAt.toISOString(),
     registrationOpensAt: new Date(now - day).toISOString(),
     registrationClosesAt: startsAt.toISOString(),
-    imageUrl: "/utsav/hero.jpg",
+    imageUrl: "https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,w_1920/utsav-events/hero",
     tagline: "A Divine Bhajan Evening",
-    gallery: ["/utsav/hero.jpg", "/utsav/artist.jpg", "/utsav/audience.jpg"],
+    gallery: ["https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,w_1920/utsav-events/hero", "https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,w_1600/utsav-events/artist", "https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,w_1600/utsav-events/audience"],
     featured: true,
     poster: posterForIndex(0),
     faqs: [
@@ -322,6 +323,8 @@ async function seedFeaturedVenueIfAbsent(): Promise<void> {
     categories: [],
     layout: BABU_JAGAJEEVANRAM_LAYOUT,
     blockedSeats: [],
+    // Placeholder — admin should replace with the real BookMyShow listing URL.
+    bookMyShowUrl: "https://in.bookmyshow.com/",
     published: true,
     createdAt: now,
     updatedAt: now,
@@ -372,8 +375,8 @@ async function insertEventRow(event: EventItem, client?: PoolClient): Promise<vo
     `INSERT INTO events (
       id, title, description, venue, city, starts_at, registration_opens_at,
       registration_closes_at, image_url, tagline, gallery, featured, poster,
-      faqs, categories, layout, blocked_seats, published, created_at, updated_at
-    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)`,
+      faqs, categories, layout, blocked_seats, bookmyshow_url, published, created_at, updated_at
+    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)`,
     [
       event.id,
       event.title,
@@ -392,6 +395,7 @@ async function insertEventRow(event: EventItem, client?: PoolClient): Promise<vo
       JSON.stringify(event.categories),
       event.layout ? JSON.stringify(event.layout) : null,
       JSON.stringify(event.blockedSeats),
+      event.bookMyShowUrl ?? null,
       event.published,
       event.createdAt,
       event.updatedAt,
@@ -446,7 +450,8 @@ export async function updateEvent(
         title=$2, description=$3, venue=$4, city=$5, starts_at=$6,
         registration_opens_at=$7, registration_closes_at=$8, image_url=$9,
         tagline=$10, gallery=$11, featured=$12, poster=$13, faqs=$14,
-        categories=$15, layout=$16, blocked_seats=$17, published=$18, updated_at=$19
+        categories=$15, layout=$16, blocked_seats=$17, bookmyshow_url=$18,
+        published=$19, updated_at=$20
       WHERE id=$1`,
       [
         id,
@@ -466,6 +471,7 @@ export async function updateEvent(
         JSON.stringify(merged.categories),
         merged.layout ? JSON.stringify(merged.layout) : null,
         JSON.stringify(merged.blockedSeats),
+        merged.bookMyShowUrl ?? null,
         merged.published,
         merged.updatedAt,
       ]

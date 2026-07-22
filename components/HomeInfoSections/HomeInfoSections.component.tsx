@@ -33,14 +33,14 @@ export default function HomeInfoSections() {
         <div className="relative">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/utsav/audience.jpg"
+            src="https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,w_1600/utsav-events/audience"
             alt="Devotees gathered in celebration"
             className="rounded-3xl w-full aspect-4/3 object-cover border border-[#2a2450] shadow-[0_24px_60px_rgba(0,0,0,0.5)]"
           />
-          <div className="absolute inset-0 rounded-3xl ring-1 ring-inset ring-[#f5a524]/10" />
+          <div className="absolute inset-0 rounded-3xl ring-1 ring-inset ring-[#d99a45]/10" />
         </div>
         <div>
-          <p className="font-heading text-[#f5a524] text-lg mb-2">About Utsav Events</p>
+          <p className="font-heading text-[#d99a45] text-lg mb-2">About Utsav Events</p>
           <h2 className="font-heading text-3xl sm:text-5xl font-semibold leading-tight mb-5">
             Sacred experiences in music &amp; devotion
           </h2>
@@ -57,7 +57,7 @@ export default function HomeInfoSections() {
       <section className="border-y border-white/6 bg-[#171228]/40">
         <div className="max-w-6xl mx-auto px-4 py-20">
           <div className="text-center max-w-2xl mx-auto mb-12">
-            <p className="font-heading text-[#f5a524] text-lg mb-1">Why Attend</p>
+            <p className="font-heading text-[#d99a45] text-lg mb-1">Why Attend</p>
             <h2 className="font-heading text-3xl sm:text-5xl font-semibold">
               An experience that touches the soul
             </h2>
@@ -68,9 +68,9 @@ export default function HomeInfoSections() {
               return (
                 <div
                   key={f.title}
-                  className="text-center bg-[#0d0a1f]/60 border border-[#2a2450] rounded-3xl p-8 hover:border-[#f5a524]/40 hover:-translate-y-1 transition-all duration-300"
+                  className="text-center bg-[#0d0a1f]/60 border border-[#2a2450] rounded-3xl p-8 hover:border-[#d99a45]/40 hover:-translate-y-1 transition-all duration-300"
                 >
-                  <div className="w-14 h-14 rounded-full bg-[#f5a524]/10 text-[#f5a524] flex items-center justify-center mx-auto mb-5">
+                  <div className="w-14 h-14 rounded-full bg-[#d99a45]/10 text-[#d99a45] flex items-center justify-center mx-auto mb-5">
                     <Icon className="w-6 h-6" aria-hidden="true" />
                   </div>
                   <h3 className="font-heading text-2xl font-semibold mb-2">{f.title}</h3>
@@ -86,7 +86,7 @@ export default function HomeInfoSections() {
       <section className="relative overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/utsav/artist.jpg"
+          src="https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,w_1600/utsav-events/artist"
           alt=""
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover"

@@ -4,6 +4,7 @@ import { minPrice, registrationState, ticketTiers, totalSeats } from "@/lib/doma
 import { EventItem } from "@/types";
 import { formatDateIST, inr } from "@/utils";
 
+import BookMyShowLink from "../BookMyShowLink";
 import CountdownTimer from "../CountdownTimer";
 import HeroMedia from "../HeroMedia";
 
@@ -29,7 +30,7 @@ export default function EventLanding({ event, remaining }: Props) {
   const cta = bookable ? (
     <Link
       href={`/events/${event.id}/book`}
-      className="inline-block w-full sm:w-auto text-center bg-linear-to-r from-[#f5a524] to-[#ffc132] hover:brightness-110 hover:scale-[1.02] rounded-2xl px-9 py-4 font-bold text-base transition-all shadow-[0_10px_40px_rgba(245,165,36,0.4)]"
+      className="inline-block w-full sm:w-auto text-center bg-linear-to-r from-[#d99a45] to-[#e8bd6b] hover:brightness-110 hover:scale-[1.02] rounded-2xl px-9 py-4 font-bold text-base transition-all shadow-[0_10px_40px_rgba(217,154,69,0.4)]"
     >
       Book tickets · from {inr(fromPrice)}
     </Link>
@@ -49,7 +50,10 @@ export default function EventLanding({ event, remaining }: Props) {
       <section
         className={`relative min-h-[78vh] flex items-end overflow-hidden bg-linear-to-br ${event.poster}`}
       >
-        <HeroMedia images={[event.imageUrl, ...event.gallery].filter(Boolean)} alt={event.title} />
+        <HeroMedia
+          images={[...new Set([event.imageUrl, ...event.gallery].filter(Boolean))]}
+          alt={event.title}
+        />
         <div className="absolute inset-0 bg-linear-to-t from-[#0d0a1f] via-[#0d0a1f]/55 to-[#0d0a1f]/10" />
         <div className="relative max-w-6xl mx-auto px-4 pb-10 sm:pb-16 pt-28 sm:pt-40 w-full">
           {!soldOut && <CountdownTimer targetIso={event.startsAt} />}
@@ -137,10 +141,10 @@ export default function EventLanding({ event, remaining }: Props) {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {tiers.map((tier, i) => {
               const cardCls = `block rounded-2xl border p-6 text-left transition-all duration-300 ${
-                i === 0 ? "border-[#f5a524]/40 bg-[#f5a524]/5" : "border-[#2a2450] bg-[#171228]"
+                i === 0 ? "border-[#d99a45]/40 bg-[#d99a45]/5" : "border-[#2a2450] bg-[#171228]"
               } ${
                 bookable
-                  ? "hover:border-[#f5a524] hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(245,165,36,0.12)] cursor-pointer"
+                  ? "hover:border-[#d99a45] hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(217,154,69,0.12)] cursor-pointer"
                   : "opacity-60 cursor-not-allowed"
               }`;
 
@@ -149,7 +153,7 @@ export default function EventLanding({ event, remaining }: Props) {
                   <div className="flex items-baseline justify-between gap-2 mb-2">
                     <h3 className="font-bold text-lg wrap-break-word min-w-0">{tier.name}</h3>
                     {i === 0 && (
-                      <span className="text-[10px] font-bold uppercase tracking-wide text-[#f5a524]">
+                      <span className="text-[10px] font-bold uppercase tracking-wide text-[#d99a45]">
                         Closest to stage
                       </span>
                     )}
@@ -171,6 +175,11 @@ export default function EventLanding({ event, remaining }: Props) {
             })}
           </div>
           <div className="mt-8 text-center">{cta}</div>
+          {event.bookMyShowUrl && (
+            <div className="mt-6">
+              <BookMyShowLink url={event.bookMyShowUrl} />
+            </div>
+          )}
         </section>
 
         {/* ---- FAQs ---- */}
@@ -217,7 +226,7 @@ export default function EventLanding({ event, remaining }: Props) {
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-6 flex items-center gap-3">
-      <span className="w-8 h-1 rounded-full bg-linear-to-r from-[#f5a524] to-[#ffc132] inline-block" />
+      <span className="w-8 h-1 rounded-full bg-linear-to-r from-[#d99a45] to-[#e8bd6b] inline-block" />
       {children}
     </h2>
   );

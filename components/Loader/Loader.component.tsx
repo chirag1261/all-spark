@@ -11,7 +11,7 @@ interface Props {
 export default function Loader({ label, fullscreen }: Props) {
   const spinner = (
     <div className="flex flex-col items-center gap-3">
-      <Loader2 className="w-8 h-8 animate-spin text-[#f5a524]" aria-hidden="true" />
+      <Loader2 className="w-8 h-8 animate-spin text-[#d99a45]" aria-hidden="true" />
       {label && <p className="text-sm text-zinc-300">{label}</p>}
       <span className="sr-only">Loading</span>
     </div>

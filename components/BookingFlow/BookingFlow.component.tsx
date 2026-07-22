@@ -181,7 +181,7 @@ export default function BookingFlow({ event, customer }: Props) {
         description: `Seats ${selectedSeats.join(", ")}`,
         order_id: data.orderId,
         prefill: data.prefill,
-        theme: { color: "#f5a524" },
+        theme: { color: "#d99a45" },
         handler: async (resp: {
           razorpay_order_id: string;
           razorpay_payment_id: string;
@@ -285,7 +285,7 @@ export default function BookingFlow({ event, customer }: Props) {
                 <p className="font-mono text-xs text-zinc-500 mt-1 wrap-break-word">{t.ticketId}</p>
                 <Link
                   href={`/ticket/${t.ticketId}`}
-                  className="inline-block mt-2 text-sm text-[#f5a524] hover:underline"
+                  className="inline-block mt-2 text-sm text-[#d99a45] hover:underline"
                 >
                   View / share ticket
                 </Link>
@@ -310,7 +310,7 @@ export default function BookingFlow({ event, customer }: Props) {
           </Link>
           <Link
             href="/"
-            className="flex-1 bg-[#f5a524] hover:bg-[#d98c1f] rounded-lg px-5 py-3 font-semibold text-sm transition-colors"
+            className="flex-1 bg-[#d99a45] hover:bg-[#bf863a] rounded-lg px-5 py-3 font-semibold text-sm transition-colors"
           >
             Browse more events
           </Link>
@@ -369,7 +369,7 @@ export default function BookingFlow({ event, customer }: Props) {
                     required
                     minLength={2}
                     maxLength={80}
-                    className="flex-1 min-w-0 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#f5a524]"
+                    className="flex-1 min-w-0 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#d99a45]"
                   />
                 </div>
               ))}
@@ -391,7 +391,7 @@ export default function BookingFlow({ event, customer }: Props) {
           <button
             onClick={pay}
             disabled={paying || selected.size === 0}
-            className="bg-[#f5a524] hover:bg-[#d98c1f] disabled:opacity-40 disabled:cursor-not-allowed rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+            className="bg-[#d99a45] hover:bg-[#bf863a] disabled:opacity-40 disabled:cursor-not-allowed rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
           >
             {paying ? "Processing…" : selected.size > 0 ? `Pay ${inr(totalAmount)}` : "Pay"}
           </button>

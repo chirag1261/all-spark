@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import QRCode from "qrcode";
 
+import { sessionSecret } from "@/lib/auth/secret";
 import { createTickets, listTicketsForBooking } from "@/lib/db";
 import { Booking, TicketRecord } from "@/types";
 
@@ -78,9 +79,8 @@ export async function ticketQrDataUrl(ticket: TicketRecord, booking: Booking): P
  * this token) may release its seat locks — an orderId alone is not enough.
  */
 export function releaseToken(orderId: string): string {
-  const secret = process.env.RAZORPAY_KEY_SECRET ?? "dev-secret";
   return crypto
-    .createHmac("sha256", secret)
+    .createHmac("sha256", sessionSecret())
     .update(`release:${orderId}`)
     .digest("hex")
     .slice(0, 32);
