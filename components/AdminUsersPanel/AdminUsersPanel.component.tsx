@@ -40,7 +40,7 @@ export default function AdminUsersPanel({ users, currentUserId }: Props) {
         <h1 className="text-2xl font-bold">Admin users</h1>
         <button
           onClick={() => setDrawer("new")}
-          className="ml-auto inline-flex items-center gap-1.5 bg-[#f5a524] hover:bg-[#d98c1f] rounded-lg px-4 py-2 font-semibold text-sm transition-colors"
+          className="ml-auto inline-flex items-center gap-1.5 bg-[#d99a45] hover:bg-[#bf863a] rounded-lg px-4 py-2 font-semibold text-sm transition-colors"
         >
           <Plus className="w-4 h-4" aria-hidden="true" /> New admin
         </button>
@@ -79,7 +79,7 @@ export default function AdminUsersPanel({ users, currentUserId }: Props) {
                   <span
                     className={`inline-block text-xs font-semibold px-2 py-0.5 rounded ${
                       u.role === "super_admin"
-                        ? "bg-[#f5a524]/15 text-[#f5a524]"
+                        ? "bg-[#d99a45]/15 text-[#d99a45]"
                         : "bg-zinc-500/15 text-zinc-400"
                     }`}
                   >
@@ -107,7 +107,7 @@ export default function AdminUsersPanel({ users, currentUserId }: Props) {
                 <td className="px-4 py-3 text-right">
                   <button
                     onClick={() => setDrawer(u.id)}
-                    className="text-[#f5a524] hover:underline"
+                    className="text-[#d99a45] hover:underline"
                   >
                     Edit
                   </button>

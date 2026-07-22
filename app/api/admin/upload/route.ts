@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { validateImageUpload } from "@/constants";
 import { getCurrentAdmin, hasPermission } from "@/lib/auth/admin";
 import { cloudinaryConfigured, uploadToCloudinary } from "@/lib/integrations/cloudinary";
-
-const MAX_UPLOAD_BYTES = 8 * 1024 * 1024; // 8 MB
 
 /**
  * POST /api/admin/upload — multipart form with a "file" image field.
@@ -36,11 +35,9 @@ export async function POST(req: NextRequest) {
   if (!(file instanceof File) || file.size === 0) {
     return NextResponse.json({ error: "A file is required" }, { status: 400 });
   }
-  if (!file.type.startsWith("image/")) {
-    return NextResponse.json({ error: "Only image files are allowed" }, { status: 400 });
-  }
-  if (file.size > MAX_UPLOAD_BYTES) {
-    return NextResponse.json({ error: "Image must be under 8 MB" }, { status: 400 });
+  const invalid = validateImageUpload({ name: file.name, type: file.type, size: file.size });
+  if (invalid) {
+    return NextResponse.json({ error: invalid }, { status: 400 });
   }
 
   const result = await uploadToCloudinary(file);

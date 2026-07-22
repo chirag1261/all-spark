@@ -42,7 +42,7 @@ export default function PolicyPage({ title, updated, intro, sections }: Props) {
                 </p>
               ))}
               {section.bullets && (
-                <ul className="list-disc list-inside space-y-1.5 text-sm text-zinc-400 marker:text-[#f5a524]">
+                <ul className="list-disc list-inside space-y-1.5 text-sm text-zinc-400 marker:text-[#d99a45]">
                   {section.bullets.map((b, j) => (
                     <li key={j} className="wrap-break-word">
                       {b}
@@ -56,7 +56,7 @@ export default function PolicyPage({ title, updated, intro, sections }: Props) {
 
         <p className="text-xs text-zinc-500 mt-12 border-t border-zinc-800 pt-6">
           Questions about this policy? Email{" "}
-          <a href="mailto:utsavevents.tech@gmail.com" className="text-[#f5a524] hover:underline">
+          <a href="mailto:utsavevents.tech@gmail.com" className="text-[#d99a45] hover:underline">
             utsavevents.tech@gmail.com
           </a>
           . This document is provided for transparency and should be reviewed by the organiser

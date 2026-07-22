@@ -31,3 +31,4 @@ export * from "./WhatsAppShare";
 export * from "./LayoutEditor";
 export * from "./Loader";
 export * from "./PolicyPage";
+export * from "./BookMyShowLink";

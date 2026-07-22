@@ -54,7 +54,7 @@ export function AdminLoginScreen() {
           placeholder="you@example.com"
           required
           autoFocus
-          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#f5a524] mb-3"
+          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#d99a45] mb-3"
         />
         <input
           type="password"
@@ -64,12 +64,12 @@ export function AdminLoginScreen() {
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Password"
           required
-          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#f5a524] mb-3"
+          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#d99a45] mb-3"
         />
         <button
           type="submit"
           disabled={busy || !email || !password}
-          className="w-full bg-[#f5a524] hover:bg-[#d98c1f] disabled:opacity-40 rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+          className="w-full bg-[#d99a45] hover:bg-[#bf863a] disabled:opacity-40 rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
         >
           {busy ? "Signing in…" : "Sign in"}
         </button>

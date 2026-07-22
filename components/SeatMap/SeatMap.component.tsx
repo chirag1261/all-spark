@@ -46,7 +46,7 @@ export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onT
 
         {/* Stage */}
         <div className="w-3/5 mb-6">
-          <div className="h-1.5 rounded-[50%] bg-linear-to-r from-transparent via-[#f5a524] to-transparent shadow-[0_8px_24px_rgba(245,165,36,0.4)]" />
+          <div className="h-1.5 rounded-[50%] bg-linear-to-r from-transparent via-[#d99a45] to-transparent shadow-[0_8px_24px_rgba(217,154,69,0.4)]" />
           <p className="text-center text-[11px] text-zinc-500 mt-2 tracking-widest uppercase">
             Stage this way
           </p>
@@ -57,7 +57,7 @@ export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onT
           return (
             <div key={section.id || "main"} className="w-full flex flex-col items-center">
               {section.name && (
-                <div className="w-full max-w-md text-center font-heading text-base tracking-wide text-[#f5a524] border-y border-[#f5a524]/20 bg-[#f5a524]/5 rounded-lg py-1.5 mt-6 mb-3">
+                <div className="w-full max-w-md text-center font-heading text-base tracking-wide text-[#d99a45] border-y border-[#d99a45]/20 bg-[#d99a45]/5 rounded-lg py-1.5 mt-6 mb-3">
                   {section.name}
                 </div>
               )}

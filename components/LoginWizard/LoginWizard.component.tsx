@@ -18,9 +18,9 @@ import { useToast } from "../Toast";
 type Step = "identifier" | "signup" | "password" | "otp";
 
 const inputCls =
-  "w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#f5a524]";
+  "w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#d99a45]";
 const primaryBtn =
-  "w-full bg-linear-to-r from-[#f5a524] to-[#ffc132] hover:brightness-110 disabled:opacity-40 rounded-xl px-6 py-2.5 font-semibold text-sm shadow-lg shadow-[#f5a524]/20 transition-all";
+  "w-full bg-linear-to-r from-[#d99a45] to-[#e8bd6b] hover:brightness-110 disabled:opacity-40 rounded-xl px-6 py-2.5 font-semibold text-sm shadow-lg shadow-[#d99a45]/20 transition-all";
 
 export default function LoginWizard({ next }: { next: string }) {
   const router = useRouter();
@@ -210,7 +210,7 @@ export default function LoginWizard({ next }: { next: string }) {
             type="button"
             onClick={switchToOtp}
             disabled={busy}
-            className="w-full mt-3 text-sm text-[#f5a524] hover:underline disabled:opacity-40"
+            className="w-full mt-3 text-sm text-[#d99a45] hover:underline disabled:opacity-40"
           >
             Sign in with a one-time code instead
           </button>

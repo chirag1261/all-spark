@@ -25,7 +25,7 @@ export default async function SiteHeader() {
           ) : (
             <Link
               href="/login"
-              className="bg-linear-to-r from-[#f5a524] to-[#ffc132] hover:brightness-110 text-white font-semibold rounded-full px-5 py-2 shadow-lg shadow-[#f5a524]/25 transition-all"
+              className="bg-linear-to-r from-[#d99a45] to-[#e8bd6b] hover:brightness-110 text-white font-semibold rounded-full px-5 py-2 shadow-lg shadow-[#d99a45]/25 transition-all"
             >
               Sign in
             </Link>

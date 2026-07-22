@@ -6,6 +6,7 @@ import {
   createOtpChallenge,
   getLiveOtpChallenge,
 } from "@/lib/db";
+import { sessionSecret } from "@/lib/auth/secret";
 import { sendOtpEmail } from "@/lib/notifications/email";
 import { sendSms } from "@/lib/notifications/sms";
 import { OtpChannel } from "@/types";
@@ -23,12 +24,7 @@ const OTP_TTL_MS = 5 * 60 * 1000;
 const MAX_ATTEMPTS = 5;
 
 function hashCode(identifier: string, code: string): string {
-  const secret =
-    process.env.AUTH_SESSION_SECRET ||
-    process.env.ADMIN_SESSION_SECRET ||
-    process.env.ADMIN_PASSWORD ||
-    "dev-secret";
-  return crypto.createHmac("sha256", secret).update(`${identifier}:${code}`).digest("hex");
+  return crypto.createHmac("sha256", sessionSecret()).update(`${identifier}:${code}`).digest("hex");
 }
 
 export async function issueOtp(

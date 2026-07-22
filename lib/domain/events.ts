@@ -94,6 +94,7 @@ export interface EventInput {
   categories?: unknown;
   layout?: unknown;
   blockedSeats?: unknown;
+  bookMyShowUrl?: unknown;
   published?: unknown;
 }
 
@@ -327,6 +328,21 @@ export function validateEventInput(
     }
   }
 
+  // Optional external BookMyShow listing — must be a valid http(s) URL.
+  let bookMyShowUrl: string | null = null;
+  const bmsRaw = str(body.bookMyShowUrl);
+  if (bmsRaw) {
+    try {
+      const parsed = new URL(bmsRaw);
+      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+        return { ok: false, error: "BookMyShow link must be an http(s) URL" };
+      }
+      bookMyShowUrl = parsed.toString();
+    } catch {
+      return { ok: false, error: "BookMyShow link is not a valid URL" };
+    }
+  }
+
   return {
     ok: true,
     value: {
@@ -343,6 +359,7 @@ export function validateEventInput(
       categories,
       layout,
       blockedSeats,
+      bookMyShowUrl,
       published: Boolean(body.published),
     },
   };

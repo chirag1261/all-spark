@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { verifyPassword } from "@/lib/auth/password";
+import { sessionSecret } from "@/lib/auth/secret";
 import { getAdminUserById, listAdminUsers } from "@/lib/db";
 import { AdminPermission, AdminUser } from "@/types";
 
@@ -17,13 +18,8 @@ import { AdminPermission, AdminUser } from "@/types";
 export const ADMIN_COOKIE = "admin_session";
 const SESSION_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
 
-function secret(): string {
-  // A dedicated secret is preferred; ADMIN_PASSWORD works as a bootstrap fallback.
-  return process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_PASSWORD || "dev-secret";
-}
-
 function sign(payload: string): string {
-  return crypto.createHmac("sha256", secret()).update(payload).digest("hex");
+  return crypto.createHmac("sha256", sessionSecret()).update(payload).digest("hex");
 }
 
 /** True once at least one admin account exists (login is otherwise impossible). */

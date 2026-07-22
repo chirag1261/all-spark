@@ -86,7 +86,7 @@ export default function BookingLookup() {
           onChange={(e) => setBookingId(e.target.value)}
           placeholder="Booking ID (e.g. BKG1752…)"
           required
-          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#f5a524]"
+          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#d99a45]"
         />
         <input
           type="email"
@@ -96,12 +96,12 @@ export default function BookingLookup() {
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Email used while booking"
           required
-          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#f5a524]"
+          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#d99a45]"
         />
         <button
           type="submit"
           disabled={busy || !bookingId.trim() || !email.trim()}
-          className="w-full bg-[#f5a524] hover:bg-[#d98c1f] disabled:opacity-40 rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+          className="w-full bg-[#d99a45] hover:bg-[#bf863a] disabled:opacity-40 rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
         >
           {busy ? "Checking…" : "Check status"}
         </button>
@@ -136,7 +136,7 @@ export default function BookingLookup() {
                 <Link
                   key={t.ticketId}
                   href={`/ticket/${t.ticketId}`}
-                  className="block text-center bg-[#f5a524] hover:bg-[#d98c1f] rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+                  className="block text-center bg-[#d99a45] hover:bg-[#bf863a] rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
                 >
                   View ticket — {t.name} · Seat {t.seatId}
                 </Link>
