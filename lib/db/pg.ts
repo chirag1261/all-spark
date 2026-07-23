@@ -181,6 +181,27 @@ const SCHEMA = `
   ALTER TABLE bookings ADD COLUMN IF NOT EXISTS customer_id TEXT;
   ALTER TABLE bookings ADD COLUMN IF NOT EXISTS attendees JSONB NOT NULL DEFAULT '[]';
   CREATE INDEX IF NOT EXISTS bookings_customer_id_idx ON bookings (customer_id);
+  -- Applied promo code + rupee discount, added after initial release.
+  ALTER TABLE bookings ADD COLUMN IF NOT EXISTS promo_code TEXT;
+  ALTER TABLE bookings ADD COLUMN IF NOT EXISTS discount_amount INTEGER;
+
+  CREATE TABLE IF NOT EXISTS promo_codes (
+    id TEXT PRIMARY KEY,
+    code TEXT NOT NULL UNIQUE,          -- stored UPPERCASE
+    discount_type TEXT NOT NULL,        -- 'flat' | 'percent'
+    discount_value INTEGER NOT NULL,    -- paise (flat) | percent-points (percent)
+    max_discount INTEGER,               -- paise cap for percent; null for flat
+    min_order_amount INTEGER NOT NULL DEFAULT 0,
+    event_id TEXT,                      -- null = all events
+    max_redemptions INTEGER,            -- null = unlimited
+    redemption_count INTEGER NOT NULL DEFAULT 0,
+    valid_from BIGINT,
+    valid_to BIGINT,
+    active BOOLEAN NOT NULL DEFAULT true,
+    created_at BIGINT NOT NULL,
+    updated_at BIGINT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS promo_codes_code_idx ON promo_codes (code);
 `;
 
 async function ensureSchema(): Promise<void> {

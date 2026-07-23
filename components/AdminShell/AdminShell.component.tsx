@@ -13,6 +13,7 @@ import {
   type LucideIcon,
   Menu,
   ScanLine,
+  Tag,
   Ticket,
   Users,
 } from "lucide-react";
@@ -61,6 +62,14 @@ const NAV: NavSection[] = [
         ],
       },
       { title: "Bookings", href: "/admin/bookings", icon: Ticket },
+      {
+        title: "Promo codes",
+        icon: Tag,
+        items: [
+          { title: "View promo codes", href: "/admin/promocodes" },
+          { title: "Create promo code", href: "/admin/promocodes/new" },
+        ],
+      },
       { title: "Admin users", href: "/admin/users", icon: Users, roles: ["super_admin"] },
     ],
   },

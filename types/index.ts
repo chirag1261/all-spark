@@ -198,9 +198,9 @@ export type AdminRole = "super_admin" | "admin" | "gate_controller";
 /** Scoped capabilities assignable to non-super-admin users. Super admins
  *  implicitly have all of them and can't be restricted. Gate controllers
  *  carry none — they can only reach the entry scanner. */
-export type AdminPermission = "events" | "bookings";
+export type AdminPermission = "events" | "bookings" | "promocodes";
 
-export const ADMIN_PERMISSIONS: AdminPermission[] = ["events", "bookings"];
+export const ADMIN_PERMISSIONS: AdminPermission[] = ["events", "bookings", "promocodes"];
 
 export interface AdminUser {
   id: string;
@@ -236,7 +236,7 @@ export interface Booking {
   seatIds: string[];
   /** Per-seat attendee details — each gets an individual QR ticket on confirmation. */
   attendees: BookingAttendee[];
-  amount: number; // paise
+  amount: number; // paise — what Razorpay actually charged (post-discount)
   razorpayOrderId: string;
   razorpayPaymentId?: string;
   razorpayRefundId?: string;
@@ -247,6 +247,35 @@ export interface Booking {
   createdAt: number;
   ticketId?: string; // first ticket's id, kept for legacy links; see tickets table
   emailSent?: boolean;
+  /** Applied promo code (UPPERCASE), if any. Subtotal = amount + discountAmount. */
+  promoCode?: string;
+  discountAmount?: number; // paise knocked off by the promo (0/undefined if none)
+}
+
+// ---------- Promo codes ----------
+
+export type PromoDiscountType = "flat" | "percent";
+
+export interface PromoCode {
+  id: string;
+  code: string; // stored UPPERCASE, unique
+  discountType: PromoDiscountType;
+  /** paise for "flat"; percent-points (1..100) for "percent". */
+  discountValue: number;
+  /** paise cap on a percentage discount — required for "percent", null for "flat". */
+  maxDiscount?: number | null;
+  /** paise; minimum order subtotal to qualify (0 = no minimum). */
+  minOrderAmount: number;
+  /** Event this code applies to; null = valid across all events. */
+  eventId?: string | null;
+  /** Total redemptions allowed; null = unlimited. */
+  maxRedemptions?: number | null;
+  redemptionCount: number;
+  validFrom?: number | null; // epoch ms; null = no start bound
+  validTo?: number | null; // epoch ms; null = no end bound
+  active: boolean;
+  createdAt: number;
+  updatedAt: number;
 }
 
 /** An individual QR ticket — one per attendee/seat, minted on confirmation. */

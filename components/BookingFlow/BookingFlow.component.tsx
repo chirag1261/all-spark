@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Check, Users } from "lucide-react";
+import { Check, Tag, Users } from "lucide-react";
 import Link from "next/link";
 
 import { MAX_SEATS_PER_BOOKING } from "@/constants";
@@ -78,6 +78,10 @@ export default function BookingFlow({
   const [confirmed, setConfirmed] = useState<Confirmation | null>(null);
   // Guided checkout journey: pick seats → name attendees → review → pay.
   const [step, setStep] = useState<"seats" | "attendees" | "summary">("seats");
+  // Promo code applied on the summary step (server-validated preview).
+  const [promoInput, setPromoInput] = useState("");
+  const [applyingPromo, setApplyingPromo] = useState(false);
+  const [appliedPromo, setAppliedPromo] = useState<{ code: string; discount: number } | null>(null);
   const routeLoader = useRouteLoader();
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -112,6 +116,10 @@ export default function BookingFlow({
     return sum;
   }, [selected, event]);
 
+  // What the customer actually pays after any applied promo (display only; the
+  // server recomputes authoritatively in /api/orders).
+  const payable = Math.max(0, totalAmount - (appliedPromo?.discount ?? 0));
+
   const toggleSeat = (seatId: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
@@ -143,6 +151,37 @@ export default function BookingFlow({
     setStep("summary");
   };
 
+  // Going back to change seats/names invalidates any previewed discount — clear it.
+  const clearPromo = () => {
+    setAppliedPromo(null);
+    setPromoInput("");
+  };
+
+  const applyPromo = async () => {
+    const code = promoInput.trim().toUpperCase();
+    if (!code) return;
+    setApplyingPromo(true);
+    try {
+      const res = await fetch("/api/promo/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, eventId: event.id, seatIds: selectedSeats }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        showToast(data.error ?? "Could not apply that code", "error");
+        setAppliedPromo(null);
+        return;
+      }
+      setAppliedPromo({ code: data.code, discount: data.discount });
+      showToast(`Promo ${data.code} applied`, "success");
+    } catch {
+      showToast("Could not reach the server", "error");
+    } finally {
+      setApplyingPromo(false);
+    }
+  };
+
   const pay = async () => {
     if (paying) return;
 
@@ -161,7 +200,11 @@ export default function BookingFlow({
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ eventId: event.id, attendees }),
+        body: JSON.stringify({
+          eventId: event.id,
+          attendees,
+          promoCode: appliedPromo?.code,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -439,7 +482,10 @@ export default function BookingFlow({
           </div>
           <div className="flex gap-3 mt-6">
             <button
-              onClick={() => setStep("seats")}
+              onClick={() => {
+                clearPromo(); // seats may change → any previewed discount is stale
+                setStep("seats");
+              }}
               className="rounded-lg border border-zinc-700 px-5 py-2.5 font-semibold text-sm text-zinc-300 hover:text-zinc-100 hover:border-zinc-600 transition-colors"
             >
               Back
@@ -477,12 +523,66 @@ export default function BookingFlow({
                 </li>
               ))}
             </ul>
-            <div className="px-5 py-4 border-t border-zinc-800 flex items-center justify-between">
-              <span className="text-sm text-zinc-400">
-                Total · {selected.size} seat{selected.size > 1 ? "s" : ""}
-              </span>
-              <span className="text-lg font-bold">{inr(totalAmount)}</span>
+            <div className="px-5 py-4 border-t border-zinc-800 space-y-1.5">
+              <div className="flex items-center justify-between text-sm text-zinc-400">
+                <span>
+                  Subtotal · {selected.size} seat{selected.size > 1 ? "s" : ""}
+                </span>
+                <span>{inr(totalAmount)}</span>
+              </div>
+              {appliedPromo && (
+                <div className="flex items-center justify-between text-sm text-emerald-400">
+                  <span>Promo {appliedPromo.code}</span>
+                  <span>−{inr(appliedPromo.discount)}</span>
+                </div>
+              )}
+              <div className="flex items-center justify-between pt-1.5 border-t border-zinc-800/70">
+                <span className="text-sm text-zinc-300">Total payable</span>
+                <span className="text-lg font-bold">{inr(payable)}</span>
+              </div>
             </div>
+          </div>
+
+          {/* Promo code */}
+          <div className="mt-4">
+            {appliedPromo ? (
+              <div className="flex items-center gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3">
+                <Tag className="w-4 h-4 shrink-0 text-emerald-400" aria-hidden="true" />
+                <span className="text-sm">
+                  <span className="font-semibold">{appliedPromo.code}</span> applied — you save{" "}
+                  {inr(appliedPromo.discount)}
+                </span>
+                <button
+                  onClick={clearPromo}
+                  disabled={paying}
+                  className="ml-auto text-sm text-zinc-400 hover:text-zinc-200 disabled:opacity-40"
+                >
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <input
+                  value={promoInput}
+                  onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      applyPromo();
+                    }
+                  }}
+                  placeholder="Promo code"
+                  className="flex-1 min-w-0 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm font-mono tracking-wide uppercase outline-none focus:border-[#d99a45]"
+                />
+                <button
+                  onClick={applyPromo}
+                  disabled={applyingPromo || !promoInput.trim()}
+                  className="shrink-0 rounded-lg border border-zinc-700 px-5 py-2.5 font-semibold text-sm text-zinc-200 hover:border-zinc-600 disabled:opacity-40 transition-colors"
+                >
+                  {applyingPromo ? "Applying…" : "Apply"}
+                </button>
+              </div>
+            )}
           </div>
 
           <p className="text-xs text-zinc-500 mt-4">
@@ -502,7 +602,7 @@ export default function BookingFlow({
               disabled={paying || selected.size === 0}
               className="flex-1 bg-[#d99a45] hover:bg-[#bf863a] disabled:opacity-40 disabled:cursor-not-allowed rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
             >
-              {paying ? "Processing…" : `Proceed to payment · ${inr(totalAmount)}`}
+              {paying ? "Processing…" : `Proceed to payment · ${inr(payable)}`}
             </button>
           </div>
         </div>

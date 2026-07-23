@@ -1,10 +1,13 @@
 /**
  * Centralised logger — structured console output on every tier (FE/BE/DB/Server)
- * plus optional WhatsApp group alerts via a webhook URL.
+ * plus optional WhatsApp alerts on warn/error via CallMeBot
+ * (https://www.callmebot.com/blog/free-api-whatsapp-messages/).
  *
- * Set WHATSAPP_WEBHOOK_URL in .env.local to a CallMeBot / Green-API / Meta
- * Cloud API endpoint that accepts { text } in the POST body.
- * Without it, alerts are only written to the console.
+ * Set WHATSAPP_ALERT_PHONE (full international format, e.g. "+917323058176")
+ * and CALLMEBOT_API_KEY in .env.local. The API key comes from CallMeBot itself:
+ * message "I allow callmebot to send me messages" to their WhatsApp number
+ * (+34 644 59 71 67) and they reply with your personal key.
+ * Without both set, alerts are only written to the console.
  */
 
 type Level = "info" | "warn" | "error" | "debug";
@@ -30,16 +33,16 @@ function write(entry: LogEntry) {
   else console.log(line);
 }
 
-/** Fire-and-forget WhatsApp alert for warn/error events. */
+/** Fire-and-forget WhatsApp alert for warn/error events, via CallMeBot. */
 async function alertWhatsApp(entry: LogEntry) {
-  const url = process.env.WHATSAPP_WEBHOOK_URL;
-  if (!url) return;
+  const phone = process.env.WHATSAPP_ALERT_PHONE;
+  const apiKey = process.env.CALLMEBOT_API_KEY;
+  if (!phone || !apiKey) return;
   try {
-    await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: fmt(entry) }),
-    });
+    const url =
+      `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(phone)}` +
+      `&text=${encodeURIComponent(fmt(entry))}&apikey=${encodeURIComponent(apiKey)}`;
+    await fetch(url);
   } catch {
     // Never let an alert failure break the main flow.
   }

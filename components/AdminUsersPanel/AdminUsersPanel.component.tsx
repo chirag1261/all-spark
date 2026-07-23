@@ -19,6 +19,7 @@ interface Props {
 const PERMISSION_LABELS: Record<string, string> = {
   events: "Events",
   bookings: "Bookings",
+  promocodes: "Promo codes",
 };
 
 const ROLE_LABELS: Record<AdminRole, string> = {

@@ -13,6 +13,7 @@ import {
   Customer,
   EventItem,
   OtpChallenge,
+  PromoCode,
   TicketRecord,
 } from "@/types";
 
@@ -115,6 +116,8 @@ function rowToBooking(r: any): Booking {
     createdAt: Number(r.created_at),
     ticketId: r.ticket_id ?? undefined,
     emailSent: r.email_sent ?? undefined,
+    promoCode: r.promo_code ?? undefined,
+    discountAmount: r.discount_amount ?? undefined,
   };
 }
 
@@ -706,8 +709,9 @@ export async function saveBooking(booking: Booking): Promise<void> {
     `INSERT INTO bookings (
       booking_id, event_id, customer_id, seat_ids, attendees, amount,
       razorpay_order_id, razorpay_payment_id, razorpay_refund_id, status,
-      attendee_name, customer_email, customer_phone, created_at, ticket_id, email_sent
-    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
+      attendee_name, customer_email, customer_phone, created_at, ticket_id, email_sent,
+      promo_code, discount_amount
+    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
     ON CONFLICT (razorpay_order_id) DO UPDATE SET
       booking_id = EXCLUDED.booking_id,
       event_id = EXCLUDED.event_id,
@@ -722,7 +726,9 @@ export async function saveBooking(booking: Booking): Promise<void> {
       customer_email = EXCLUDED.customer_email,
       customer_phone = EXCLUDED.customer_phone,
       ticket_id = EXCLUDED.ticket_id,
-      email_sent = EXCLUDED.email_sent`,
+      email_sent = EXCLUDED.email_sent,
+      promo_code = EXCLUDED.promo_code,
+      discount_amount = EXCLUDED.discount_amount`,
     [
       booking.bookingId,
       booking.eventId,
@@ -740,6 +746,8 @@ export async function saveBooking(booking: Booking): Promise<void> {
       booking.createdAt,
       booking.ticketId ?? null,
       booking.emailSent ?? null,
+      booking.promoCode ?? null,
+      booking.discountAmount ?? null,
     ]
   );
 }
@@ -953,6 +961,142 @@ export async function countActiveSuperAdmins(): Promise<number> {
 export async function deleteAdminUser(id: string): Promise<void> {
   await initOnce();
   await db().query("DELETE FROM admin_users WHERE id = $1", [id]);
+}
+
+// ---------- Promo codes ----------
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToPromoCode(r: any): PromoCode {
+  return {
+    id: r.id,
+    code: r.code,
+    discountType: r.discount_type,
+    discountValue: r.discount_value,
+    maxDiscount: r.max_discount ?? null,
+    minOrderAmount: r.min_order_amount,
+    eventId: r.event_id ?? null,
+    maxRedemptions: r.max_redemptions ?? null,
+    redemptionCount: r.redemption_count,
+    validFrom: r.valid_from != null ? Number(r.valid_from) : null,
+    validTo: r.valid_to != null ? Number(r.valid_to) : null,
+    active: r.active,
+    createdAt: Number(r.created_at),
+    updatedAt: Number(r.updated_at),
+  };
+}
+
+async function insertPromoCodeRow(promo: PromoCode, client?: PoolClient): Promise<void> {
+  await (client ?? db()).query(
+    `INSERT INTO promo_codes (
+      id, code, discount_type, discount_value, max_discount, min_order_amount,
+      event_id, max_redemptions, redemption_count, valid_from, valid_to, active,
+      created_at, updated_at
+    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
+    [
+      promo.id,
+      promo.code,
+      promo.discountType,
+      promo.discountValue,
+      promo.maxDiscount ?? null,
+      promo.minOrderAmount,
+      promo.eventId ?? null,
+      promo.maxRedemptions ?? null,
+      promo.redemptionCount,
+      promo.validFrom ?? null,
+      promo.validTo ?? null,
+      promo.active,
+      promo.createdAt,
+      promo.updatedAt,
+    ]
+  );
+}
+
+export async function listPromoCodes(): Promise<PromoCode[]> {
+  await initOnce();
+  const { rows } = await db().query("SELECT * FROM promo_codes ORDER BY created_at DESC");
+  return rows.map(rowToPromoCode);
+}
+
+export async function getPromoCodeById(id: string): Promise<PromoCode | undefined> {
+  await initOnce();
+  const { rows } = await db().query("SELECT * FROM promo_codes WHERE id = $1", [id]);
+  return rows[0] ? rowToPromoCode(rows[0]) : undefined;
+}
+
+/** Case-insensitive lookup (codes are stored uppercased). */
+export async function getPromoCodeByCode(code: string): Promise<PromoCode | undefined> {
+  await initOnce();
+  const { rows } = await db().query("SELECT * FROM promo_codes WHERE code = $1", [
+    code.trim().toUpperCase(),
+  ]);
+  return rows[0] ? rowToPromoCode(rows[0]) : undefined;
+}
+
+export async function createPromoCode(promo: PromoCode): Promise<void> {
+  await initOnce();
+  await insertPromoCodeRow(promo);
+}
+
+export async function updatePromoCode(
+  id: string,
+  patch: Partial<PromoCode>
+): Promise<PromoCode | undefined> {
+  await initOnce();
+  const existing = await getPromoCodeById(id);
+  if (!existing) return undefined;
+  const merged: PromoCode = { ...existing, ...patch, id, updatedAt: Date.now() };
+  await db().query(
+    `UPDATE promo_codes SET
+      code=$2, discount_type=$3, discount_value=$4, max_discount=$5, min_order_amount=$6,
+      event_id=$7, max_redemptions=$8, valid_from=$9, valid_to=$10, active=$11, updated_at=$12
+     WHERE id=$1`,
+    [
+      id,
+      merged.code,
+      merged.discountType,
+      merged.discountValue,
+      merged.maxDiscount ?? null,
+      merged.minOrderAmount,
+      merged.eventId ?? null,
+      merged.maxRedemptions ?? null,
+      merged.validFrom ?? null,
+      merged.validTo ?? null,
+      merged.active,
+      merged.updatedAt,
+    ]
+  );
+  return merged;
+}
+
+/** Flip a promo code active/inactive without touching anything else. */
+export async function setPromoCodeActive(
+  id: string,
+  active: boolean
+): Promise<PromoCode | undefined> {
+  await initOnce();
+  const { rows } = await db().query(
+    "UPDATE promo_codes SET active=$2, updated_at=$3 WHERE id=$1 RETURNING *",
+    [id, active, Date.now()]
+  );
+  return rows[0] ? rowToPromoCode(rows[0]) : undefined;
+}
+
+export async function deletePromoCode(id: string): Promise<void> {
+  await initOnce();
+  await db().query("DELETE FROM promo_codes WHERE id = $1", [id]);
+}
+
+/**
+ * Atomically count one redemption against a code's cap. Called once per
+ * confirmed payment (see /api/verify). Best-effort — a code deleted between
+ * order and confirmation simply updates zero rows.
+ */
+export async function incrementPromoRedemption(code: string): Promise<void> {
+  await initOnce();
+  await db().query(
+    "UPDATE promo_codes SET redemption_count = redemption_count + 1, updated_at = $2 WHERE code = $1",
+    [code.trim().toUpperCase(), Date.now()]
+  );
 }
 
 // ---------- Customers (public site accounts) ----------

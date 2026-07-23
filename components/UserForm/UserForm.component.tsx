@@ -19,6 +19,7 @@ interface Props {
 const PERMISSION_LABELS: Partial<Record<AdminPermission, { label: string; hint: string }>> = {
   events: { label: "Events", hint: "Create, edit, publish and delete events" },
   bookings: { label: "Bookings", hint: "View bookings, export CSV, cancel pending ones" },
+  promocodes: { label: "Promo codes", hint: "Create, edit and deactivate promo codes" },
 };
 
 const ROLE_LABELS: Record<AdminRole, string> = {
