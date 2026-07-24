@@ -101,7 +101,7 @@ export default function AdminPromoCodesPanel({ codes, events }: Props) {
           <Plus className="w-4 h-4" aria-hidden="true" /> New promo code
         </button>
       </div>
-      <p className="text-sm text-slate-500 mb-6">
+      <p className="text-sm text-slate-800 mb-6">
         Flat or percentage discounts, scoped to an event (or all events), with an optional total
         usage cap. A redemption is counted only when a payment is confirmed.
       </p>
@@ -109,7 +109,7 @@ export default function AdminPromoCodesPanel({ codes, events }: Props) {
       <div className="overflow-x-auto border border-slate-200 rounded-xl">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-slate-500 border-b border-slate-200 bg-slate-50">
+            <tr className="text-left text-slate-800 border-b border-slate-200 bg-slate-50">
               <th className="px-4 py-3 font-medium">Code</th>
               <th className="px-4 py-3 font-medium">Discount</th>
               <th className="px-4 py-3 font-medium">Event</th>
@@ -122,7 +122,7 @@ export default function AdminPromoCodesPanel({ codes, events }: Props) {
           <tbody>
             {codes.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-slate-400">
+                <td colSpan={7} className="px-4 py-8 text-center text-slate-700">
                   No promo codes yet.
                 </td>
               </tr>
@@ -145,12 +145,12 @@ export default function AdminPromoCodesPanel({ codes, events }: Props) {
                   <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
                     {c.redemptionCount} / {c.maxRedemptions ?? "∞"}
                   </td>
-                  <td className="px-4 py-3 text-slate-600 whitespace-nowrap text-xs">
+                  <td className="px-4 py-3 text-slate-600 whitespace-nowrap text-sm">
                     {formatDate(c.validFrom)} – {formatDate(c.validTo)}
                   </td>
                   <td className="px-4 py-3">
                     <span
-                      className={`inline-block text-xs font-semibold px-2 py-0.5 rounded ${
+                      className={`inline-block text-sm font-semibold px-2 py-0.5 rounded ${
                         c.active
                           ? "bg-emerald-50 text-emerald-700"
                           : "bg-red-50 text-red-700"
@@ -197,7 +197,7 @@ export default function AdminPromoCodesPanel({ codes, events }: Props) {
             <div className="flex items-center gap-3 px-6 h-16 border-b border-slate-200 shrink-0">
               <h2 className="font-bold text-lg">{editing ? "Edit promo code" : "New promo code"}</h2>
               {editing && (
-                <span className="font-mono text-xs text-[#1d4ed8] truncate">{editing.code}</span>
+                <span className="font-mono text-sm text-[#1d4ed8] truncate">{editing.code}</span>
               )}
               <button
                 onClick={() => setDrawer(null)}

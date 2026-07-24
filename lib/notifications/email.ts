@@ -198,7 +198,7 @@ export async function sendTicketEmail(
     const { error } = await client().emails.send({
       from: FROM(),
       to: booking.customerEmail,
-      subject: `🎟️ Your ${tickets.length > 1 ? `${tickets.length} tickets` : "ticket"} — ${event?.title ?? "Event"}`,
+      subject: `🎫 Your ${tickets.length > 1 ? `${tickets.length} tickets` : "ticket"} — ${event?.title ?? "Event"}`,
       text: [
         `Booking confirmed!`,
         ``,

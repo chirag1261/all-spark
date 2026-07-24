@@ -1,6 +1,8 @@
 import { HeartHandshake, type LucideIcon, ShieldCheck, Sparkles, Users2 } from "lucide-react";
 import Link from "next/link";
 
+import CountUp from "@/components/CountUp";
+import Reveal from "@/components/Reveal";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import { getFeaturedEvent } from "@/lib/db";
@@ -61,13 +63,13 @@ export async function AboutScreen() {
       <main>
         {/* Hero */}
         <section className="section-y border-b border-slate-200">
-          <div className="max-w-4xl mx-auto px-4 text-center">
+          <Reveal className="max-w-4xl mx-auto px-4 text-center">
             <p className="font-heading text-[#1d4ed8] text-lg mb-3">About Utsav Events</p>
             <h1 className="font-heading text-4xl sm:text-6xl font-semibold leading-tight">
               Born from devotion. Built on community.
               <br className="hidden sm:block" /> Dedicated to the divine.
             </h1>
-          </div>
+          </Reveal>
         </section>
 
         {/* Story */}
@@ -89,7 +91,7 @@ export async function AboutScreen() {
         {/* Who we are — image + intro */}
         <section className="section-y border-y border-slate-200 bg-[#f5f8ff]">
           <div className="max-w-6xl mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center">
-            <div className="relative order-2 lg:order-1">
+            <Reveal variant="left" className="relative order-2 lg:order-1">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,w_1600/utsav-events/audience"
@@ -97,8 +99,8 @@ export async function AboutScreen() {
                 className="rounded-3xl w-full aspect-4/3 object-cover border border-[#e5eaf1] shadow-[0_16px_40px_rgba(15,23,42,0.10)]"
               />
               <div className="absolute inset-0 rounded-3xl ring-1 ring-inset ring-[#1d4ed8]/10" />
-            </div>
-            <div className="order-1 lg:order-2">
+            </Reveal>
+            <Reveal variant="right" className="order-1 lg:order-2">
               <p className="font-heading text-[#1d4ed8] text-lg mb-2">Who We Are</p>
               <h2 className="font-heading text-3xl sm:text-5xl font-semibold leading-tight mb-5">
                 About Utsav Events
@@ -112,19 +114,19 @@ export async function AboutScreen() {
               <p className="font-heading text-xl text-[#1d4ed8]/90 mt-5">
                 Where Music Meets the Divine
               </p>
-            </div>
+            </Reveal>
           </div>
         </section>
 
         {/* Stats */}
         <section className="border-y border-slate-200 bg-[#f5f8ff]">
-          <div className="max-w-4xl mx-auto px-4 py-10 grid grid-cols-3 gap-6 text-center">
+          <div className="max-w-4xl mx-auto px-4 py-10 grid grid-cols-3 gap-3 sm:gap-6 text-center">
             {STATS.map((s) => (
-              <div key={s.label}>
-                <p className="font-heading text-3xl sm:text-5xl font-semibold text-[#1d4ed8]">
-                  {s.value}
+              <div key={s.label} className="min-w-0">
+                <p className="font-heading text-xl sm:text-5xl font-semibold text-[#1d4ed8] wrap-break-word leading-tight">
+                  <CountUp value={s.value} />
                 </p>
-                <p className="text-xs sm:text-sm uppercase tracking-widest text-slate-500 mt-1">
+                <p className="text-[10px] sm:text-sm uppercase tracking-widest text-slate-500 mt-1 wrap-break-word">
                   {s.label}
                 </p>
               </div>
@@ -134,14 +136,14 @@ export async function AboutScreen() {
 
         {/* Mission */}
         <section className="section-y">
-          <div className="max-w-3xl mx-auto px-4 text-center">
+          <Reveal variant="scale" className="max-w-3xl mx-auto px-4 text-center">
             <p className="font-heading text-[#1d4ed8] text-lg mb-3">Our mission</p>
             <blockquote className="font-heading text-2xl sm:text-4xl font-semibold leading-snug">
               “To preserve and celebrate India&apos;s rich tradition of devotional music by creating
               extraordinary live experiences that bring communities together in the spirit of
               bhakti.”
             </blockquote>
-          </div>
+          </Reveal>
         </section>
 
         {/* Values */}
@@ -152,19 +154,21 @@ export async function AboutScreen() {
               <h2 className="font-heading text-3xl sm:text-5xl font-semibold">Our values</h2>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {VALUES.map((v) => {
+              {VALUES.map((v, i) => {
                 const Icon = v.icon;
                 return (
-                  <div
+                  <Reveal
                     key={v.title}
-                    className="bg-white border border-[#e5eaf1] rounded-3xl p-6 hover:border-[#1d4ed8]/40 hover:-translate-y-1 transition-all duration-300"
+                    variant="up"
+                    delay={i * 90}
+                    className="bg-white border border-[#e5eaf1] rounded-3xl p-6 hover:border-[#1d4ed8]/40 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(29,78,216,0.10)] transition-all duration-300"
                   >
                     <div className="w-12 h-12 rounded-full bg-[#1d4ed8]/10 text-[#1d4ed8] flex items-center justify-center mb-4">
                       <Icon className="w-5 h-5" aria-hidden="true" />
                     </div>
                     <h3 className="font-heading text-xl font-semibold mb-1.5">{v.title}</h3>
                     <p className="text-sm text-slate-600 leading-relaxed">{v.body}</p>
-                  </div>
+                  </Reveal>
                 );
               })}
             </div>
@@ -179,14 +183,16 @@ export async function AboutScreen() {
               <h2 className="font-heading text-3xl sm:text-5xl font-semibold">Our team</h2>
             </div>
             <div className="grid sm:grid-cols-3 gap-5">
-              {TEAM.map((t) => (
-                <div
+              {TEAM.map((t, i) => (
+                <Reveal
                   key={t.title}
-                  className="text-center bg-white border border-[#e5eaf1] rounded-3xl p-8"
+                  variant="up"
+                  delay={i * 90}
+                  className="text-center bg-white border border-[#e5eaf1] rounded-3xl p-8 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(29,78,216,0.10)] transition-all duration-300"
                 >
                   <h3 className="font-heading text-2xl font-semibold mb-2">{t.title}</h3>
                   <p className="text-sm text-slate-600 leading-relaxed">{t.body}</p>
-                </div>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -194,7 +200,7 @@ export async function AboutScreen() {
 
         {/* Closing CTA */}
         <section className="border-t border-slate-200 bg-[#f5f8ff]">
-          <div className="section-y max-w-3xl mx-auto px-4 text-center">
+          <Reveal variant="scale" className="section-y max-w-3xl mx-auto px-4 text-center">
             <h2 className="font-heading text-3xl sm:text-5xl font-semibold mb-4">
               Join us at our next gathering
             </h2>
@@ -209,7 +215,7 @@ export async function AboutScreen() {
             >
               {featured ? "View the event" : "Browse events"}
             </Link>
-          </div>
+          </Reveal>
         </section>
       </main>
 

@@ -13,7 +13,7 @@ export async function AdminScanScreen() {
   return (
     <AdminShell user={{ name: currentUser.name, role: currentUser.role }}>
       <h1 className="text-2xl font-bold mb-1">Entry scanner</h1>
-      <p className="text-sm text-slate-500 mb-6">
+      <p className="text-sm text-slate-800 mb-6">
         Point the camera at a ticket QR to check attendees in at the gate.
       </p>
       <ScanConsole events={events} />

@@ -399,10 +399,16 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
   return (
     <>
       <form onSubmit={submit} className="space-y-8">
+        <p className="text-sm text-slate-700">
+          <span className="text-red-600" aria-hidden="true">
+            *
+          </span>{" "}
+          Required fields
+        </p>
         <section className="space-y-4">
           <h2 className="text-lg font-semibold">Event details</h2>
           <div>
-            <Label>Title</Label>
+            <Label required>Title</Label>
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -440,7 +446,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <Label>Venue</Label>
+              <Label required>Venue</Label>
               <input
                 value={venue}
                 onChange={(e) => setVenue(e.target.value)}
@@ -558,7 +564,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
               )}
             </div>
             {!cloudinaryEnabled && (
-              <p className="text-xs text-slate-400 mt-1.5">
+              <p className="text-sm text-slate-700 mt-1.5">
                 Set the CLOUDINARY_* env vars to enable direct uploads; URL paste always works.
               </p>
             )}
@@ -569,7 +575,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
           <h2 className="text-lg font-semibold">Schedule</h2>
           <div className="grid sm:grid-cols-3 gap-4">
             <div>
-              <Label>Event starts</Label>
+              <Label required>Event starts</Label>
               <input
                 type="datetime-local"
                 value={startsAt}
@@ -579,7 +585,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
               />
             </div>
             <div>
-              <Label>Registration opens</Label>
+              <Label required>Registration opens</Label>
               <input
                 type="datetime-local"
                 value={opensAt}
@@ -589,7 +595,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
               />
             </div>
             <div>
-              <Label>Registration closes</Label>
+              <Label required>Registration closes</Label>
               <input
                 type="datetime-local"
                 value={closesAt}
@@ -605,7 +611,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-lg font-semibold">Seating &amp; pricing</h2>
             {/* Simple uniform grid vs. a rich multi-section venue layout. */}
-            <div className="ml-auto inline-flex rounded-lg border border-slate-200 p-0.5 text-xs">
+            <div className="ml-auto inline-flex rounded-lg border border-slate-200 p-0.5 text-sm">
               {(["simple", "layout"] as const).map((m) => (
                 <button
                   key={m}
@@ -628,7 +634,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
           ) : (
             <>
               <div className="flex items-center">
-                <span className="text-xs text-slate-500">
+                <span className="text-sm text-slate-800">
                   Front rows first — order defines the seat map
                 </span>
                 <button
@@ -650,7 +656,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
                   className="grid grid-cols-2 sm:grid-cols-[1fr_120px_90px_110px_32px] gap-3 items-end bg-white border border-slate-200 rounded-xl p-3"
                 >
                   <div>
-                    <Label>Name</Label>
+                    <Label required>Name</Label>
                     <input
                       value={cat.name}
                       onChange={(e) => setCategory(i, { name: e.target.value })}
@@ -660,7 +666,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
                     />
                   </div>
                   <div>
-                    <Label>Price (₹)</Label>
+                    <Label required>Price (₹)</Label>
                     <input
                       type="number"
                       min={1}
@@ -672,7 +678,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
                     />
                   </div>
                   <div>
-                    <Label>Rows</Label>
+                    <Label required>Rows</Label>
                     <input
                       type="number"
                       min={1}
@@ -684,7 +690,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
                     />
                   </div>
                   <div>
-                    <Label>Seats/row</Label>
+                    <Label required>Seats/row</Label>
                     <input
                       type="number"
                       min={1}
@@ -700,7 +706,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
                     onClick={() => setCategories((prev) => prev.filter((_, idx) => idx !== i))}
                     disabled={categories.length === 1}
                     aria-label="Remove category"
-                    className="h-10 inline-flex items-center text-slate-500 hover:text-red-700 disabled:opacity-30"
+                    className="h-10 inline-flex items-center text-slate-800 hover:text-red-700 disabled:opacity-30"
                   >
                     <X className="w-4 h-4" aria-hidden="true" />
                   </button>
@@ -725,7 +731,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
         <section className="space-y-4">
           <div>
             <h2 className="text-lg font-semibold">Landing page content</h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-sm text-slate-700">
               Rich sections shown on the featured-event landing page. Everything here is optional —
               empty sections are hidden automatically.
             </p>
@@ -777,7 +783,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
                     type="button"
                     onClick={() => setWhyAttend((prev) => prev.filter((_, idx) => idx !== i))}
                     aria-label="Remove card"
-                    className="inline-flex items-center text-slate-500 hover:text-red-700 px-1"
+                    className="inline-flex items-center text-slate-800 hover:text-red-700 px-1"
                   >
                     <X className="w-4 h-4" aria-hidden="true" />
                   </button>
@@ -893,7 +899,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
                     type="button"
                     onClick={() => setArtistStats((prev) => prev.filter((_, idx) => idx !== i))}
                     aria-label="Remove stat"
-                    className="inline-flex items-center text-slate-500 hover:text-red-700 px-1"
+                    className="inline-flex items-center text-slate-800 hover:text-red-700 px-1"
                   >
                     <X className="w-4 h-4" aria-hidden="true" />
                   </button>
@@ -932,7 +938,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
                   type="button"
                   onClick={() => setDetails((prev) => prev.filter((_, idx) => idx !== i))}
                   aria-label="Remove detail"
-                  className="inline-flex items-center text-slate-500 hover:text-red-700 px-1"
+                  className="inline-flex items-center text-slate-800 hover:text-red-700 px-1"
                 >
                   <X className="w-4 h-4" aria-hidden="true" />
                 </button>
@@ -973,7 +979,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
                     type="button"
                     onClick={() => setSchedule((prev) => prev.filter((_, idx) => idx !== i))}
                     aria-label="Remove slot"
-                    className="inline-flex items-center text-slate-500 hover:text-red-700 px-1"
+                    className="inline-flex items-center text-slate-800 hover:text-red-700 px-1"
                   >
                     <X className="w-4 h-4" aria-hidden="true" />
                   </button>
@@ -1083,9 +1089,9 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
             </button>
           </div>
           {faqs.length === 0 ? (
-            <p className="text-sm text-slate-500">No FAQs yet.</p>
+            <p className="text-sm text-slate-800">No FAQs yet.</p>
           ) : (
-            <p className="text-xs text-slate-400">
+            <p className="text-sm text-slate-700">
               Both question and answer are required to save a FAQ — rows missing either are silently
               dropped on save.
             </p>
@@ -1103,7 +1109,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
                   type="button"
                   onClick={() => setFaqs((prev) => prev.filter((_, idx) => idx !== i))}
                   aria-label="Remove FAQ"
-                  className="inline-flex items-center text-slate-500 hover:text-red-700 px-1"
+                  className="inline-flex items-center text-slate-800 hover:text-red-700 px-1"
                 >
                   <X className="w-4 h-4" aria-hidden="true" />
                 </button>
@@ -1130,7 +1136,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
             />
             <label htmlFor="published" className="text-sm">
               <span className="font-medium">Published</span>
-              <span className="text-slate-500"> — visible on the site and open for booking</span>
+              <span className="text-slate-800"> — visible on the site and open for booking</span>
             </label>
           </div>
           <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-xl p-4">
@@ -1143,7 +1149,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
             />
             <label htmlFor="featured" className="text-sm">
               <span className="font-medium">Featured</span>
-              <span className="text-slate-500">
+              <span className="text-slate-800">
                 {" "}
                 — becomes the site&apos;s landing page (only one event can be featured)
               </span>
@@ -1184,6 +1190,15 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
   );
 }
 
-function Label({ children }: { children: React.ReactNode }) {
-  return <label className="block text-xs text-slate-500 mb-1.5">{children}</label>;
+function Label({ children, required }: { children: React.ReactNode; required?: boolean }) {
+  return (
+    <label className="block text-sm text-slate-800 mb-1.5">
+      {children}
+      {required && (
+        <span className="text-red-600 ml-0.5" aria-hidden="true">
+          *
+        </span>
+      )}
+    </label>
+  );
 }

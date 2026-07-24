@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useIdleLogout } from "@/lib/hooks/useIdleLogout";
 
@@ -94,12 +94,35 @@ interface Props {
   children: React.ReactNode;
 }
 
+const LOGO_URL =
+  "https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,w_240/utsav-events/logo";
+
 export default function AdminShell({ user, children }: Props) {
   const pathname = usePathname();
   const routeLoader = useRouteLoader();
   const { confirm, dialog } = useConfirm();
   const [open, setOpen] = useState(false); // mobile drawer
   const [expanded, setExpanded] = useState<string[]>([]); // expanded controllers
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!profileOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setProfileOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [profileOpen]);
 
   const roleLabel =
     user.role === "super_admin"
@@ -131,21 +154,12 @@ export default function AdminShell({ user, children }: Props) {
   useIdleLogout(idleLogout);
 
   const sidebar = (
-    <div className="flex h-full flex-col bg-white border-r border-[#e5eaf1]">
-      {/* Brand */}
-      <div className="h-16 flex items-center gap-2.5 px-5 border-b border-[#e5eaf1] shrink-0">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,w_240/utsav-events/logo"
-          alt=""
-          className="h-8 w-8 object-contain"
-        />
-        <span className="font-heading text-xl font-semibold leading-none">
-          Utsav{" "}
-          <span className="text-transparent bg-clip-text bg-linear-to-r from-[#1d4ed8] to-[#3b82f6]">
-            Events
-          </span>
-          <span className="ml-1.5 text-[10px] font-sans font-semibold uppercase text-slate-500 align-super">
+    <div className="flex h-full flex-col bg-[#1d4ed8]">
+      {/* Brand — wordmark only; the logo mark lives in the top-right profile dropdown */}
+      <div className="h-16 flex items-center px-5 border-b border-white/15 shrink-0">
+        <span className="font-heading text-xl font-semibold leading-none text-white">
+          Utsav Events
+          <span className="ml-1.5 text-[12px] font-sans font-semibold uppercase text-white/70 align-super">
             admin
           </span>
         </span>
@@ -158,7 +172,7 @@ export default function AdminShell({ user, children }: Props) {
           if (!items.length) return null;
           return (
             <div key={section.label}>
-              <p className="px-3 mb-2 text-[11px] font-semibold uppercase tracking-widest text-slate-500">
+              <p className="px-3 mb-2 text-[12px] font-semibold uppercase tracking-widest text-white/60">
                 {section.label}
               </p>
               <ul className="space-y-1">
@@ -182,8 +196,8 @@ export default function AdminShell({ user, children }: Props) {
                           }
                           className={`w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                             childActive
-                              ? "text-[#1d4ed8]"
-                              : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                              ? "text-white"
+                              : "text-white/80 hover:text-white hover:bg-white/10"
                           }`}
                         >
                           <Icon className="w-5 h-5 shrink-0" aria-hidden="true" />
@@ -194,7 +208,7 @@ export default function AdminShell({ user, children }: Props) {
                           />
                         </button>
                         {isOpen && (
-                          <ul className="mt-1 ml-6.5 border-l border-[#e5eaf1] space-y-1">
+                          <ul className="mt-1 ml-6.5 border-l border-white/20 space-y-1">
                             {item.items.map((sub) => {
                               const active = pathname === sub.href;
                               return (
@@ -205,8 +219,8 @@ export default function AdminShell({ user, children }: Props) {
                                     data-active={active}
                                     className={`block rounded-lg pl-4 pr-3 py-2 text-sm transition-colors ${
                                       active
-                                        ? "text-[#1d4ed8] font-medium"
-                                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                                        ? "bg-white text-[#1d4ed8] font-medium"
+                                        : "text-white/80 hover:text-white hover:bg-white/10"
                                     }`}
                                   >
                                     {sub.title}
@@ -230,8 +244,8 @@ export default function AdminShell({ user, children }: Props) {
                         data-active={active}
                         className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                           active
-                            ? "bg-[#1d4ed8]/15 text-[#1d4ed8]"
-                            : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                            ? "bg-white text-[#1d4ed8]"
+                            : "text-white/80 hover:text-white hover:bg-white/10"
                         }`}
                       >
                         <Icon className="w-5 h-5 shrink-0" aria-hidden="true" />
@@ -245,24 +259,6 @@ export default function AdminShell({ user, children }: Props) {
           );
         })}
       </nav>
-
-      {/* Footer: view site + logout */}
-      <div className="border-t border-[#e5eaf1] p-3 space-y-1 shrink-0">
-        <Link
-          href="/"
-          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-        >
-          <ExternalLink className="w-5 h-5 shrink-0" aria-hidden="true" />
-          View site
-        </Link>
-        <button
-          onClick={logout}
-          className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-600 hover:text-red-700 hover:bg-slate-100 transition-colors"
-        >
-          <LogOut className="w-5 h-5 shrink-0" aria-hidden="true" />
-          Log out
-        </button>
-      </div>
     </div>
   );
 
@@ -286,22 +282,67 @@ export default function AdminShell({ user, children }: Props) {
       {/* Content column */}
       <div className="flex-1 min-w-0 flex flex-col">
         {/* Topbar */}
-        <header className="h-16 shrink-0 sticky top-0 z-30 flex items-center gap-3 px-4 sm:px-6 bg-white/90 backdrop-blur border-b border-[#e5eaf1]">
+        <header className="h-16 shrink-0 sticky top-0 z-30 flex items-center gap-3 px-4 sm:px-6 bg-[#1d4ed8] border-b border-white/15">
           <button
             onClick={() => setOpen(true)}
             aria-label="Open menu"
-            className="lg:hidden w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100"
+            className="lg:hidden w-9 h-9 inline-flex items-center justify-center rounded-lg text-white hover:bg-white/10"
           >
             <Menu className="w-5 h-5" />
           </button>
-          <div className="ml-auto flex items-center gap-3">
-            <span className="text-sm text-slate-700 hidden sm:block">{user.name}</span>
-            <span className="text-[10px] font-bold uppercase tracking-wide bg-[#1d4ed8]/15 text-[#1d4ed8] px-2 py-0.5 rounded">
-              {roleLabel}
-            </span>
-            <span className="w-8 h-8 rounded-full bg-[#1d4ed8]/20 text-[#1d4ed8] font-bold text-sm flex items-center justify-center uppercase">
-              {user.name.trim().charAt(0) || "?"}
-            </span>
+          {/* Profile dropdown — brand mark + user info; View site / Log out live here */}
+          <div className="ml-auto relative" ref={profileRef}>
+            <button
+              onClick={() => setProfileOpen((v) => !v)}
+              aria-expanded={profileOpen}
+              aria-label="Account menu"
+              className="flex items-center gap-2 sm:gap-3 rounded-lg px-1.5 py-1 hover:bg-white/10 transition-colors"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={LOGO_URL}
+                alt=""
+                className="hidden sm:block h-7 w-7 object-contain shrink-0"
+              />
+              <span className="text-sm text-white/90 hidden md:block">{user.name}</span>
+              <span className="text-[12px] font-bold uppercase tracking-wide bg-white/20 text-white px-2 py-0.5 rounded hidden sm:inline-block">
+                {roleLabel}
+              </span>
+              <span className="w-8 h-8 rounded-full bg-white text-[#1d4ed8] font-bold text-sm flex items-center justify-center uppercase shrink-0">
+                {user.name.trim().charAt(0) || "?"}
+              </span>
+              <ChevronDown
+                className={`hidden sm:block w-4 h-4 text-white/70 transition-transform ${profileOpen ? "rotate-180" : ""}`}
+                aria-hidden="true"
+              />
+            </button>
+
+            {profileOpen && (
+              <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-2xl py-1.5 z-30 animate-[dialog-in_.12s_ease-out]">
+                <div className="px-4 py-2.5 border-b border-slate-100">
+                  <p className="text-sm font-semibold text-slate-900 truncate">{user.name}</p>
+                  <p className="text-xs text-slate-500">{roleLabel}</p>
+                </div>
+                <Link
+                  href="/"
+                  onClick={() => setProfileOpen(false)}
+                  className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+                >
+                  <ExternalLink className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  View site
+                </Link>
+                <button
+                  onClick={() => {
+                    setProfileOpen(false);
+                    logout();
+                  }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+                >
+                  <LogOut className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  Log out
+                </button>
+              </div>
+            )}
           </div>
         </header>
 

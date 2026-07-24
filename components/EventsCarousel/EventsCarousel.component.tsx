@@ -39,7 +39,7 @@ export default function EventsCarousel({ events, compact = false }: Props) {
     return () => clearInterval(timer);
   }, [events.length]);
 
-  const aspect = compact ? "aspect-video" : "aspect-4/5";
+  const aspect = compact ? "aspect-video" : "aspect-3/4";
 
   if (events.length === 0) {
     return (

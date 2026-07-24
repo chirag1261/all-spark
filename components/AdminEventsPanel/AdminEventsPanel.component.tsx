@@ -102,7 +102,7 @@ export default function AdminEventsPanel({ rows, cloudinaryEnabled }: Props) {
               }`}
             >
               {FILTER_LABELS[f]}
-              <span className="ml-1.5 text-xs text-slate-500">{counts[f]}</span>
+              <span className="ml-1.5 text-sm text-slate-800">{counts[f]}</span>
             </button>
           ))}
         </div>
@@ -111,14 +111,14 @@ export default function AdminEventsPanel({ rows, cloudinaryEnabled }: Props) {
       {rows.length === 0 ? (
         <EmptyState />
       ) : visibleRows.length === 0 ? (
-        <p className="text-slate-500 border border-dashed border-slate-200 rounded-xl px-4 py-10 text-center text-sm">
+        <p className="text-slate-800 border border-dashed border-slate-200 rounded-xl px-4 py-10 text-center text-sm">
           No {FILTER_LABELS[filter].toLowerCase()} to show.
         </p>
       ) : (
         <div className="overflow-x-auto border border-slate-200 rounded-xl">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-slate-500 border-b border-slate-200 bg-slate-50">
+              <tr className="text-left text-slate-800 border-b border-slate-200 bg-slate-50">
                 <th className="px-4 py-3 font-medium">Event</th>
                 <th className="px-4 py-3 font-medium">Starts</th>
                 <th className="px-4 py-3 font-medium">Status</th>
@@ -144,7 +144,7 @@ export default function AdminEventsPanel({ rows, cloudinaryEnabled }: Props) {
                           </span>
                         )}
                       </p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-sm text-slate-800">
                         {event.venue}, {event.city}
                       </p>
                     </td>
@@ -162,7 +162,7 @@ export default function AdminEventsPanel({ rows, cloudinaryEnabled }: Props) {
                     <td className="px-4 py-3 text-right">{inr(revenue)}</td>
                     <td className="px-4 py-3 text-right">
                       {remaining}
-                      <span className="text-slate-400">/{total}</span>
+                      <span className="text-slate-700">/{total}</span>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
@@ -214,7 +214,7 @@ export default function AdminEventsPanel({ rows, cloudinaryEnabled }: Props) {
           <div className="absolute inset-y-0 right-0 w-full max-w-2xl bg-white border-l border-slate-200 shadow-2xl flex flex-col animate-[slide-in_.2s_ease-out]">
             <div className="flex items-center gap-3 px-6 h-16 border-b border-slate-200 shrink-0">
               <h2 className="font-bold text-lg">Edit event</h2>
-              {editing && <span className="text-xs text-slate-500 truncate">{editing.title}</span>}
+              {editing && <span className="text-sm text-slate-800 truncate">{editing.title}</span>}
               <button
                 onClick={() => setDrawer(null)}
                 aria-label="Close"
@@ -284,9 +284,9 @@ function StatusBadge({
 function EmptyState() {
   return (
     <div className="border border-dashed border-slate-200 rounded-2xl px-6 py-14 text-center">
-      <Mic className="w-10 h-10 mx-auto mb-3 text-slate-500" aria-hidden="true" />
+      <Mic className="w-10 h-10 mx-auto mb-3 text-slate-800" aria-hidden="true" />
       <h3 className="font-semibold text-slate-900 mb-1">No events created yet</h3>
-      <p className="text-sm text-slate-500 max-w-sm mx-auto mb-5">
+      <p className="text-sm text-slate-800 max-w-sm mx-auto mb-5">
         Launch your first standup comedy night or music concert — add the details, seating and
         pricing, then publish it to the public site.
       </p>
@@ -367,7 +367,7 @@ function Badge({
   return (
     <span
       title={title}
-      className={`inline-block text-xs font-semibold px-2 py-0.5 rounded cursor-help ${tones[tone]}`}
+      className={`inline-block text-sm font-semibold px-2 py-0.5 rounded cursor-help ${tones[tone]}`}
     >
       {children}
     </span>

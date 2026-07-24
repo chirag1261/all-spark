@@ -19,7 +19,7 @@ const MENU = [
 ];
 
 /** Header dropdown for a signed-in customer. */
-export default function AccountMenu({ name }: { name: string }) {
+export default function AccountMenu({ name, onDark = false }: { name: string; onDark?: boolean }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const routeLoader = useRouteLoader();
@@ -66,13 +66,22 @@ export default function AccountMenu({ name }: { name: string }) {
       <button
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="flex items-center gap-2 text-sm text-slate-700 hover:text-slate-900"
+        className={`flex items-center gap-2 text-sm ${
+          onDark ? "text-white/90 hover:text-white" : "text-slate-700 hover:text-slate-900"
+        }`}
       >
-        <span className="w-7 h-7 rounded-full bg-[#1d4ed8]/20 text-[#1d4ed8] font-bold text-xs flex items-center justify-center uppercase">
+        <span
+          className={`w-7 h-7 rounded-full font-bold text-xs flex items-center justify-center uppercase ${
+            onDark ? "bg-white/20 text-white" : "bg-[#1d4ed8]/20 text-[#1d4ed8]"
+          }`}
+        >
           {name.trim().charAt(0) || "?"}
         </span>
         <span className="hidden sm:block max-w-28 truncate">{name}</span>
-        <ChevronDown className="w-3.5 h-3.5 text-slate-500" aria-hidden="true" />
+        <ChevronDown
+          className={`w-3.5 h-3.5 ${onDark ? "text-white/70" : "text-slate-500"}`}
+          aria-hidden="true"
+        />
       </button>
 
       {open && (

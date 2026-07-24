@@ -37,7 +37,7 @@ export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onT
         {/* Price-tier colour key */}
         <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 mb-4 text-[11px] sm:text-xs">
           {venue.tiers.map((tier) => (
-            <span key={tier.id + tier.price} className="flex items-center gap-1.5 text-slate-700">
+            <span key={tier.id + tier.price} className="flex items-center gap-1.5 text-slate-200">
               <i
                 className={`w-3 h-3 rounded-sm inline-block ${styleForPrice(tier.price).swatch}`}
               />
@@ -48,8 +48,8 @@ export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onT
 
         {/* Stage */}
         <div className="w-3/5 mb-4">
-          <div className="h-1.5 rounded-[50%] bg-linear-to-r from-transparent via-[#1d4ed8] to-transparent shadow-[0_8px_24px_rgba(29,78,216,0.25)]" />
-          <p className="text-center text-[10px] text-slate-500 mt-1.5 tracking-widest uppercase">
+          <div className="h-1.5 rounded-[50%] bg-linear-to-r from-transparent via-[#60a5fa] to-transparent shadow-[0_8px_24px_rgba(96,165,250,0.4)]" />
+          <p className="text-center text-[10px] text-slate-400 mt-1.5 tracking-widest uppercase">
             Stage this way
           </p>
         </div>
@@ -59,7 +59,7 @@ export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onT
           return (
             <div key={section.id || "main"} className="w-full flex flex-col items-center">
               {section.name && (
-                <div className="w-full max-w-md text-center font-heading text-sm tracking-wide text-[#1d4ed8] border-y border-[#1d4ed8]/20 bg-[#1d4ed8]/5 rounded-lg py-1 mt-4 mb-2">
+                <div className="w-full max-w-md text-center font-heading text-sm tracking-wide text-[#93c5fd] border-y border-[#3b82f6]/30 bg-[#3b82f6]/10 rounded-lg py-1 mt-4 mb-2">
                   {section.name}
                 </div>
               )}
@@ -70,7 +70,7 @@ export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onT
                 return (
                   <div key={section.id + row.label} className="w-full flex flex-col items-center">
                     {showTier && (
-                      <div className="flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-widest text-slate-500 mb-1.5 mt-2">
+                      <div className="flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-widest text-slate-400 mb-1.5 mt-2">
                         <i
                           className={`w-2 h-2 rounded-sm ${styleForPrice(row.price).swatch}`}
                         />
@@ -79,14 +79,14 @@ export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onT
                       </div>
                     )}
                     <div className="flex items-center gap-1">
-                      <span className="w-3.5 sm:w-4 text-[9px] sm:text-[10px] text-slate-500 text-right mr-0.5 shrink-0">
+                      <span className="w-3.5 sm:w-4 text-[9px] sm:text-[10px] text-slate-400 text-right mr-0.5 shrink-0">
                         {row.label}
                       </span>
                       {row.groups.map((group, gi) => (
                         <div
                           key={gi}
                           className={`flex items-center gap-1 ${gi > 0 ? "ml-2.5 sm:ml-3.5" : ""} ${
-                            group.side ? "px-1 rounded bg-slate-50" : ""
+                            group.side ? "px-1 rounded bg-white/5" : ""
                           }`}
                         >
                           {group.seats.map((seat) => (
@@ -117,7 +117,7 @@ export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onT
         })}
 
         {/* State legend */}
-        <div className="flex flex-wrap justify-center gap-4 mt-6 text-[11px] sm:text-xs text-slate-600">
+        <div className="flex flex-wrap justify-center gap-4 mt-6 text-[11px] sm:text-xs text-slate-300">
           <span className="flex items-center gap-1.5">
             <i className="w-3 h-3 rounded-sm bg-slate-300 inline-block" /> Available (coloured
             by price above)
@@ -129,7 +129,7 @@ export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onT
             <i className="w-3 h-3 rounded-sm bg-amber-300 inline-block" /> Held
           </span>
           <span className="flex items-center gap-1.5">
-            <i className="w-3 h-3 rounded-sm bg-slate-200 inline-block" /> Sold / blocked
+            <i className="w-3 h-3 rounded-sm bg-slate-600 inline-block" /> Sold / blocked
           </span>
         </div>
       </div>
@@ -161,7 +161,7 @@ function SeatButton({
       className={[
         "w-5 h-5 sm:w-6 sm:h-6 rounded-t text-[7px] sm:text-[9px] font-medium transition-all shrink-0",
         state === "booked"
-          ? "bg-slate-100 text-slate-300 cursor-not-allowed"
+          ? "bg-slate-700 text-slate-500 cursor-not-allowed"
           : state === "locked"
             ? "bg-amber-200 text-amber-700 cursor-not-allowed"
             : state === "selected"

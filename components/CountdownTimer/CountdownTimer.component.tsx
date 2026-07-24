@@ -54,7 +54,7 @@ export default function CountdownTimer({ targetIso }: Props) {
 
   return (
     <div className="mb-6">
-      <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.25em] text-white/60 mb-2">
+      <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.25em] text-[#fbbf24] mb-2">
         <Clock className="w-3 h-3" aria-hidden="true" />
         Event starts in
       </p>
@@ -80,7 +80,7 @@ function TimeBlock({ value, label, accent }: { value: number; label: string; acc
     <div className="flex flex-col items-center justify-center px-3.5 py-2 sm:px-4 sm:py-2.5 min-w-13 sm:min-w-15 bg-white/5">
       <span
         className={`font-mono text-xl sm:text-2xl font-bold tabular-nums leading-none ${
-          accent ? "text-[#1d4ed8]" : "text-white"
+          accent ? "text-[#fbbf24]" : "text-white"
         }`}
       >
         {String(value).padStart(2, "0")}

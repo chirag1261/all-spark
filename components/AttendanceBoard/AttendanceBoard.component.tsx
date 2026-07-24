@@ -55,7 +55,7 @@ export default function AttendanceBoard({ events }: { events: EventOption[] }) {
   return (
     <div className="space-y-6">
       <div className="max-w-sm">
-        <label className="block text-xs text-slate-500 mb-1.5">Event</label>
+        <label className="block text-sm text-slate-800 mb-1.5">Event</label>
         <select
           value={eventId}
           onChange={(e) => {
@@ -79,15 +79,15 @@ export default function AttendanceBoard({ events }: { events: EventOption[] }) {
           <div className="flex items-end gap-6">
             <div>
               <p className="text-3xl font-bold text-emerald-700">{counts.checkedIn}</p>
-              <p className="text-xs text-slate-500">Checked in</p>
+              <p className="text-sm text-slate-800">Checked in</p>
             </div>
             <div>
               <p className="text-3xl font-bold text-slate-800">{counts.sold}</p>
-              <p className="text-xs text-slate-500">Tickets sold</p>
+              <p className="text-sm text-slate-800">Tickets sold</p>
             </div>
             <div className="ml-auto text-right">
               <p className="text-3xl font-bold text-[#1d4ed8]">{pct}%</p>
-              <p className="text-xs text-slate-500">Attendance</p>
+              <p className="text-sm text-slate-800">Attendance</p>
             </div>
           </div>
           <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-slate-100">
@@ -102,7 +102,7 @@ export default function AttendanceBoard({ events }: { events: EventOption[] }) {
       <div className="overflow-x-auto border border-slate-200 rounded-xl">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-slate-500 border-b border-slate-200 bg-slate-50">
+            <tr className="text-left text-slate-800 border-b border-slate-200 bg-slate-50">
               <th className="px-4 py-3 font-medium">Attendee</th>
               <th className="px-4 py-3 font-medium">Seat</th>
               <th className="px-4 py-3 font-medium">Status</th>
@@ -113,7 +113,7 @@ export default function AttendanceBoard({ events }: { events: EventOption[] }) {
           <tbody>
             {attendees.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-slate-400">
+                <td colSpan={5} className="px-4 py-8 text-center text-slate-700">
                   No tickets issued for this event yet.
                 </td>
               </tr>
@@ -124,7 +124,7 @@ export default function AttendanceBoard({ events }: { events: EventOption[] }) {
                   <td className="px-4 py-3 text-slate-600">{a.seat}</td>
                   <td className="px-4 py-3">
                     <span
-                      className={`inline-block text-xs font-semibold px-2 py-0.5 rounded ${
+                      className={`inline-block text-sm font-semibold px-2 py-0.5 rounded ${
                         a.status === "IN"
                           ? "bg-emerald-50 text-emerald-700"
                           : "bg-slate-100 text-slate-600"
@@ -133,7 +133,7 @@ export default function AttendanceBoard({ events }: { events: EventOption[] }) {
                       {a.status === "IN" ? "In" : "Pending"}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-slate-600 whitespace-nowrap text-xs">
+                  <td className="px-4 py-3 text-slate-600 whitespace-nowrap text-sm">
                     {a.scannedAt
                       ? new Date(a.scannedAt).toLocaleString("en-IN", {
                           timeZone: "Asia/Kolkata",

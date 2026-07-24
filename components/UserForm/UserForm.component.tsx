@@ -114,8 +114,14 @@ export default function UserForm({ user, currentUserId, onDone }: Props) {
   return (
     <>
       <form onSubmit={submit} className="space-y-6">
+        <p className="text-sm text-slate-700">
+          <span className="text-red-600" aria-hidden="true">
+            *
+          </span>{" "}
+          Required fields
+        </p>
         <div>
-          <Label>Name</Label>
+          <Label required>Name</Label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -124,7 +130,7 @@ export default function UserForm({ user, currentUserId, onDone }: Props) {
           />
         </div>
         <div>
-          <Label>Email</Label>
+          <Label required>Email</Label>
           <input
             type="email"
             value={email}
@@ -144,7 +150,7 @@ export default function UserForm({ user, currentUserId, onDone }: Props) {
           />
         </div>
         <div>
-          <Label>{user ? "Password" : "Password"}</Label>
+          <Label required={!user}>Password</Label>
           {resetting ? (
             <input
               type="password"
@@ -166,7 +172,7 @@ export default function UserForm({ user, currentUserId, onDone }: Props) {
             </button>
           )}
           {user && resetting && (
-            <p className="text-xs text-slate-400 mt-1.5">
+            <p className="text-sm text-slate-700 mt-1.5">
               Share the new password with the user directly — they aren&apos;t emailed.
             </p>
           )}
@@ -192,7 +198,7 @@ export default function UserForm({ user, currentUserId, onDone }: Props) {
             ))}
           </div>
           {isSelf && user?.role === "super_admin" && (
-            <p className="text-xs text-slate-400 mt-1.5">
+            <p className="text-sm text-slate-700 mt-1.5">
               You can&apos;t change your own role — ask another super admin.
             </p>
           )}
@@ -215,7 +221,7 @@ export default function UserForm({ user, currentUserId, onDone }: Props) {
                   />
                   <span className="text-sm">
                     <span className="font-medium">{PERMISSION_LABELS[p]?.label}</span>
-                    <span className="block text-xs text-slate-500">{PERMISSION_LABELS[p]?.hint}</span>
+                    <span className="block text-sm text-slate-800">{PERMISSION_LABELS[p]?.hint}</span>
                   </span>
                 </label>
               ))}
@@ -223,12 +229,12 @@ export default function UserForm({ user, currentUserId, onDone }: Props) {
           </div>
         )}
         {role === "super_admin" && (
-          <p className="text-xs text-slate-400">
+          <p className="text-sm text-slate-700">
             Super admins have every permission and can manage other admin users.
           </p>
         )}
         {role === "gate_controller" && (
-          <p className="text-xs text-slate-400">
+          <p className="text-sm text-slate-700">
             Gate staff can only open the entry scanner to check in tickets — the rest of the
             admin is hidden from them.
           </p>
@@ -267,6 +273,15 @@ export default function UserForm({ user, currentUserId, onDone }: Props) {
   );
 }
 
-function Label({ children }: { children: React.ReactNode }) {
-  return <label className="block text-xs text-slate-500 mb-1.5">{children}</label>;
+function Label({ children, required }: { children: React.ReactNode; required?: boolean }) {
+  return (
+    <label className="block text-sm text-slate-800 mb-1.5">
+      {children}
+      {required && (
+        <span className="text-red-600 ml-0.5" aria-hidden="true">
+          *
+        </span>
+      )}
+    </label>
+  );
 }
