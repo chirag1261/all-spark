@@ -47,19 +47,19 @@ function hrefFor(entry: AuditEntry): string | null {
 
 export default function ActivityFeed({ entries }: { entries: AuditEntry[] }) {
   return (
-    <div className="border border-zinc-800 rounded-xl divide-y divide-zinc-800/60">
+    <div className="border border-slate-200 rounded-xl divide-y divide-slate-200">
       {entries.map((entry) => {
         const meta = ACTION_META[entry.action] ?? { icon: Circle, label: entry.action };
         const Icon = meta.icon;
         const href = hrefFor(entry);
         const body = (
-          <div className="px-4 py-3 flex items-baseline gap-3 text-sm hover:bg-zinc-900/50 transition-colors">
-            <Icon className="w-4 h-4 shrink-0 text-zinc-400 translate-y-0.5" aria-hidden="true" />
+          <div className="px-4 py-3 flex items-baseline gap-3 text-sm hover:bg-slate-50 transition-colors">
+            <Icon className="w-4 h-4 shrink-0 text-slate-600 translate-y-0.5" aria-hidden="true" />
             <span className="min-w-0 wrap-break-word">
-              <span className="font-semibold text-zinc-100">{meta.label}:</span>{" "}
-              <span className="text-zinc-400">{entry.detail}</span>
+              <span className="font-semibold text-slate-900">{meta.label}:</span>{" "}
+              <span className="text-slate-600">{entry.detail}</span>
             </span>
-            <span className="ml-auto text-xs text-zinc-500 whitespace-nowrap">
+            <span className="ml-auto text-xs text-slate-500 whitespace-nowrap">
               {formatDateIST(new Date(entry.at).toISOString())}
             </span>
           </div>

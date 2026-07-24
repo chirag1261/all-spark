@@ -18,11 +18,11 @@ export default function Logo({ href = "/", admin = false }: Props) {
       />
       <span className="font-heading text-2xl font-semibold tracking-tight leading-none">
         Utsav{" "}
-        <span className="text-transparent bg-clip-text bg-linear-to-r from-[#d99a45] to-[#e8bd6b]">
+        <span className="text-transparent bg-clip-text bg-linear-to-r from-[#1d4ed8] to-[#3b82f6]">
           Events
         </span>
         {admin && (
-          <span className="ml-1.5 text-[10px] font-sans font-semibold uppercase text-zinc-500 align-super">
+          <span className="ml-1.5 text-[10px] font-sans font-semibold uppercase text-slate-500 align-super">
             admin
           </span>
         )}

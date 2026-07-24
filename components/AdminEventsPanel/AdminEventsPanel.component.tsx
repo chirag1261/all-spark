@@ -82,7 +82,7 @@ export default function AdminEventsPanel({ rows, cloudinaryEnabled }: Props) {
         <h2 className="text-lg font-semibold">Events</h2>
         <Link
           href="/admin/events/new"
-          className="ml-auto inline-flex items-center gap-1.5 bg-[#d99a45] hover:bg-[#bf863a] rounded-lg px-4 py-2 font-semibold text-sm transition-colors"
+          className="ml-auto inline-flex items-center gap-1.5 bg-[#1d4ed8] hover:bg-[#1e40af] rounded-lg px-4 py-2 font-semibold text-sm transition-colors"
         >
           <Plus className="w-4 h-4" aria-hidden="true" /> New event
         </Link>
@@ -97,12 +97,12 @@ export default function AdminEventsPanel({ rows, cloudinaryEnabled }: Props) {
               onClick={() => setFilter(f)}
               className={`rounded-full px-3.5 py-1.5 text-sm font-medium border transition-colors ${
                 filter === f
-                  ? "bg-[#d99a45]/15 border-[#d99a45]/50 text-zinc-100"
-                  : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700"
+                  ? "bg-[#1d4ed8]/15 border-[#1d4ed8]/50 text-slate-900"
+                  : "bg-white border-slate-200 text-slate-600 hover:text-slate-800 hover:border-slate-300"
               }`}
             >
               {FILTER_LABELS[f]}
-              <span className="ml-1.5 text-xs text-zinc-500">{counts[f]}</span>
+              <span className="ml-1.5 text-xs text-slate-500">{counts[f]}</span>
             </button>
           ))}
         </div>
@@ -111,14 +111,14 @@ export default function AdminEventsPanel({ rows, cloudinaryEnabled }: Props) {
       {rows.length === 0 ? (
         <EmptyState />
       ) : visibleRows.length === 0 ? (
-        <p className="text-zinc-500 border border-dashed border-zinc-800 rounded-xl px-4 py-10 text-center text-sm">
+        <p className="text-slate-500 border border-dashed border-slate-200 rounded-xl px-4 py-10 text-center text-sm">
           No {FILTER_LABELS[filter].toLowerCase()} to show.
         </p>
       ) : (
-        <div className="overflow-x-auto border border-zinc-800 rounded-xl">
+        <div className="overflow-x-auto border border-slate-200 rounded-xl">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-zinc-500 border-b border-zinc-800 bg-zinc-900/60">
+              <tr className="text-left text-slate-500 border-b border-slate-200 bg-slate-50">
                 <th className="px-4 py-3 font-medium">Event</th>
                 <th className="px-4 py-3 font-medium">Starts</th>
                 <th className="px-4 py-3 font-medium">Status</th>
@@ -131,24 +131,24 @@ export default function AdminEventsPanel({ rows, cloudinaryEnabled }: Props) {
             <tbody>
               {visibleRows.map(
                 ({ event, registrationOpen, registrations, revenue, remaining, total }) => (
-                  <tr key={event.id} className="border-b border-zinc-800/60 last:border-0">
+                  <tr key={event.id} className="border-b border-slate-200 last:border-0">
                     <td className="px-4 py-3">
                       <p className="font-medium">
                         {event.title}
                         {event.featured && (
                           <span
                             title="This event takes over the public homepage as the featured landing page."
-                            className="ml-2 text-[10px] font-bold uppercase tracking-wide bg-[#d99a45]/15 text-[#d99a45] px-1.5 py-0.5 rounded cursor-help"
+                            className="ml-2 text-[10px] font-bold uppercase tracking-wide bg-[#1d4ed8]/15 text-[#1d4ed8] px-1.5 py-0.5 rounded cursor-help"
                           >
                             Landing page
                           </span>
                         )}
                       </p>
-                      <p className="text-xs text-zinc-500">
+                      <p className="text-xs text-slate-500">
                         {event.venue}, {event.city}
                       </p>
                     </td>
-                    <td className="px-4 py-3 text-zinc-400 whitespace-nowrap">
+                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
                       {formatDateIST(event.startsAt)}
                     </td>
                     <td className="px-4 py-3">
@@ -162,7 +162,7 @@ export default function AdminEventsPanel({ rows, cloudinaryEnabled }: Props) {
                     <td className="px-4 py-3 text-right">{inr(revenue)}</td>
                     <td className="px-4 py-3 text-right">
                       {remaining}
-                      <span className="text-zinc-600">/{total}</span>
+                      <span className="text-slate-400">/{total}</span>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
@@ -211,14 +211,14 @@ export default function AdminEventsPanel({ rows, cloudinaryEnabled }: Props) {
             onClick={() => setDrawer(null)}
             className="absolute inset-0 bg-black/60 backdrop-blur-xs cursor-default"
           />
-          <div className="absolute inset-y-0 right-0 w-full max-w-2xl bg-zinc-950 border-l border-zinc-800 shadow-2xl flex flex-col animate-[slide-in_.2s_ease-out]">
-            <div className="flex items-center gap-3 px-6 h-16 border-b border-zinc-800 shrink-0">
+          <div className="absolute inset-y-0 right-0 w-full max-w-2xl bg-white border-l border-slate-200 shadow-2xl flex flex-col animate-[slide-in_.2s_ease-out]">
+            <div className="flex items-center gap-3 px-6 h-16 border-b border-slate-200 shrink-0">
               <h2 className="font-bold text-lg">Edit event</h2>
-              {editing && <span className="text-xs text-zinc-500 truncate">{editing.title}</span>}
+              {editing && <span className="text-xs text-slate-500 truncate">{editing.title}</span>}
               <button
                 onClick={() => setDrawer(null)}
                 aria-label="Close"
-                className="ml-auto w-8 h-8 inline-flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800"
+                className="ml-auto w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -283,16 +283,16 @@ function StatusBadge({
 
 function EmptyState() {
   return (
-    <div className="border border-dashed border-zinc-800 rounded-2xl px-6 py-14 text-center">
-      <Mic className="w-10 h-10 mx-auto mb-3 text-zinc-500" aria-hidden="true" />
-      <h3 className="font-semibold text-zinc-100 mb-1">No events created yet</h3>
-      <p className="text-sm text-zinc-500 max-w-sm mx-auto mb-5">
+    <div className="border border-dashed border-slate-200 rounded-2xl px-6 py-14 text-center">
+      <Mic className="w-10 h-10 mx-auto mb-3 text-slate-500" aria-hidden="true" />
+      <h3 className="font-semibold text-slate-900 mb-1">No events created yet</h3>
+      <p className="text-sm text-slate-500 max-w-sm mx-auto mb-5">
         Launch your first standup comedy night or music concert — add the details, seating and
         pricing, then publish it to the public site.
       </p>
       <Link
         href="/admin/events/new"
-        className="inline-flex items-center gap-1.5 bg-[#d99a45] hover:bg-[#bf863a] rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
+        className="inline-flex items-center gap-1.5 bg-[#1d4ed8] hover:bg-[#1e40af] rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
       >
         <Plus className="w-4 h-4" aria-hidden="true" /> New event
       </Link>
@@ -318,7 +318,7 @@ function IconButton({
       aria-label={title}
       onClick={onClick}
       disabled={disabled}
-      className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+      className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed"
     >
       {children}
     </button>
@@ -342,7 +342,7 @@ function IconLink({
       title={title}
       aria-label={title}
       {...(newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-      className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors"
+      className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
     >
       {children}
     </Link>
@@ -359,10 +359,10 @@ function Badge({
   children: string;
 }) {
   const tones = {
-    emerald: "bg-emerald-500/15 text-emerald-400",
-    red: "bg-red-500/15 text-red-400",
-    sky: "bg-sky-500/15 text-sky-400",
-    zinc: "bg-zinc-500/15 text-zinc-400",
+    emerald: "bg-emerald-50 text-emerald-700",
+    red: "bg-red-50 text-red-700",
+    sky: "bg-sky-50 text-sky-700",
+    zinc: "bg-slate-100 text-slate-600",
   } as const;
   return (
     <span

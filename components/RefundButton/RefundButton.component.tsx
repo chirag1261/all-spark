@@ -53,7 +53,7 @@ export default function RefundButton({
       <button
         onClick={refund}
         disabled={busy}
-        className="text-red-400 hover:text-red-300 hover:underline disabled:opacity-40"
+        className="text-red-700 hover:text-red-700 hover:underline disabled:opacity-40"
       >
         {busy ? "Refunding…" : "Refund"}
       </button>

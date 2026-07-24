@@ -63,7 +63,7 @@ function toLocalInput(iso: string): string {
 }
 
 const inputCls =
-  "w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#d99a45]";
+  "w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#1d4ed8]";
 
 export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled }: Props) {
   const router = useRouter();
@@ -479,7 +479,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
                     type="button"
                     onClick={() => bannerFileRef.current?.click()}
                     disabled={uploading !== null}
-                    className="shrink-0 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40 rounded-lg px-4 text-sm font-medium transition-colors"
+                    className="shrink-0 bg-slate-100 hover:bg-slate-200 disabled:opacity-40 rounded-lg px-4 text-sm font-medium transition-colors"
                   >
                     {uploading === "banner" ? "Uploading…" : "Upload"}
                   </button>
@@ -491,7 +491,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
               <img
                 src={imageUrl}
                 alt="Banner preview"
-                className="mt-2 h-24 rounded-lg object-cover border border-zinc-800"
+                className="mt-2 h-24 rounded-lg object-cover border border-slate-200"
               />
             )}
           </div>
@@ -508,13 +508,13 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
                     <img
                       src={url}
                       alt={`Gallery photo ${i + 1}`}
-                      className="aspect-square w-full rounded-lg object-cover border border-zinc-800"
+                      className="aspect-square w-full rounded-lg object-cover border border-slate-200"
                     />
                     <button
                       type="button"
                       onClick={() => setGallery((prev) => prev.filter((u) => u !== url))}
                       aria-label="Remove photo"
-                      className="absolute top-1 right-1 w-6 h-6 inline-flex items-center justify-center rounded-full bg-black/70 text-zinc-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-1 right-1 w-6 h-6 inline-flex items-center justify-center rounded-full bg-black/70 text-slate-700 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <X className="w-3.5 h-3.5" aria-hidden="true" />
                     </button>
@@ -532,7 +532,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
               <button
                 type="button"
                 onClick={addGalleryUrl}
-                className="shrink-0 bg-zinc-800 hover:bg-zinc-700 rounded-lg px-4 text-sm font-medium transition-colors"
+                className="shrink-0 bg-slate-100 hover:bg-slate-200 rounded-lg px-4 text-sm font-medium transition-colors"
               >
                 Add
               </button>
@@ -550,7 +550,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
                     type="button"
                     onClick={() => galleryFileRef.current?.click()}
                     disabled={uploading !== null}
-                    className="shrink-0 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40 rounded-lg px-4 text-sm font-medium transition-colors"
+                    className="shrink-0 bg-slate-100 hover:bg-slate-200 disabled:opacity-40 rounded-lg px-4 text-sm font-medium transition-colors"
                   >
                     {uploading === "gallery" ? "Uploading…" : "Upload"}
                   </button>
@@ -558,7 +558,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
               )}
             </div>
             {!cloudinaryEnabled && (
-              <p className="text-xs text-zinc-600 mt-1.5">
+              <p className="text-xs text-slate-400 mt-1.5">
                 Set the CLOUDINARY_* env vars to enable direct uploads; URL paste always works.
               </p>
             )}
@@ -605,7 +605,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-lg font-semibold">Seating &amp; pricing</h2>
             {/* Simple uniform grid vs. a rich multi-section venue layout. */}
-            <div className="ml-auto inline-flex rounded-lg border border-zinc-800 p-0.5 text-xs">
+            <div className="ml-auto inline-flex rounded-lg border border-slate-200 p-0.5 text-xs">
               {(["simple", "layout"] as const).map((m) => (
                 <button
                   key={m}
@@ -613,8 +613,8 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
                   onClick={() => setSeatingMode(m)}
                   className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
                     seatingMode === m
-                      ? "bg-[#d99a45] text-white"
-                      : "text-zinc-400 hover:text-zinc-200"
+                      ? "bg-[#1d4ed8] text-white"
+                      : "text-slate-600 hover:text-slate-800"
                   }`}
                 >
                   {m === "simple" ? "Simple grid" : "Advanced layout"}
@@ -628,7 +628,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
           ) : (
             <>
               <div className="flex items-center">
-                <span className="text-xs text-zinc-500">
+                <span className="text-xs text-slate-500">
                   Front rows first — order defines the seat map
                 </span>
                 <button
@@ -639,7 +639,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
                       { name: "", priceInr: "", rows: "2", seatsPerRow: "12" },
                     ])
                   }
-                  className="ml-auto text-sm text-[#d99a45] hover:underline"
+                  className="ml-auto text-sm text-[#1d4ed8] hover:underline"
                 >
                   + Add category
                 </button>
@@ -647,7 +647,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
               {categories.map((cat, i) => (
                 <div
                   key={i}
-                  className="grid grid-cols-2 sm:grid-cols-[1fr_120px_90px_110px_32px] gap-3 items-end bg-zinc-900 border border-zinc-800 rounded-xl p-3"
+                  className="grid grid-cols-2 sm:grid-cols-[1fr_120px_90px_110px_32px] gap-3 items-end bg-white border border-slate-200 rounded-xl p-3"
                 >
                   <div>
                     <Label>Name</Label>
@@ -700,7 +700,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
                     onClick={() => setCategories((prev) => prev.filter((_, idx) => idx !== i))}
                     disabled={categories.length === 1}
                     aria-label="Remove category"
-                    className="h-10 inline-flex items-center text-zinc-500 hover:text-red-400 disabled:opacity-30"
+                    className="h-10 inline-flex items-center text-slate-500 hover:text-red-700 disabled:opacity-30"
                   >
                     <X className="w-4 h-4" aria-hidden="true" />
                   </button>
@@ -725,7 +725,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
         <section className="space-y-4">
           <div>
             <h2 className="text-lg font-semibold">Landing page content</h2>
-            <p className="text-xs text-zinc-600">
+            <p className="text-xs text-slate-400">
               Rich sections shown on the featured-event landing page. Everything here is optional —
               empty sections are hidden automatically.
             </p>
@@ -753,19 +753,19 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
           </div>
 
           {/* Why attend */}
-          <div className="space-y-2 border-t border-zinc-800 pt-4">
+          <div className="space-y-2 border-t border-slate-200 pt-4">
             <div className="flex items-center">
-              <h3 className="text-sm font-semibold text-zinc-300">Why attend</h3>
+              <h3 className="text-sm font-semibold text-slate-700">Why attend</h3>
               <button
                 type="button"
                 onClick={() => setWhyAttend((prev) => [...prev, { title: "", body: "" }])}
-                className="ml-auto text-sm text-[#d99a45] hover:underline"
+                className="ml-auto text-sm text-[#1d4ed8] hover:underline"
               >
                 + Add card
               </button>
             </div>
             {whyAttend.map((c, i) => (
-              <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 space-y-2">
+              <div key={i} className="bg-white border border-slate-200 rounded-xl p-3 space-y-2">
                 <div className="flex gap-3">
                   <input
                     value={c.title}
@@ -777,7 +777,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
                     type="button"
                     onClick={() => setWhyAttend((prev) => prev.filter((_, idx) => idx !== i))}
                     aria-label="Remove card"
-                    className="inline-flex items-center text-zinc-500 hover:text-red-400 px-1"
+                    className="inline-flex items-center text-slate-500 hover:text-red-700 px-1"
                   >
                     <X className="w-4 h-4" aria-hidden="true" />
                   </button>
@@ -794,8 +794,8 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
           </div>
 
           {/* Featured artist */}
-          <div className="space-y-3 border-t border-zinc-800 pt-4">
-            <h3 className="text-sm font-semibold text-zinc-300">Featured artist</h3>
+          <div className="space-y-3 border-t border-slate-200 pt-4">
+            <h3 className="text-sm font-semibold text-slate-700">Featured artist</h3>
             <div className="grid sm:grid-cols-2 gap-3">
               <div>
                 <Label>Name</Label>
@@ -848,7 +848,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
                       type="button"
                       onClick={() => artistFileRef.current?.click()}
                       disabled={uploading !== null}
-                      className="shrink-0 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40 rounded-lg px-4 text-sm font-medium transition-colors"
+                      className="shrink-0 bg-slate-100 hover:bg-slate-200 disabled:opacity-40 rounded-lg px-4 text-sm font-medium transition-colors"
                     >
                       {uploading === "artist" ? "Uploading…" : "Upload"}
                     </button>
@@ -860,7 +860,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
                 <img
                   src={artistImageUrl}
                   alt="Artist preview"
-                  className="mt-2 h-24 rounded-lg object-cover border border-zinc-800"
+                  className="mt-2 h-24 rounded-lg object-cover border border-slate-200"
                 />
               )}
             </div>
@@ -870,7 +870,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
                 <button
                   type="button"
                   onClick={() => setArtistStats((prev) => [...prev, { value: "", label: "" }])}
-                  className="ml-auto text-sm text-[#d99a45] hover:underline"
+                  className="ml-auto text-sm text-[#1d4ed8] hover:underline"
                 >
                   + Add stat
                 </button>
@@ -893,7 +893,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
                     type="button"
                     onClick={() => setArtistStats((prev) => prev.filter((_, idx) => idx !== i))}
                     aria-label="Remove stat"
-                    className="inline-flex items-center text-zinc-500 hover:text-red-400 px-1"
+                    className="inline-flex items-center text-slate-500 hover:text-red-700 px-1"
                   >
                     <X className="w-4 h-4" aria-hidden="true" />
                   </button>
@@ -903,13 +903,13 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
           </div>
 
           {/* Event details */}
-          <div className="space-y-2 border-t border-zinc-800 pt-4">
+          <div className="space-y-2 border-t border-slate-200 pt-4">
             <div className="flex items-center">
-              <h3 className="text-sm font-semibold text-zinc-300">Event details</h3>
+              <h3 className="text-sm font-semibold text-slate-700">Event details</h3>
               <button
                 type="button"
                 onClick={() => setDetails((prev) => [...prev, { label: "", value: "" }])}
-                className="ml-auto text-sm text-[#d99a45] hover:underline"
+                className="ml-auto text-sm text-[#1d4ed8] hover:underline"
               >
                 + Add detail
               </button>
@@ -932,7 +932,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
                   type="button"
                   onClick={() => setDetails((prev) => prev.filter((_, idx) => idx !== i))}
                   aria-label="Remove detail"
-                  className="inline-flex items-center text-zinc-500 hover:text-red-400 px-1"
+                  className="inline-flex items-center text-slate-500 hover:text-red-700 px-1"
                 >
                   <X className="w-4 h-4" aria-hidden="true" />
                 </button>
@@ -941,21 +941,21 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
           </div>
 
           {/* Evening schedule */}
-          <div className="space-y-2 border-t border-zinc-800 pt-4">
+          <div className="space-y-2 border-t border-slate-200 pt-4">
             <div className="flex items-center">
-              <h3 className="text-sm font-semibold text-zinc-300">Evening schedule</h3>
+              <h3 className="text-sm font-semibold text-slate-700">Evening schedule</h3>
               <button
                 type="button"
                 onClick={() =>
                   setSchedule((prev) => [...prev, { time: "", title: "", description: "" }])
                 }
-                className="ml-auto text-sm text-[#d99a45] hover:underline"
+                className="ml-auto text-sm text-[#1d4ed8] hover:underline"
               >
                 + Add slot
               </button>
             </div>
             {schedule.map((s, i) => (
-              <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 space-y-2">
+              <div key={i} className="bg-white border border-slate-200 rounded-xl p-3 space-y-2">
                 <div className="flex gap-2">
                   <input
                     value={s.time}
@@ -973,7 +973,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
                     type="button"
                     onClick={() => setSchedule((prev) => prev.filter((_, idx) => idx !== i))}
                     aria-label="Remove slot"
-                    className="inline-flex items-center text-zinc-500 hover:text-red-400 px-1"
+                    className="inline-flex items-center text-slate-500 hover:text-red-700 px-1"
                   >
                     <X className="w-4 h-4" aria-hidden="true" />
                   </button>
@@ -989,8 +989,8 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
           </div>
 
           {/* Venue */}
-          <div className="space-y-3 border-t border-zinc-800 pt-4">
-            <h3 className="text-sm font-semibold text-zinc-300">Venue</h3>
+          <div className="space-y-3 border-t border-slate-200 pt-4">
+            <h3 className="text-sm font-semibold text-slate-700">Venue</h3>
             <div className="grid sm:grid-cols-2 gap-3">
               <div>
                 <Label>Venue name</Label>
@@ -1052,7 +1052,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
                       type="button"
                       onClick={() => venueFileRef.current?.click()}
                       disabled={uploading !== null}
-                      className="shrink-0 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40 rounded-lg px-4 text-sm font-medium transition-colors"
+                      className="shrink-0 bg-slate-100 hover:bg-slate-200 disabled:opacity-40 rounded-lg px-4 text-sm font-medium transition-colors"
                     >
                       {uploading === "venue" ? "Uploading…" : "Upload"}
                     </button>
@@ -1064,7 +1064,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
                 <img
                   src={venueImageUrl}
                   alt="Venue preview"
-                  className="mt-2 h-24 rounded-lg object-cover border border-zinc-800"
+                  className="mt-2 h-24 rounded-lg object-cover border border-slate-200"
                 />
               )}
             </div>
@@ -1077,21 +1077,21 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
             <button
               type="button"
               onClick={() => setFaqs((prev) => [...prev, { question: "", answer: "" }])}
-              className="ml-auto text-sm text-[#d99a45] hover:underline"
+              className="ml-auto text-sm text-[#1d4ed8] hover:underline"
             >
               + Add FAQ
             </button>
           </div>
           {faqs.length === 0 ? (
-            <p className="text-sm text-zinc-500">No FAQs yet.</p>
+            <p className="text-sm text-slate-500">No FAQs yet.</p>
           ) : (
-            <p className="text-xs text-zinc-600">
+            <p className="text-xs text-slate-400">
               Both question and answer are required to save a FAQ — rows missing either are silently
               dropped on save.
             </p>
           )}
           {faqs.map((faq, i) => (
-            <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 space-y-2">
+            <div key={i} className="bg-white border border-slate-200 rounded-xl p-3 space-y-2">
               <div className="flex gap-3">
                 <input
                   value={faq.question}
@@ -1103,7 +1103,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
                   type="button"
                   onClick={() => setFaqs((prev) => prev.filter((_, idx) => idx !== i))}
                   aria-label="Remove FAQ"
-                  className="inline-flex items-center text-zinc-500 hover:text-red-400 px-1"
+                  className="inline-flex items-center text-slate-500 hover:text-red-700 px-1"
                 >
                   <X className="w-4 h-4" aria-hidden="true" />
                 </button>
@@ -1120,30 +1120,30 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
         </section>
 
         <section className="space-y-3">
-          <div className="flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+          <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-xl p-4">
             <input
               id="published"
               type="checkbox"
               checked={published}
               onChange={(e) => setPublished(e.target.checked)}
-              className="w-4 h-4 accent-[#d99a45]"
+              className="w-4 h-4 accent-[#1d4ed8]"
             />
             <label htmlFor="published" className="text-sm">
               <span className="font-medium">Published</span>
-              <span className="text-zinc-500"> — visible on the site and open for booking</span>
+              <span className="text-slate-500"> — visible on the site and open for booking</span>
             </label>
           </div>
-          <div className="flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+          <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-xl p-4">
             <input
               id="featured"
               type="checkbox"
               checked={featured}
               onChange={(e) => setFeatured(e.target.checked)}
-              className="w-4 h-4 accent-[#d99a45]"
+              className="w-4 h-4 accent-[#1d4ed8]"
             />
             <label htmlFor="featured" className="text-sm">
               <span className="font-medium">Featured</span>
-              <span className="text-zinc-500">
+              <span className="text-slate-500">
                 {" "}
                 — becomes the site&apos;s landing page (only one event can be featured)
               </span>
@@ -1155,14 +1155,14 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
           <button
             type="submit"
             disabled={busy || uploading !== null}
-            className="bg-[#d99a45] hover:bg-[#bf863a] disabled:opacity-40 rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+            className="bg-[#1d4ed8] hover:bg-[#1e40af] disabled:opacity-40 rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
           >
             {busy ? "Saving…" : event ? "Save changes" : "Create event"}
           </button>
           <button
             type="button"
             onClick={onDone}
-            className="text-sm text-zinc-400 hover:text-zinc-200"
+            className="text-sm text-slate-600 hover:text-slate-800"
           >
             Cancel
           </button>
@@ -1171,7 +1171,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
               type="button"
               onClick={remove}
               disabled={busy}
-              className="ml-auto text-sm text-red-400 hover:text-red-300 disabled:opacity-40"
+              className="ml-auto text-sm text-red-700 hover:text-red-700 disabled:opacity-40"
             >
               Delete event
             </button>
@@ -1185,5 +1185,5 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return <label className="block text-xs text-zinc-500 mb-1.5">{children}</label>;
+  return <label className="block text-xs text-slate-500 mb-1.5">{children}</label>;
 }

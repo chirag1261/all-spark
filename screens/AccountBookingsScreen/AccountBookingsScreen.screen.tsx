@@ -31,17 +31,17 @@ export async function AccountBookingsScreen() {
             return (
               <div
                 key={b.razorpayOrderId}
-                className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5"
+                className="bg-white border border-slate-200 rounded-2xl p-5"
               >
                 <div className="flex flex-wrap items-start gap-3">
                   <div className="min-w-0 flex-1">
                     <p className="font-bold wrap-break-word">{event?.title ?? b.eventId}</p>
-                    <p className="text-sm text-zinc-400">
+                    <p className="text-sm text-slate-600">
                       {event
                         ? `${formatDateIST(event.startsAt)} · ${event.venue}, ${event.city}`
                         : ""}
                     </p>
-                    <p className="text-sm text-zinc-500 mt-1">
+                    <p className="text-sm text-slate-500 mt-1">
                       Seats {b.seatIds.join(", ")} · {inr(b.amount)} ·{" "}
                       <span className="font-mono text-xs">{b.bookingId}</span>
                     </p>
@@ -58,7 +58,7 @@ export async function AccountBookingsScreen() {
                       <Link
                         key={t.ticketId}
                         href={`/ticket/${t.ticketId}`}
-                        className="inline-flex items-center gap-1.5 text-xs bg-zinc-800 hover:bg-zinc-700 rounded-lg px-3 py-1.5 transition-colors"
+                        className="inline-flex items-center gap-1.5 text-xs bg-slate-100 hover:bg-slate-200 rounded-lg px-3 py-1.5 transition-colors"
                       >
                         <Ticket className="w-3.5 h-3.5" aria-hidden="true" /> {t.attendeeName} ·{" "}
                         {t.seatId}
@@ -78,10 +78,10 @@ export async function AccountBookingsScreen() {
 function Empty({ label, cta, href }: { label: string; cta: string; href: string }) {
   return (
     <div className="text-center py-16">
-      <p className="text-zinc-500 mb-4">{label}</p>
+      <p className="text-slate-500 mb-4">{label}</p>
       <Link
         href={href}
-        className="inline-block bg-[#d99a45] hover:bg-[#bf863a] rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
+        className="inline-block bg-[#1d4ed8] hover:bg-[#1e40af] rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
       >
         {cta}
       </Link>

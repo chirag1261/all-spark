@@ -33,19 +33,19 @@ export default function Loader({ label, fullscreen }: Props) {
           return (
             <div
               key={i}
-              className={`absolute inset-0 flex items-center justify-center rounded-2xl bg-[#d99a45]/10 border border-[#d99a45]/25 transition-all duration-200 ${
+              className={`absolute inset-0 flex items-center justify-center rounded-2xl bg-[#1d4ed8]/10 border border-[#1d4ed8]/25 transition-all duration-200 ${
                 active
                   ? "opacity-100 scale-100 rotate-0"
                   : "opacity-0 scale-50 " + (i < index ? "-rotate-12" : "rotate-12")
               }`}
               style={{ transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)" }}
             >
-              <Icon className="w-7 h-7 text-[#d99a45]" aria-hidden="true" />
+              <Icon className="w-7 h-7 text-[#1d4ed8]" aria-hidden="true" />
             </div>
           );
         })}
       </div>
-      {label && <p className="text-sm text-zinc-300">{label}</p>}
+      {label && <p className="text-sm text-slate-700">{label}</p>}
       <span className="sr-only">Loading</span>
     </div>
   );
@@ -56,7 +56,7 @@ export default function Loader({ label, fullscreen }: Props) {
     <div
       role="status"
       aria-live="polite"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#0d0a1f]/90 backdrop-blur-sm animate-[fade-in_.15s_ease-out]"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-white/90 backdrop-blur-sm animate-[fade-in_.15s_ease-out]"
     >
       {body}
     </div>

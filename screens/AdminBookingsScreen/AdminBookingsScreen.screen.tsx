@@ -11,10 +11,10 @@ import { BookingStatus } from "@/types";
 import { inr } from "@/utils";
 
 const STATUS_TONES: Record<BookingStatus, string> = {
-  CONFIRMED: "bg-emerald-500/15 text-emerald-400",
-  PENDING: "bg-amber-500/15 text-amber-400",
-  FAILED: "bg-zinc-500/15 text-zinc-400",
-  REFUNDED: "bg-sky-500/15 text-sky-400",
+  CONFIRMED: "bg-emerald-50 text-emerald-700",
+  PENDING: "bg-amber-50 text-amber-700",
+  FAILED: "bg-slate-100 text-slate-600",
+  REFUNDED: "bg-sky-50 text-sky-700",
 };
 
 interface AdminBookingsScreenProps {
@@ -59,7 +59,7 @@ export async function AdminBookingsScreen({
         <h1 className="font-heading text-3xl font-semibold">Bookings</h1>
         <a
           href={`/api/admin/bookings/export?${exportParams}`}
-          className="ml-auto inline-flex items-center gap-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg px-4 py-2 font-semibold text-sm transition-colors"
+          className="ml-auto inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg px-4 py-2 font-semibold text-sm transition-colors"
         >
           <Download className="w-4 h-4" aria-hidden="true" /> Export CSV
         </a>
@@ -71,12 +71,12 @@ export async function AdminBookingsScreen({
           name="q"
           defaultValue={q}
           placeholder="Search attendee name, email, phone, booking or ticket ID…"
-          className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-[#d99a45]"
+          className="flex-1 bg-white border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-[#1d4ed8]"
         />
         <select
           name="eventId"
           defaultValue={eventId}
-          className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#d99a45]"
+          className="bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#1d4ed8]"
         >
           <option value="">All events</option>
           {events.map((e) => (
@@ -88,7 +88,7 @@ export async function AdminBookingsScreen({
         <select
           name="status"
           defaultValue={status}
-          className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#d99a45]"
+          className="bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#1d4ed8]"
         >
           <option value="">All statuses</option>
           {(["CONFIRMED", "PENDING", "FAILED", "REFUNDED"] as const).map((s) => (
@@ -99,19 +99,19 @@ export async function AdminBookingsScreen({
         </select>
         <button
           type="submit"
-          className="bg-[#d99a45] hover:bg-[#bf863a] rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
+          className="bg-[#1d4ed8] hover:bg-[#1e40af] rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
         >
           Search
         </button>
       </form>
 
       {bookings.length === 0 ? (
-        <p className="text-zinc-500">No bookings found.</p>
+        <p className="text-slate-500">No bookings found.</p>
       ) : (
-        <div className="overflow-x-auto border border-zinc-800 rounded-xl">
+        <div className="overflow-x-auto border border-slate-200 rounded-xl">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-zinc-500 border-b border-zinc-800 bg-zinc-900/60">
+              <tr className="text-left text-slate-500 border-b border-slate-200 bg-slate-50">
                 <th className="px-4 py-3 font-medium">Attendee</th>
                 <th className="px-4 py-3 font-medium">Event</th>
                 <th className="px-4 py-3 font-medium">Seats</th>
@@ -124,14 +124,14 @@ export async function AdminBookingsScreen({
             </thead>
             <tbody>
               {bookings.map((b) => (
-                <tr key={b.razorpayOrderId} className="border-b border-zinc-800/60 last:border-0">
+                <tr key={b.razorpayOrderId} className="border-b border-slate-200 last:border-0">
                   <td className="px-4 py-3">
                     <p className="font-medium">{b.attendeeName}</p>
-                    <p className="text-xs text-zinc-500">
+                    <p className="text-xs text-slate-500">
                       {b.customerEmail} · {b.customerPhone}
                     </p>
                   </td>
-                  <td className="px-4 py-3 text-zinc-400">
+                  <td className="px-4 py-3 text-slate-600">
                     {eventTitleById.get(b.eventId) ?? b.eventId}
                   </td>
                   <td className="px-4 py-3">{b.seatIds.join(", ")}</td>
@@ -139,12 +139,12 @@ export async function AdminBookingsScreen({
                     {b.ticketId ? (
                       <Link
                         href={`/ticket/${b.ticketId}`}
-                        className="font-mono text-xs text-[#d99a45] hover:underline"
+                        className="font-mono text-xs text-[#1d4ed8] hover:underline"
                       >
                         {b.ticketId}
                       </Link>
                     ) : (
-                      <span className="text-zinc-600">—</span>
+                      <span className="text-slate-400">—</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-right">{inr(b.amount)}</td>
@@ -155,7 +155,7 @@ export async function AdminBookingsScreen({
                       {b.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-zinc-400 whitespace-nowrap text-xs">
+                  <td className="px-4 py-3 text-slate-600 whitespace-nowrap text-xs">
                     {new Date(b.createdAt).toLocaleString("en-IN", {
                       timeZone: "Asia/Kolkata",
                       dateStyle: "medium",
@@ -175,7 +175,7 @@ export async function AdminBookingsScreen({
         </div>
       )}
 
-      <p className="text-xs text-zinc-600 mt-4">
+      <p className="text-xs text-slate-400 mt-4">
         {bookings.length} booking{bookings.length === 1 ? "" : "s"} shown. Refunds are full refunds
         via Razorpay and release the seats back to sale.
       </p>

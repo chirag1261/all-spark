@@ -106,10 +106,10 @@ function ConfirmDialogView({
         onClick={onCancel}
         className="absolute inset-0 bg-black/70 backdrop-blur-sm cursor-default animate-[fade-in_.15s_ease-out]"
       />
-      <div className="relative w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl text-center animate-[dialog-in_.15s_ease-out]">
+      <div className="relative w-full max-w-sm bg-white border border-slate-200 rounded-2xl p-6 shadow-2xl text-center animate-[dialog-in_.15s_ease-out]">
         <div
           className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 ${
-            danger ? "bg-red-500/15 text-red-400" : "bg-[#d99a45]/15 text-[#d99a45]"
+            danger ? "bg-red-50 text-red-700" : "bg-[#1d4ed8]/15 text-[#1d4ed8]"
           }`}
         >
           {danger ? (
@@ -119,12 +119,12 @@ function ConfirmDialogView({
           )}
         </div>
         {title && <h2 className="font-bold text-lg mb-1.5">{title}</h2>}
-        <p className="text-sm text-zinc-400 leading-relaxed wrap-break-word">{message}</p>
+        <p className="text-sm text-slate-600 leading-relaxed wrap-break-word">{message}</p>
         <div className="flex gap-3 mt-6">
           <button
             onClick={onCancel}
             autoFocus
-            className="flex-1 text-sm font-medium text-zinc-300 border border-zinc-700 hover:bg-zinc-800 hover:border-zinc-600 px-4 py-2.5 rounded-lg transition-colors"
+            className="flex-1 text-sm font-medium text-slate-700 border border-slate-300 hover:bg-slate-100 hover:border-slate-400 px-4 py-2.5 rounded-lg transition-colors"
           >
             {cancelLabel}
           </button>
@@ -133,7 +133,7 @@ function ConfirmDialogView({
             className={`flex-1 text-sm font-semibold px-4 py-2.5 rounded-lg shadow-lg transition-colors ${
               danger
                 ? "bg-red-600 hover:bg-red-500 text-white shadow-red-600/20"
-                : "bg-[#d99a45] hover:bg-[#bf863a] text-white shadow-[#d99a45]/20"
+                : "bg-[#1d4ed8] hover:bg-[#1e40af] text-white shadow-[#1d4ed8]/20"
             }`}
           >
             {confirmLabel}

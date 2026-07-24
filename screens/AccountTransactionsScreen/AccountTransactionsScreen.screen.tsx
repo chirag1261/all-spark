@@ -14,12 +14,12 @@ export async function AccountTransactionsScreen() {
     <AccountShell active="/account/transactions">
       <h1 className="text-2xl font-bold mb-6">My Transactions</h1>
       {bookings.length === 0 ? (
-        <p className="text-zinc-500 py-16 text-center">No transactions yet.</p>
+        <p className="text-slate-500 py-16 text-center">No transactions yet.</p>
       ) : (
-        <div className="overflow-x-auto border border-zinc-800 rounded-xl">
+        <div className="overflow-x-auto border border-slate-200 rounded-xl">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-zinc-500 border-b border-zinc-800 bg-zinc-900/60">
+              <tr className="text-left text-slate-500 border-b border-slate-200 bg-slate-50">
                 <th className="px-4 py-3 font-medium">Date</th>
                 <th className="px-4 py-3 font-medium">Event</th>
                 <th className="px-4 py-3 font-medium">Reference</th>
@@ -29,8 +29,8 @@ export async function AccountTransactionsScreen() {
             </thead>
             <tbody>
               {bookings.map((b) => (
-                <tr key={b.razorpayOrderId} className="border-b border-zinc-800/60 last:border-0">
-                  <td className="px-4 py-3 text-zinc-400 whitespace-nowrap text-xs">
+                <tr key={b.razorpayOrderId} className="border-b border-slate-200 last:border-0">
+                  <td className="px-4 py-3 text-slate-600 whitespace-nowrap text-xs">
                     {new Date(b.createdAt).toLocaleString("en-IN", {
                       timeZone: "Asia/Kolkata",
                       dateStyle: "medium",
@@ -43,10 +43,10 @@ export async function AccountTransactionsScreen() {
                   <td className="px-4 py-3">
                     <p className="font-mono text-xs">{b.bookingId}</p>
                     {b.razorpayPaymentId && (
-                      <p className="font-mono text-[11px] text-zinc-500">{b.razorpayPaymentId}</p>
+                      <p className="font-mono text-[11px] text-slate-500">{b.razorpayPaymentId}</p>
                     )}
                     {b.razorpayRefundId && (
-                      <p className="flex items-center gap-1 font-mono text-[11px] text-sky-400">
+                      <p className="flex items-center gap-1 font-mono text-[11px] text-sky-700">
                         <Undo2 className="w-3 h-3" aria-hidden="true" />
                         {b.razorpayRefundId}
                       </p>

@@ -18,7 +18,7 @@ interface Props {
 }
 
 const inputCls =
-  "w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#d99a45]";
+  "w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#1d4ed8]";
 
 export default function ProfileForm({ profile }: Props) {
   const router = useRouter();
@@ -86,7 +86,7 @@ export default function ProfileForm({ profile }: Props) {
     <div className="grid md:grid-cols-2 gap-6 items-start">
       <form
         onSubmit={saveProfile}
-        className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-4"
+        className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4"
       >
         <h2 className="font-semibold">Profile</h2>
         <div>
@@ -111,13 +111,13 @@ export default function ProfileForm({ profile }: Props) {
               className={inputCls}
             />
             {!emailChanged && profile.email && profile.emailVerified && (
-              <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide bg-emerald-500/15 text-emerald-400 px-1.5 py-0.5 rounded">
+              <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded">
                 Verified
               </span>
             )}
           </div>
           {emailChanged && (
-            <p className="text-xs text-zinc-500 mt-1.5">
+            <p className="text-xs text-slate-500 mt-1.5">
               You&apos;ll need to verify this with an OTP the next time you sign in with it.
             </p>
           )}
@@ -129,7 +129,7 @@ export default function ProfileForm({ profile }: Props) {
         <button
           type="submit"
           disabled={busy || name.trim().length < 2}
-          className="bg-[#d99a45] hover:bg-[#bf863a] disabled:opacity-40 rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
+          className="bg-[#1d4ed8] hover:bg-[#1e40af] disabled:opacity-40 rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
         >
           Save profile
         </button>
@@ -137,12 +137,12 @@ export default function ProfileForm({ profile }: Props) {
 
       <form
         onSubmit={savePassword}
-        className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-4"
+        className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4"
       >
         <h2 className="font-semibold">
           {profile.hasPassword ? "Change password" : "Set a password"}
         </h2>
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-slate-500">
           {profile.hasPassword
             ? "You can sign in with your password or a one-time code."
             : "Optional — you can always sign in with a one-time code instead."}
@@ -176,7 +176,7 @@ export default function ProfileForm({ profile }: Props) {
         <button
           type="submit"
           disabled={busy || newPassword.length < 8}
-          className="bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40 rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
+          className="bg-slate-100 hover:bg-slate-200 disabled:opacity-40 rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
         >
           {profile.hasPassword ? "Change password" : "Set password"}
         </button>
@@ -187,12 +187,12 @@ export default function ProfileForm({ profile }: Props) {
 }
 
 function ContactRow({ value, verified }: { value: string | null; verified: boolean }) {
-  if (!value) return <p className="text-sm text-zinc-600 py-2.5">Not added</p>;
+  if (!value) return <p className="text-sm text-slate-400 py-2.5">Not added</p>;
   return (
     <p className="text-sm py-2.5 flex items-center gap-2 wrap-break-word min-w-0">
       <span className="min-w-0 wrap-break-word">{value}</span>
       {verified && (
-        <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide bg-emerald-500/15 text-emerald-400 px-1.5 py-0.5 rounded">
+        <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded">
           Verified
         </span>
       )}
@@ -201,5 +201,5 @@ function ContactRow({ value, verified }: { value: string | null; verified: boole
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return <label className="block text-xs text-zinc-500 mb-1.5">{children}</label>;
+  return <label className="block text-xs text-slate-500 mb-1.5">{children}</label>;
 }

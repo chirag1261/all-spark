@@ -79,13 +79,13 @@ function ToastView({
       aria-live="polite"
     >
       <div
-        className={`pointer-events-auto flex items-center gap-3 max-w-sm rounded-2xl border px-4 py-3 shadow-[0_16px_40px_rgba(0,0,0,0.45)] backdrop-blur-md bg-[#171228]/95 animate-[dialog-in_.18s_ease-out] ${
+        className={`pointer-events-auto flex items-center gap-3 max-w-sm rounded-2xl border px-4 py-3 shadow-[0_12px_30px_rgba(15,23,42,0.10)] backdrop-blur-md bg-white/95 animate-[dialog-in_.18s_ease-out] ${
           success ? "border-emerald-500/30" : "border-red-500/30"
         }`}
       >
         <span
           className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-            success ? "bg-emerald-500/15 text-emerald-400" : "bg-red-500/15 text-red-400"
+            success ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
           }`}
         >
           {success ? (
@@ -94,11 +94,11 @@ function ToastView({
             <CircleAlert className="w-4 h-4" aria-hidden="true" />
           )}
         </span>
-        <p className="text-sm text-zinc-100 wrap-break-word min-w-0">{message}</p>
+        <p className="text-sm text-slate-900 wrap-break-word min-w-0">{message}</p>
         <button
           onClick={onClose}
           aria-label="Dismiss"
-          className="ml-1 shrink-0 text-zinc-500 hover:text-zinc-300 transition-colors"
+          className="ml-1 shrink-0 text-slate-500 hover:text-slate-700 transition-colors"
         >
           <X className="w-4 h-4" aria-hidden="true" />
         </button>

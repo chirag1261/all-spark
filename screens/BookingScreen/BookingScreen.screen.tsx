@@ -24,7 +24,7 @@ export async function BookingScreen({ id }: { id: string }) {
   if (registrationState(event) !== "open" || soldOut) redirect(`/events/${event.id}`);
 
   return (
-    <div className="min-h-screen text-zinc-100">
+    <div className="min-h-screen text-slate-900">
       <SiteHeader />
       <main className="max-w-6xl mx-auto px-4 py-8">
         <BookingFlow

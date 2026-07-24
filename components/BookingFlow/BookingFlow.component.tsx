@@ -247,7 +247,7 @@ export default function BookingFlow({
         description: `Seats ${selectedSeats.join(", ")}`,
         order_id: data.orderId,
         prefill: data.prefill,
-        theme: { color: "#d99a45" },
+        theme: { color: "#1d4ed8" },
         handler: async (resp: {
           razorpay_order_id: string;
           razorpay_payment_id: string;
@@ -324,16 +324,16 @@ export default function BookingFlow({
     return (
       <div className="max-w-lg mx-auto text-center py-12">
         <Confetti />
-        <div className="tick-pop w-16 h-16 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center justify-center mx-auto mb-5">
+        <div className="tick-pop w-16 h-16 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center mx-auto mb-5">
           <Check className="w-8 h-8" aria-hidden="true" />
         </div>
         <h1 className="text-2xl font-bold mb-1">Booking confirmed!</h1>
-        <p className="text-zinc-400 text-sm mb-2">
+        <p className="text-slate-600 text-sm mb-2">
           {confirmed.tickets.length > 1
             ? `${confirmed.tickets.length} tickets — each attendee shows their own QR at the gate.`
             : "Show this QR at the venue gate."}
         </p>
-        <p className="text-zinc-500 text-sm mb-8">
+        <p className="text-slate-500 text-sm mb-8">
           {confirmed.emailSent
             ? `Tickets were emailed to ${customer.email}.`
             : "Save your tickets — they're also in My Tickets in your account."}
@@ -343,7 +343,7 @@ export default function BookingFlow({
           {confirmed.tickets.map((t) => (
             <div
               key={t.ticketId}
-              className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex items-center gap-5"
+              className="bg-white border border-slate-200 rounded-2xl p-5 flex items-center gap-5"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -353,11 +353,11 @@ export default function BookingFlow({
               />
               <div className="min-w-0">
                 <p className="font-bold wrap-break-word">{t.name}</p>
-                <p className="text-sm text-zinc-400">Seat {t.seatId}</p>
-                <p className="font-mono text-xs text-zinc-500 mt-1 wrap-break-word">{t.ticketId}</p>
+                <p className="text-sm text-slate-600">Seat {t.seatId}</p>
+                <p className="font-mono text-xs text-slate-500 mt-1 wrap-break-word">{t.ticketId}</p>
                 <Link
                   href={`/ticket/${t.ticketId}`}
-                  className="inline-block mt-2 text-sm text-[#d99a45] hover:underline"
+                  className="inline-block mt-2 text-sm text-[#1d4ed8] hover:underline"
                 >
                   View / share ticket
                 </Link>
@@ -366,7 +366,7 @@ export default function BookingFlow({
           ))}
         </div>
 
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 mt-4 text-left space-y-2">
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 mt-4 text-left space-y-2">
           <Row label="Booking ID" value={confirmed.bookingId} mono />
           <Row label="Event" value={event.title} />
           <Row label="When" value={formatDateIST(event.startsAt)} />
@@ -376,13 +376,13 @@ export default function BookingFlow({
         <div className="flex flex-col sm:flex-row gap-3 mt-6">
           <Link
             href="/account/tickets"
-            className="flex-1 bg-zinc-800 hover:bg-zinc-700 rounded-lg px-5 py-3 font-semibold text-sm transition-colors"
+            className="flex-1 bg-slate-100 hover:bg-slate-200 rounded-lg px-5 py-3 font-semibold text-sm transition-colors"
           >
             My tickets
           </Link>
           <Link
             href="/"
-            className="flex-1 bg-[#d99a45] hover:bg-[#bf863a] rounded-lg px-5 py-3 font-semibold text-sm transition-colors"
+            className="flex-1 bg-[#1d4ed8] hover:bg-[#1e40af] rounded-lg px-5 py-3 font-semibold text-sm transition-colors"
           >
             Browse more events
           </Link>
@@ -401,12 +401,12 @@ export default function BookingFlow({
       </BackLink>
       <div className="flex flex-wrap items-baseline gap-x-3 mb-1">
         <h1 className="text-xl font-bold wrap-break-word">{event.title}</h1>
-        <span className="text-sm text-zinc-400">
+        <span className="text-sm text-slate-600">
           {event.venue} · {formatDateIST(event.startsAt)}
         </span>
       </div>
-      <p className="text-xs text-zinc-500 mb-6">
-        Booking as <span className="text-zinc-300">{customer.name}</span> (
+      <p className="text-xs text-slate-500 mb-6">
+        Booking as <span className="text-slate-700">{customer.name}</span> (
         {customer.email ?? customer.phone}).
       </p>
 
@@ -422,7 +422,7 @@ export default function BookingFlow({
             selected={selected}
             onToggle={toggleSeat}
           />
-          <div className="sticky bottom-0 mt-6 bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+          <div className="sticky bottom-0 mt-6 bg-white border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium">
                 {selected.size > 0 ? (
@@ -434,13 +434,13 @@ export default function BookingFlow({
                 )}
               </p>
               {selected.size > 0 && (
-                <p className="text-xs text-zinc-500 truncate">{selectedSeats.join(", ")}</p>
+                <p className="text-xs text-slate-500 truncate">{selectedSeats.join(", ")}</p>
               )}
             </div>
             <button
               onClick={goToAttendees}
               disabled={selected.size === 0}
-              className="bg-[#d99a45] hover:bg-[#bf863a] disabled:opacity-40 disabled:cursor-not-allowed rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+              className="bg-[#1d4ed8] hover:bg-[#1e40af] disabled:opacity-40 disabled:cursor-not-allowed rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
             >
               Continue
             </button>
@@ -451,11 +451,11 @@ export default function BookingFlow({
       {/* ---- Step 2: attendee names ---- */}
       {step === "attendees" && (
         <div className="mt-6 max-w-2xl">
-          <p className="flex items-center gap-1.5 text-xs uppercase tracking-wide text-zinc-500 mb-3">
+          <p className="flex items-center gap-1.5 text-xs uppercase tracking-wide text-slate-500 mb-3">
             <Users className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             Attendee for each seat
             {selectedSeats.length > 1 && (
-              <span className="normal-case text-zinc-600">
+              <span className="normal-case text-slate-400">
                 — every person gets their own QR ticket
               </span>
             )}
@@ -463,7 +463,7 @@ export default function BookingFlow({
           <div className="grid sm:grid-cols-2 gap-2.5">
             {selectedSeats.map((seatId, i) => (
               <div key={seatId} className="flex items-center gap-2.5">
-                <span className="h-10 shrink-0 flex items-center justify-center whitespace-nowrap text-[11px] font-mono font-semibold tracking-wide text-[#e8bd6b] bg-[#d99a45]/10 border border-[#d99a45]/25 rounded-lg px-3">
+                <span className="h-10 shrink-0 flex items-center justify-center whitespace-nowrap text-[11px] font-mono font-semibold tracking-wide text-[#1d4ed8] bg-[#1d4ed8]/10 border border-[#1d4ed8]/25 rounded-lg px-3">
                   {seatId}
                 </span>
                 <input
@@ -475,7 +475,7 @@ export default function BookingFlow({
                   required
                   minLength={2}
                   maxLength={80}
-                  className="h-10 flex-1 min-w-0 bg-zinc-950 border border-zinc-800 rounded-lg px-3 text-sm outline-none focus:border-[#d99a45] transition-colors"
+                  className="h-10 flex-1 min-w-0 bg-white border border-slate-200 rounded-lg px-3 text-sm outline-none focus:border-[#1d4ed8] transition-colors"
                 />
               </div>
             ))}
@@ -486,13 +486,13 @@ export default function BookingFlow({
                 clearPromo(); // seats may change → any previewed discount is stale
                 setStep("seats");
               }}
-              className="rounded-lg border border-zinc-700 px-5 py-2.5 font-semibold text-sm text-zinc-300 hover:text-zinc-100 hover:border-zinc-600 transition-colors"
+              className="rounded-lg border border-slate-300 px-5 py-2.5 font-semibold text-sm text-slate-700 hover:text-slate-900 hover:border-slate-400 transition-colors"
             >
               Back
             </button>
             <button
               onClick={goToSummary}
-              className="flex-1 sm:flex-none bg-[#d99a45] hover:bg-[#bf863a] rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+              className="flex-1 sm:flex-none bg-[#1d4ed8] hover:bg-[#1e40af] rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
             >
               Continue
             </button>
@@ -503,41 +503,41 @@ export default function BookingFlow({
       {/* ---- Step 3: review & pay ---- */}
       {step === "summary" && (
         <div className="mt-6 max-w-2xl">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
-            <div className="px-5 py-4 border-b border-zinc-800">
+          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-200">
               <p className="font-semibold">{event.title}</p>
-              <p className="text-sm text-zinc-400">
+              <p className="text-sm text-slate-600">
                 {event.venue} · {formatDateIST(event.startsAt)}
               </p>
             </div>
-            <ul className="divide-y divide-zinc-800/70">
+            <ul className="divide-y divide-slate-200">
               {selectedSeats.map((seatId, i) => (
                 <li key={seatId} className="flex items-center gap-3 px-5 py-3">
-                  <span className="shrink-0 whitespace-nowrap text-[11px] font-mono font-semibold tracking-wide text-[#e8bd6b] bg-[#d99a45]/10 border border-[#d99a45]/25 rounded-lg px-2.5 py-1">
+                  <span className="shrink-0 whitespace-nowrap text-[11px] font-mono font-semibold tracking-wide text-[#1d4ed8] bg-[#1d4ed8]/10 border border-[#1d4ed8]/25 rounded-lg px-2.5 py-1">
                     {seatId}
                   </span>
                   <span className="min-w-0 flex-1 truncate text-sm">{nameForSeat(seatId, i)}</span>
-                  <span className="shrink-0 text-sm text-zinc-400">
+                  <span className="shrink-0 text-sm text-slate-600">
                     {inr(seatPrice(event, seatId) ?? 0)}
                   </span>
                 </li>
               ))}
             </ul>
-            <div className="px-5 py-4 border-t border-zinc-800 space-y-1.5">
-              <div className="flex items-center justify-between text-sm text-zinc-400">
+            <div className="px-5 py-4 border-t border-slate-200 space-y-1.5">
+              <div className="flex items-center justify-between text-sm text-slate-600">
                 <span>
                   Subtotal · {selected.size} seat{selected.size > 1 ? "s" : ""}
                 </span>
                 <span>{inr(totalAmount)}</span>
               </div>
               {appliedPromo && (
-                <div className="flex items-center justify-between text-sm text-emerald-400">
+                <div className="flex items-center justify-between text-sm text-emerald-700">
                   <span>Promo {appliedPromo.code}</span>
                   <span>−{inr(appliedPromo.discount)}</span>
                 </div>
               )}
-              <div className="flex items-center justify-between pt-1.5 border-t border-zinc-800/70">
-                <span className="text-sm text-zinc-300">Total payable</span>
+              <div className="flex items-center justify-between pt-1.5 border-t border-slate-200">
+                <span className="text-sm text-slate-700">Total payable</span>
                 <span className="text-lg font-bold">{inr(payable)}</span>
               </div>
             </div>
@@ -546,8 +546,8 @@ export default function BookingFlow({
           {/* Promo code */}
           <div className="mt-4">
             {appliedPromo ? (
-              <div className="flex items-center gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3">
-                <Tag className="w-4 h-4 shrink-0 text-emerald-400" aria-hidden="true" />
+              <div className="flex items-center gap-3 rounded-xl border border-emerald-500/30 bg-emerald-50 px-4 py-3">
+                <Tag className="w-4 h-4 shrink-0 text-emerald-700" aria-hidden="true" />
                 <span className="text-sm">
                   <span className="font-semibold">{appliedPromo.code}</span> applied — you save{" "}
                   {inr(appliedPromo.discount)}
@@ -555,7 +555,7 @@ export default function BookingFlow({
                 <button
                   onClick={clearPromo}
                   disabled={paying}
-                  className="ml-auto text-sm text-zinc-400 hover:text-zinc-200 disabled:opacity-40"
+                  className="ml-auto text-sm text-slate-600 hover:text-slate-800 disabled:opacity-40"
                 >
                   Remove
                 </button>
@@ -572,12 +572,12 @@ export default function BookingFlow({
                     }
                   }}
                   placeholder="Promo code"
-                  className="flex-1 min-w-0 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm font-mono tracking-wide uppercase outline-none focus:border-[#d99a45]"
+                  className="flex-1 min-w-0 bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm font-mono tracking-wide uppercase outline-none focus:border-[#1d4ed8]"
                 />
                 <button
                   onClick={applyPromo}
                   disabled={applyingPromo || !promoInput.trim()}
-                  className="shrink-0 rounded-lg border border-zinc-700 px-5 py-2.5 font-semibold text-sm text-zinc-200 hover:border-zinc-600 disabled:opacity-40 transition-colors"
+                  className="shrink-0 rounded-lg border border-slate-300 px-5 py-2.5 font-semibold text-sm text-slate-800 hover:border-slate-400 disabled:opacity-40 transition-colors"
                 >
                   {applyingPromo ? "Applying…" : "Apply"}
                 </button>
@@ -585,7 +585,7 @@ export default function BookingFlow({
             )}
           </div>
 
-          <p className="text-xs text-zinc-500 mt-4">
+          <p className="text-xs text-slate-500 mt-4">
             Your seats are held for 8 minutes once you proceed to payment.
           </p>
 
@@ -593,14 +593,14 @@ export default function BookingFlow({
             <button
               onClick={() => setStep("attendees")}
               disabled={paying}
-              className="rounded-lg border border-zinc-700 px-5 py-2.5 font-semibold text-sm text-zinc-300 hover:text-zinc-100 hover:border-zinc-600 disabled:opacity-40 transition-colors"
+              className="rounded-lg border border-slate-300 px-5 py-2.5 font-semibold text-sm text-slate-700 hover:text-slate-900 hover:border-slate-400 disabled:opacity-40 transition-colors"
             >
               Back
             </button>
             <button
               onClick={pay}
               disabled={paying || selected.size === 0}
-              className="flex-1 bg-[#d99a45] hover:bg-[#bf863a] disabled:opacity-40 disabled:cursor-not-allowed rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+              className="flex-1 bg-[#1d4ed8] hover:bg-[#1e40af] disabled:opacity-40 disabled:cursor-not-allowed rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
             >
               {paying ? "Processing…" : `Proceed to payment · ${inr(payable)}`}
             </button>
@@ -634,22 +634,22 @@ function Stepper({ current }: { current: "seats" | "attendees" | "summary" }) {
               <span
                 className={`w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-xs font-bold ${
                   done
-                    ? "bg-[#d99a45] text-[#1a1206]"
+                    ? "bg-[#1d4ed8] text-[#ffffff]"
                     : active
-                      ? "bg-[#d99a45]/20 text-[#e8bd6b] ring-1 ring-[#d99a45]"
-                      : "bg-zinc-800 text-zinc-500"
+                      ? "bg-[#1d4ed8]/20 text-[#1d4ed8] ring-1 ring-[#1d4ed8]"
+                      : "bg-slate-100 text-slate-500"
                 }`}
               >
                 {done ? <Check className="w-3.5 h-3.5" aria-hidden="true" /> : i + 1}
               </span>
               <span
-                className={`text-sm font-medium ${active ? "text-zinc-100" : "text-zinc-500"}`}
+                className={`text-sm font-medium ${active ? "text-slate-900" : "text-slate-500"}`}
               >
                 {s.label}
               </span>
             </span>
             {i < STEPS.length - 1 && (
-              <span className="w-4 sm:w-8 h-px bg-zinc-700 shrink-0" aria-hidden="true" />
+              <span className="w-4 sm:w-8 h-px bg-slate-200 shrink-0" aria-hidden="true" />
             )}
           </li>
         );
@@ -671,7 +671,7 @@ function Row({
 }) {
   return (
     <div className="flex justify-between gap-4 text-sm">
-      <span className="text-zinc-500">{label}</span>
+      <span className="text-slate-500">{label}</span>
       <span
         className={`${mono ? "font-mono" : ""} ${strong ? "font-bold text-base" : ""} text-right wrap-break-word min-w-0`}
       >

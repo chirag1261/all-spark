@@ -89,7 +89,7 @@ export default function QrScanner({ onDecode, paused }: Props) {
         <div className="h-2/3 w-2/3 rounded-2xl border-2 border-white/70 shadow-[0_0_0_9999px_rgba(0,0,0,0.35)]" />
       </div>
       {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/80 p-6 text-center text-sm text-red-300">
+        <div className="absolute inset-0 flex items-center justify-center bg-black/80 p-6 text-center text-sm text-red-700">
           {error}
         </div>
       )}

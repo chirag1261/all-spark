@@ -43,7 +43,7 @@ export async function AdminEventsScreen() {
     <AdminShell user={shellUser}>
       <h1 className="font-heading text-3xl font-semibold mb-6">Events</h1>
       {noFeatured && (
-        <div className="mb-5 flex items-start gap-3 bg-amber-400/10 border border-amber-400/25 text-amber-300 rounded-xl px-4 py-3 text-sm">
+        <div className="mb-5 flex items-start gap-3 bg-amber-50 border border-amber-400/25 text-amber-700 rounded-xl px-4 py-3 text-sm">
           <span className="shrink-0 mt-0.5">⚠️</span>
           <span>
             No event is set as the <strong>Featured</strong> landing page — the home screen will

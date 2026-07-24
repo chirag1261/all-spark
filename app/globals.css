@@ -1,18 +1,23 @@
 @import "tailwindcss";
 
 /* ---------------------------------------------------------------------------
-   Utsav Events — devotional design tokens
-   Deep-indigo canvas, saffron-gold accents. Roboto throughout (client's
-   brand consistency requirement) for both body copy and headings.
+   Utsav Events — light design tokens
+   Crisp white canvas, royal-cobalt accents (~70% white / 30% blue). Classy,
+   professional, ticketing-platform feel. Roboto throughout (client's brand
+   consistency requirement) for both body copy and headings.
 --------------------------------------------------------------------------- */
 :root {
-  --background: #0d0a1f; /* deep indigo — hsl(249 51% 8%) */
-  --foreground: #f5f4ef; /* warm off-white */
-  --surface: #171228; /* raised cards */
-  --surface-2: #1f1838; /* hover / inset */
-  --edge: #2a2450; /* indigo borders — hsl(248 41% 28%) */
-  --accent: #d99a45; /* soft honey gold — muted saffron, easy on the eyes */
-  --accent-hot: #e8bd6b; /* lighter gold for gradients/glow */
+  --background: #ffffff; /* page canvas */
+  --foreground: #0f172a; /* slate-900 — primary text */
+  --muted: #64748b; /* slate-500 — secondary text */
+  --surface: #ffffff; /* raised cards */
+  --surface-2: #f5f8ff; /* subtle blue section band / inset */
+  --band: #f5f8ff; /* alias for section bands */
+  --edge: #e5eaf1; /* light borders */
+  --accent: #1d4ed8; /* royal cobalt — CTAs, links, highlights */
+  --accent-dark: #1e40af; /* hover */
+  --accent-hot: #3b82f6; /* lighter cobalt for gradients */
+  --accent-soft: #eff4ff; /* cobalt tint background */
 }
 
 @theme inline {
@@ -25,7 +30,7 @@
 
 body {
   background:
-    radial-gradient(1200px 500px at 50% -220px, rgba(217,154,69, 0.1), transparent 70%),
+    radial-gradient(1200px 500px at 50% -220px, rgba(29, 78, 216, 0.05), transparent 70%),
     var(--background);
   color: var(--foreground);
   font-family: var(--font-roboto), system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -41,34 +46,33 @@ h3 {
 /* Thin, unobtrusive scrollbars for carousels/tables */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #33363e transparent;
+  scrollbar-color: #cbd5e1 transparent;
 }
 *::-webkit-scrollbar {
   height: 6px;
   width: 6px;
 }
 *::-webkit-scrollbar-thumb {
-  background: #33363e;
+  background: #cbd5e1;
   border-radius: 999px;
 }
 *::-webkit-scrollbar-track {
   background: transparent;
 }
 
-/* Native <input type="datetime-local"/date/time"> pickers default to a
-   light-mode calendar icon + popup, which reads as broken on this dark
-   theme. color-scheme flips both the icon and the OS-rendered popup to dark. */
+/* Native <input type="datetime-local"> pickers — keep them in light mode to
+   match the app's light theme, with a subtle cobalt hover on the indicator. */
 .dt-input {
-  color-scheme: dark;
+  color-scheme: light;
 }
 .dt-input::-webkit-calendar-picker-indicator {
-  opacity: 0.7;
+  opacity: 0.6;
   cursor: pointer;
   border-radius: 4px;
 }
 .dt-input::-webkit-calendar-picker-indicator:hover {
   opacity: 1;
-  background-color: rgba(217, 154, 69, 0.15);
+  background-color: rgba(29, 78, 216, 0.12);
 }
 
 /* ---------------------------------------------------------------------------
@@ -116,10 +120,10 @@ h3 {
 @keyframes neon-pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(217,154,69, 0.55);
+    box-shadow: 0 0 0 0 rgba(29, 78, 216, 0.5);
   }
   50% {
-    box-shadow: 0 0 14px 2px rgba(217,154,69, 0.35);
+    box-shadow: 0 0 14px 2px rgba(29, 78, 216, 0.3);
   }
 }
 

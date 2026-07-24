@@ -74,7 +74,7 @@ export async function AdminDashboardScreen() {
   return (
     <AdminShell user={{ name: currentUser.name, role: currentUser.role }}>
       <h1 className="font-heading text-3xl font-semibold mb-1">Dashboard</h1>
-      <p className="text-sm text-zinc-500 mb-8">
+      <p className="text-sm text-slate-500 mb-8">
         Live totals across all events. Trends compare the last 7 days with the 7 days before.
       </p>
 
@@ -115,10 +115,10 @@ export async function AdminDashboardScreen() {
           {recentActivity.length > 0 ? (
             <ActivityFeed entries={recentActivity} />
           ) : (
-            <div className="border border-dashed border-zinc-800 rounded-xl px-4 py-10 text-center">
-              <ClipboardList className="w-8 h-8 mx-auto mb-2 text-zinc-500" aria-hidden="true" />
-              <p className="text-sm text-zinc-400">No admin activity yet.</p>
-              <p className="text-xs text-zinc-600 mt-1">
+            <div className="border border-dashed border-slate-200 rounded-xl px-4 py-10 text-center">
+              <ClipboardList className="w-8 h-8 mx-auto mb-2 text-slate-500" aria-hidden="true" />
+              <p className="text-sm text-slate-600">No admin activity yet.</p>
+              <p className="text-xs text-slate-400 mt-1">
                 Creating events, issuing refunds and managing admins will show up here.
               </p>
             </div>
@@ -141,8 +141,8 @@ function Stat({
   trend?: Trend | null;
 }) {
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-      <p className="text-xs uppercase tracking-wide text-zinc-500 mb-1 flex items-center gap-1.5">
+    <div className="bg-white border border-slate-200 rounded-xl p-5">
+      <p className="text-xs uppercase tracking-wide text-slate-500 mb-1 flex items-center gap-1.5">
         {label}
         <InfoTip text={tip} />
       </p>
@@ -151,7 +151,7 @@ function Stat({
         {trend && (
           <span
             className={`text-xs font-semibold ${
-              trend.dir === "up" ? "text-emerald-400" : "text-red-400"
+              trend.dir === "up" ? "text-emerald-700" : "text-red-700"
             }`}
             title="vs. the previous 7 days"
           >

@@ -131,9 +131,9 @@ export default function AdminShell({ user, children }: Props) {
   useIdleLogout(idleLogout);
 
   const sidebar = (
-    <div className="flex h-full flex-col bg-[#171228] border-r border-[#2a2450]">
+    <div className="flex h-full flex-col bg-white border-r border-[#e5eaf1]">
       {/* Brand */}
-      <div className="h-16 flex items-center gap-2.5 px-5 border-b border-[#2a2450] shrink-0">
+      <div className="h-16 flex items-center gap-2.5 px-5 border-b border-[#e5eaf1] shrink-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,w_240/utsav-events/logo"
@@ -142,10 +142,10 @@ export default function AdminShell({ user, children }: Props) {
         />
         <span className="font-heading text-xl font-semibold leading-none">
           Utsav{" "}
-          <span className="text-transparent bg-clip-text bg-linear-to-r from-[#d99a45] to-[#e8bd6b]">
+          <span className="text-transparent bg-clip-text bg-linear-to-r from-[#1d4ed8] to-[#3b82f6]">
             Events
           </span>
-          <span className="ml-1.5 text-[10px] font-sans font-semibold uppercase text-zinc-500 align-super">
+          <span className="ml-1.5 text-[10px] font-sans font-semibold uppercase text-slate-500 align-super">
             admin
           </span>
         </span>
@@ -158,7 +158,7 @@ export default function AdminShell({ user, children }: Props) {
           if (!items.length) return null;
           return (
             <div key={section.label}>
-              <p className="px-3 mb-2 text-[11px] font-semibold uppercase tracking-widest text-zinc-500">
+              <p className="px-3 mb-2 text-[11px] font-semibold uppercase tracking-widest text-slate-500">
                 {section.label}
               </p>
               <ul className="space-y-1">
@@ -182,8 +182,8 @@ export default function AdminShell({ user, children }: Props) {
                           }
                           className={`w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                             childActive
-                              ? "text-[#e8bd6b]"
-                              : "text-zinc-400 hover:text-zinc-100 hover:bg-white/5"
+                              ? "text-[#1d4ed8]"
+                              : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                           }`}
                         >
                           <Icon className="w-5 h-5 shrink-0" aria-hidden="true" />
@@ -194,7 +194,7 @@ export default function AdminShell({ user, children }: Props) {
                           />
                         </button>
                         {isOpen && (
-                          <ul className="mt-1 ml-6.5 border-l border-[#2a2450] space-y-1">
+                          <ul className="mt-1 ml-6.5 border-l border-[#e5eaf1] space-y-1">
                             {item.items.map((sub) => {
                               const active = pathname === sub.href;
                               return (
@@ -205,8 +205,8 @@ export default function AdminShell({ user, children }: Props) {
                                     data-active={active}
                                     className={`block rounded-lg pl-4 pr-3 py-2 text-sm transition-colors ${
                                       active
-                                        ? "text-[#e8bd6b] font-medium"
-                                        : "text-zinc-400 hover:text-zinc-100 hover:bg-white/5"
+                                        ? "text-[#1d4ed8] font-medium"
+                                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                                     }`}
                                   >
                                     {sub.title}
@@ -230,8 +230,8 @@ export default function AdminShell({ user, children }: Props) {
                         data-active={active}
                         className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                           active
-                            ? "bg-[#d99a45]/15 text-[#e8bd6b]"
-                            : "text-zinc-400 hover:text-zinc-100 hover:bg-white/5"
+                            ? "bg-[#1d4ed8]/15 text-[#1d4ed8]"
+                            : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                         }`}
                       >
                         <Icon className="w-5 h-5 shrink-0" aria-hidden="true" />
@@ -247,17 +247,17 @@ export default function AdminShell({ user, children }: Props) {
       </nav>
 
       {/* Footer: view site + logout */}
-      <div className="border-t border-[#2a2450] p-3 space-y-1 shrink-0">
+      <div className="border-t border-[#e5eaf1] p-3 space-y-1 shrink-0">
         <Link
           href="/"
-          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-400 hover:text-zinc-100 hover:bg-white/5 transition-colors"
+          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
         >
           <ExternalLink className="w-5 h-5 shrink-0" aria-hidden="true" />
           View site
         </Link>
         <button
           onClick={logout}
-          className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-400 hover:text-red-400 hover:bg-white/5 transition-colors"
+          className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-600 hover:text-red-700 hover:bg-slate-100 transition-colors"
         >
           <LogOut className="w-5 h-5 shrink-0" aria-hidden="true" />
           Log out
@@ -267,7 +267,7 @@ export default function AdminShell({ user, children }: Props) {
   );
 
   return (
-    <div className="min-h-screen flex text-zinc-100">
+    <div className="min-h-screen flex text-slate-900">
       {/* Desktop sidebar */}
       <aside className="hidden lg:block w-[260px] shrink-0 sticky top-0 h-screen">{sidebar}</aside>
 
@@ -286,20 +286,20 @@ export default function AdminShell({ user, children }: Props) {
       {/* Content column */}
       <div className="flex-1 min-w-0 flex flex-col">
         {/* Topbar */}
-        <header className="h-16 shrink-0 sticky top-0 z-30 flex items-center gap-3 px-4 sm:px-6 bg-[#0d0a1f]/90 backdrop-blur border-b border-[#2a2450]">
+        <header className="h-16 shrink-0 sticky top-0 z-30 flex items-center gap-3 px-4 sm:px-6 bg-white/90 backdrop-blur border-b border-[#e5eaf1]">
           <button
             onClick={() => setOpen(true)}
             aria-label="Open menu"
-            className="lg:hidden w-9 h-9 inline-flex items-center justify-center rounded-lg text-zinc-300 hover:bg-white/5"
+            className="lg:hidden w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100"
           >
             <Menu className="w-5 h-5" />
           </button>
           <div className="ml-auto flex items-center gap-3">
-            <span className="text-sm text-zinc-300 hidden sm:block">{user.name}</span>
-            <span className="text-[10px] font-bold uppercase tracking-wide bg-[#d99a45]/15 text-[#e8bd6b] px-2 py-0.5 rounded">
+            <span className="text-sm text-slate-700 hidden sm:block">{user.name}</span>
+            <span className="text-[10px] font-bold uppercase tracking-wide bg-[#1d4ed8]/15 text-[#1d4ed8] px-2 py-0.5 rounded">
               {roleLabel}
             </span>
-            <span className="w-8 h-8 rounded-full bg-[#d99a45]/20 text-[#e8bd6b] font-bold text-sm flex items-center justify-center uppercase">
+            <span className="w-8 h-8 rounded-full bg-[#1d4ed8]/20 text-[#1d4ed8] font-bold text-sm flex items-center justify-center uppercase">
               {user.name.trim().charAt(0) || "?"}
             </span>
           </div>

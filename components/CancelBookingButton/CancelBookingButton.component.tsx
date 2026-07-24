@@ -48,7 +48,7 @@ export default function CancelBookingButton({ orderId }: { orderId: string }) {
       <button
         onClick={cancel}
         disabled={busy}
-        className="text-amber-400 hover:text-amber-300 hover:underline disabled:opacity-40"
+        className="text-amber-700 hover:text-amber-700 hover:underline disabled:opacity-40"
       >
         {busy ? "Cancelling…" : "Cancel"}
       </button>

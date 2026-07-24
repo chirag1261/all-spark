@@ -61,7 +61,7 @@ export default function CountdownTimer({ targetIso }: Props) {
       <div
         role="timer"
         aria-live="off"
-        className="inline-flex items-stretch gap-px rounded-2xl overflow-hidden border border-white/15 bg-white/10 backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.35)]"
+        className="inline-flex items-stretch gap-px rounded-2xl overflow-hidden border border-white/15 bg-white/10 backdrop-blur-md shadow-[0_6px_20px_rgba(15,23,42,0.08)]"
       >
         <TimeBlock value={t.days} label={t.days === 1 ? "Day" : "Days"} />
         <Sep />
@@ -80,7 +80,7 @@ function TimeBlock({ value, label, accent }: { value: number; label: string; acc
     <div className="flex flex-col items-center justify-center px-3.5 py-2 sm:px-4 sm:py-2.5 min-w-13 sm:min-w-15 bg-white/5">
       <span
         className={`font-mono text-xl sm:text-2xl font-bold tabular-nums leading-none ${
-          accent ? "text-[#e8bd6b]" : "text-white"
+          accent ? "text-[#1d4ed8]" : "text-white"
         }`}
       >
         {String(value).padStart(2, "0")}

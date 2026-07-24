@@ -44,14 +44,14 @@ export default function EventsCarousel({ events, compact = false }: Props) {
   if (events.length === 0) {
     return (
       <div
-        className={`w-full ${aspect} rounded-2xl border border-[#2a2450] bg-[#171228] flex flex-col items-center justify-center gap-3 p-8 text-center`}
+        className={`w-full ${aspect} rounded-2xl border border-[#e5eaf1] bg-white flex flex-col items-center justify-center gap-3 p-8 text-center`}
       >
-        <Sparkles className="w-8 h-8 text-[#d99a45]" aria-hidden="true" />
+        <Sparkles className="w-8 h-8 text-[#1d4ed8]" aria-hidden="true" />
         <p className="font-heading text-lg font-semibold">No live events right now</p>
-        <p className="text-sm text-zinc-500">Check back soon — new shows are announced often.</p>
+        <p className="text-sm text-slate-500">Check back soon — new shows are announced often.</p>
         <Link
           href="/events"
-          className="mt-1 text-sm font-semibold text-[#d99a45] hover:text-[#e8bd6b] hover:underline"
+          className="mt-1 text-sm font-semibold text-[#1d4ed8] hover:text-[#1d4ed8] hover:underline"
         >
           Browse all events
         </Link>
@@ -74,18 +74,21 @@ export default function EventsCarousel({ events, compact = false }: Props) {
       )}
       <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/25 to-transparent" />
 
-      <Link href={`/events/${event.id}`} className="absolute inset-0 flex flex-col justify-end p-5">
-        <span className="self-start mb-2 text-[10px] font-bold uppercase tracking-widest bg-[#d99a45]/90 text-[#1a1206] px-2.5 py-1 rounded-full">
+      <Link
+        href={`/events/${event.id}`}
+        className="absolute inset-0 flex flex-col justify-end p-5 text-white"
+      >
+        <span className="self-start mb-2 text-[10px] font-bold uppercase tracking-widest bg-[#1d4ed8]/90 text-[#ffffff] px-2.5 py-1 rounded-full">
           Now booking
         </span>
         <p className="font-heading text-xl font-semibold leading-snug drop-shadow wrap-break-word">
           {event.title}
         </p>
-        <p className="flex items-center gap-1.5 text-sm text-zinc-300 mt-1.5">
+        <p className="flex items-center gap-1.5 text-sm text-white/85 mt-1.5">
           <CalendarDays className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
           {formatDateIST(event.startsAt)}
         </p>
-        <p className="flex items-center gap-1.5 text-sm text-zinc-400 mt-0.5 wrap-break-word">
+        <p className="flex items-center gap-1.5 text-sm text-white/75 mt-0.5 wrap-break-word">
           <MapPin className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
           {event.venue}
           {event.city ? `, ${event.city}` : ""}

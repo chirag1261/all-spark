@@ -55,7 +55,7 @@ export default function AttendanceBoard({ events }: { events: EventOption[] }) {
   return (
     <div className="space-y-6">
       <div className="max-w-sm">
-        <label className="block text-xs text-zinc-500 mb-1.5">Event</label>
+        <label className="block text-xs text-slate-500 mb-1.5">Event</label>
         <select
           value={eventId}
           onChange={(e) => {
@@ -63,7 +63,7 @@ export default function AttendanceBoard({ events }: { events: EventOption[] }) {
             setCounts(null);
             setAttendees([]);
           }}
-          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#d99a45]"
+          className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#1d4ed8]"
         >
           {events.length === 0 && <option value="">No published events</option>}
           {events.map((e) => (
@@ -75,22 +75,22 @@ export default function AttendanceBoard({ events }: { events: EventOption[] }) {
       </div>
 
       {counts && (
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
           <div className="flex items-end gap-6">
             <div>
-              <p className="text-3xl font-bold text-emerald-400">{counts.checkedIn}</p>
-              <p className="text-xs text-zinc-500">Checked in</p>
+              <p className="text-3xl font-bold text-emerald-700">{counts.checkedIn}</p>
+              <p className="text-xs text-slate-500">Checked in</p>
             </div>
             <div>
-              <p className="text-3xl font-bold text-zinc-200">{counts.sold}</p>
-              <p className="text-xs text-zinc-500">Tickets sold</p>
+              <p className="text-3xl font-bold text-slate-800">{counts.sold}</p>
+              <p className="text-xs text-slate-500">Tickets sold</p>
             </div>
             <div className="ml-auto text-right">
-              <p className="text-3xl font-bold text-[#d99a45]">{pct}%</p>
-              <p className="text-xs text-zinc-500">Attendance</p>
+              <p className="text-3xl font-bold text-[#1d4ed8]">{pct}%</p>
+              <p className="text-xs text-slate-500">Attendance</p>
             </div>
           </div>
-          <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-zinc-800">
+          <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-slate-100">
             <div
               className="h-full rounded-full bg-emerald-500 transition-all"
               style={{ width: `${pct}%` }}
@@ -99,10 +99,10 @@ export default function AttendanceBoard({ events }: { events: EventOption[] }) {
         </div>
       )}
 
-      <div className="overflow-x-auto border border-zinc-800 rounded-xl">
+      <div className="overflow-x-auto border border-slate-200 rounded-xl">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-zinc-500 border-b border-zinc-800 bg-zinc-900/60">
+            <tr className="text-left text-slate-500 border-b border-slate-200 bg-slate-50">
               <th className="px-4 py-3 font-medium">Attendee</th>
               <th className="px-4 py-3 font-medium">Seat</th>
               <th className="px-4 py-3 font-medium">Status</th>
@@ -113,27 +113,27 @@ export default function AttendanceBoard({ events }: { events: EventOption[] }) {
           <tbody>
             {attendees.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-zinc-600">
+                <td colSpan={5} className="px-4 py-8 text-center text-slate-400">
                   No tickets issued for this event yet.
                 </td>
               </tr>
             ) : (
               attendees.map((a) => (
-                <tr key={a.ticketId} className="border-b border-zinc-800/60 last:border-0">
+                <tr key={a.ticketId} className="border-b border-slate-200 last:border-0">
                   <td className="px-4 py-3">{a.name}</td>
-                  <td className="px-4 py-3 text-zinc-400">{a.seat}</td>
+                  <td className="px-4 py-3 text-slate-600">{a.seat}</td>
                   <td className="px-4 py-3">
                     <span
                       className={`inline-block text-xs font-semibold px-2 py-0.5 rounded ${
                         a.status === "IN"
-                          ? "bg-emerald-500/15 text-emerald-400"
-                          : "bg-zinc-500/15 text-zinc-400"
+                          ? "bg-emerald-50 text-emerald-700"
+                          : "bg-slate-100 text-slate-600"
                       }`}
                     >
                       {a.status === "IN" ? "In" : "Pending"}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-zinc-400 whitespace-nowrap text-xs">
+                  <td className="px-4 py-3 text-slate-600 whitespace-nowrap text-xs">
                     {a.scannedAt
                       ? new Date(a.scannedAt).toLocaleString("en-IN", {
                           timeZone: "Asia/Kolkata",
@@ -142,7 +142,7 @@ export default function AttendanceBoard({ events }: { events: EventOption[] }) {
                         })
                       : "—"}
                   </td>
-                  <td className="px-4 py-3 text-zinc-400">{a.scannedByName ?? "—"}</td>
+                  <td className="px-4 py-3 text-slate-600">{a.scannedByName ?? "—"}</td>
                 </tr>
               ))
             )}

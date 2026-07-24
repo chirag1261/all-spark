@@ -39,7 +39,7 @@ export default function MobileMenu({ links, bookHref }: Props) {
       <button
         onClick={() => setOpen(true)}
         aria-label="Open menu"
-        className="w-9 h-9 inline-flex items-center justify-center rounded-lg text-zinc-300 hover:bg-white/5"
+        className="w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100"
       >
         <Menu className="w-5 h-5" aria-hidden="true" />
       </button>
@@ -57,13 +57,13 @@ export default function MobileMenu({ links, bookHref }: Props) {
               onClick={() => setOpen(false)}
               className="absolute inset-0 bg-black/60 backdrop-blur-xs"
             />
-            <div className="relative w-72 max-w-[80vw] h-full bg-[#171228] border-r border-[#2a2450] p-5 flex flex-col animate-[slide-in-left_.2s_ease-out]">
+            <div className="relative w-72 max-w-[80vw] h-full bg-white border-r border-[#e5eaf1] p-5 flex flex-col animate-[slide-in-left_.2s_ease-out]">
               <div className="flex items-center justify-between mb-6">
                 <span className="font-heading text-lg font-semibold">Menu</span>
                 <button
                   onClick={() => setOpen(false)}
                   aria-label="Close"
-                  className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-white/5"
+                  className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                 >
                   <X className="w-4 h-4" aria-hidden="true" />
                 </button>
@@ -75,18 +75,18 @@ export default function MobileMenu({ links, bookHref }: Props) {
                     key={l.href}
                     href={l.href}
                     onClick={() => setOpen(false)}
-                    className="rounded-lg px-3 py-2.5 text-sm text-zinc-300 hover:text-zinc-100 hover:bg-white/5 transition-colors"
+                    className="rounded-lg px-3 py-2.5 text-sm text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors"
                   >
                     {l.label}
                   </Link>
                 ))}
               </nav>
 
-              <div className="mt-auto pt-5 border-t border-[#2a2450]">
+              <div className="mt-auto pt-5 border-t border-[#e5eaf1]">
                 <Link
                   href={bookHref}
                   onClick={() => setOpen(false)}
-                  className="block text-center bg-linear-to-r from-[#d99a45] to-[#e8bd6b] hover:brightness-110 text-white font-semibold rounded-full px-5 py-2.5 shadow-lg shadow-[#d99a45]/25 transition-all"
+                  className="block text-center bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] hover:brightness-110 text-white font-semibold rounded-full px-5 py-2.5 shadow-lg shadow-[#1d4ed8]/25 transition-all"
                 >
                   Book Seats
                 </Link>

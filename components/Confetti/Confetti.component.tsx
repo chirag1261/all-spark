@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 // Brand gold plus the SeatMap tier palette, so the burst reads as "this app"
 // rather than generic rainbow confetti.
-const COLORS = ["#d99a45", "#e8bd6b", "#34d399", "#38bdf8", "#a78bfa", "#fb7185"];
+const COLORS = ["#1d4ed8", "#3b82f6", "#34d399", "#38bdf8", "#a78bfa", "#fb7185"];
 const PIECE_COUNT = 60;
 const DURATION_MS = 3200;
 

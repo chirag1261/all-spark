@@ -22,18 +22,18 @@ export async function LoginScreen({ next, idleExpired }: { next: string; idleExp
     }));
 
   return (
-    <div className="min-h-screen flex text-zinc-100">
+    <div className="min-h-screen flex text-slate-900">
       {/* LEFT — brand panel + active-events carousel (desktop only) */}
-      <div className="hidden md:flex flex-1 flex-col items-center justify-center gap-6 bg-[#171228] p-10 border-r border-[#2a2450]">
+      <div className="hidden md:flex flex-1 flex-col items-center justify-center gap-6 bg-white p-10 border-r border-[#e5eaf1]">
         <Logo />
-        <p className="font-heading text-lg text-[#d99a45]/90 -mt-4">॥ संगीत ही ईश्वर है ॥</p>
+        <p className="font-heading text-lg text-[#1d4ed8]/90 -mt-4">॥ संगीत ही ईश्वर है ॥</p>
         <div className="w-full max-w-sm">
           <EventsCarousel events={events} />
         </div>
       </div>
 
       {/* RIGHT — sign-in card */}
-      <div className="flex flex-1 flex-col items-center justify-center px-4 py-10 bg-[#0d0a1f]">
+      <div className="flex flex-1 flex-col items-center justify-center px-4 py-10 bg-white">
         {/* Logo (mobile only — the brand panel is hidden below md) */}
         <div className="md:hidden mb-6">
           <Logo />
@@ -46,7 +46,7 @@ export async function LoginScreen({ next, idleExpired }: { next: string; idleExp
           </div>
 
           {idleExpired && (
-            <p className="text-xs text-amber-400 bg-amber-400/10 border border-amber-400/20 rounded-lg px-3 py-2 mb-5">
+            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-400/20 rounded-lg px-3 py-2 mb-5">
               Your session expired due to inactivity. Please sign in again.
             </p>
           )}
@@ -54,7 +54,7 @@ export async function LoginScreen({ next, idleExpired }: { next: string; idleExp
           <LoginWizard next={next} />
 
           <p className="flex justify-center mt-6">
-            <BackLink href="/" className="text-zinc-500 hover:text-zinc-300">
+            <BackLink href="/" className="text-slate-500 hover:text-slate-700">
               Back to site
             </BackLink>
           </p>

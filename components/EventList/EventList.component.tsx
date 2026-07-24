@@ -50,7 +50,7 @@ export default function EventList({
     <>
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-5">
         <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-          <span className="inline-block w-8 h-1 rounded-full bg-linear-to-r from-[#d99a45] to-[#e8bd6b] align-middle mr-3" />
+          <span className="inline-block w-8 h-1 rounded-full bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] align-middle mr-3" />
           {title}
         </h1>
         {showSearch && (
@@ -58,7 +58,7 @@ export default function EventList({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search events, venues, cities…"
-            className="sm:ml-auto w-full sm:w-80 bg-[#171228] border border-[#2a2450] rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#d99a45] focus:shadow-[0_0_0_3px_rgba(217,154,69,0.15)] transition-shadow"
+            className="sm:ml-auto w-full sm:w-80 bg-white border border-[#e5eaf1] rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#1d4ed8] focus:shadow-[0_0_0_3px_rgba(29,78,216,0.15)] transition-shadow"
           />
         )}
       </div>
@@ -78,7 +78,7 @@ export default function EventList({
       )}
 
       {filtered.length === 0 ? (
-        <p className="text-zinc-500 py-10 text-center">
+        <p className="text-slate-500 py-10 text-center">
           No events match{query ? ` “${query}”` : ""}
           {city ? ` in ${city}` : ""}.
         </p>
@@ -95,7 +95,7 @@ export default function EventList({
               <Link
                 key={event.id}
                 href={`/events/${event.id}`}
-                className="group rounded-2xl bg-[#171228] border border-[#2a2450] hover:border-[#d99a45]/40 overflow-hidden shadow-lg hover:shadow-[0_16px_40px_rgba(0,0,0,0.45)] hover:-translate-y-1 transition-all duration-300"
+                className="group rounded-2xl bg-white border border-[#e5eaf1] hover:border-[#1d4ed8]/40 overflow-hidden shadow-lg hover:shadow-[0_12px_30px_rgba(15,23,42,0.10)] hover:-translate-y-1 transition-all duration-300"
               >
                 <div
                   className={`relative aspect-video overflow-hidden bg-linear-to-br ${event.poster}`}
@@ -109,7 +109,7 @@ export default function EventList({
                     />
                   )}
                   <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
-                  <div className="absolute bottom-0 p-4 max-w-full">
+                  <div className="absolute bottom-0 p-4 max-w-full text-white">
                     <span className="text-lg font-extrabold leading-snug drop-shadow wrap-break-word">
                       {event.title}
                     </span>
@@ -119,7 +119,7 @@ export default function EventList({
                       Sold out
                     </span>
                   ) : fillingFast ? (
-                    <span className="absolute top-3 right-3 inline-flex items-center gap-1 bg-linear-to-r from-[#d99a45] to-[#e8bd6b] text-white text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full animate-[neon-pulse_2s_ease-in-out_infinite]">
+                    <span className="absolute top-3 right-3 inline-flex items-center gap-1 bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] text-white text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full animate-[neon-pulse_2s_ease-in-out_infinite]">
                       <Zap className="w-3 h-3" aria-hidden="true" /> Filling fast
                     </span>
                   ) : null}
@@ -129,7 +129,7 @@ export default function EventList({
                     </span>
                   )}
                   {reg === "closed" && !soldOut && (
-                    <span className="absolute top-3 left-3 bg-zinc-800/90 backdrop-blur text-zinc-300 text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full">
+                    <span className="absolute top-3 left-3 bg-slate-100 backdrop-blur text-slate-700 text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full">
                       Closed
                     </span>
                   )}
@@ -137,14 +137,14 @@ export default function EventList({
                 <div className="p-4 flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-sm font-semibold">{formatDateIST(event.startsAt)}</p>
-                    <p className="text-sm text-zinc-400 wrap-break-word">
+                    <p className="text-sm text-slate-600 wrap-break-word">
                       {event.venue}, {event.city}
                     </p>
                     {fillingFast && (
-                      <p className="text-xs text-[#ffce7a] mt-1">Only {left} seats left</p>
+                      <p className="text-xs text-[#f59e0b] mt-1">Only {left} seats left</p>
                     )}
                   </div>
-                  <span className="shrink-0 text-sm font-bold text-[#d99a45] bg-[#d99a45]/10 border border-[#d99a45]/20 rounded-full px-3 py-1">
+                  <span className="shrink-0 text-sm font-bold text-[#1d4ed8] bg-[#1d4ed8]/10 border border-[#1d4ed8]/20 rounded-full px-3 py-1">
                     {inr(fromPrice)}+
                   </span>
                 </div>
@@ -171,8 +171,8 @@ function FilterPill({
       onClick={onClick}
       className={`inline-flex items-center gap-1 rounded-full px-4 py-1.5 text-sm font-medium border transition-all duration-200 ${
         active
-          ? "bg-linear-to-r from-[#d99a45] to-[#e8bd6b] border-transparent text-white shadow-lg shadow-[#d99a45]/25"
-          : "bg-[#171228] border-[#2a2450] text-zinc-400 hover:text-zinc-100 hover:border-zinc-600"
+          ? "bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] border-transparent text-white shadow-lg shadow-[#1d4ed8]/25"
+          : "bg-white border-[#e5eaf1] text-slate-600 hover:text-slate-900 hover:border-slate-400"
       }`}
     >
       {children}

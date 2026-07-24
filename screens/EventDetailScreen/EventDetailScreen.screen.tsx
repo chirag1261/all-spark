@@ -24,14 +24,14 @@ export async function EventDetailScreen({ id }: { id: string }) {
   const tiers = ticketTiers(event);
 
   return (
-    <div className="min-h-screen text-zinc-100">
+    <div className="min-h-screen text-slate-900">
       <SiteHeader />
       <main className="max-w-6xl mx-auto px-4 py-8">
         <BackLink href="/">All events</BackLink>
 
         {/* Banner */}
         <div
-          className={`relative mt-4 rounded-3xl overflow-hidden shadow-[0_24px_60px_rgba(0,0,0,0.45)] aspect-video sm:aspect-21/9 bg-linear-to-br ${event.poster}`}
+          className={`relative mt-4 rounded-3xl overflow-hidden shadow-[0_16px_40px_rgba(15,23,42,0.10)] aspect-video sm:aspect-21/9 bg-linear-to-br ${event.poster}`}
         >
           {(event.imageUrl || event.gallery[0]) && (
             // Falls back to the first gallery photo when no dedicated banner is set.
@@ -43,16 +43,16 @@ export async function EventDetailScreen({ id }: { id: string }) {
             />
           )}
           <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent" />
-          <div className="absolute bottom-0 p-4 sm:p-6">
+          <div className="absolute bottom-0 p-4 sm:p-6 text-white">
             {event.tagline && (
-              <span className="inline-block text-[11px] font-semibold uppercase tracking-widest text-[#ffce7a] mb-1 drop-shadow">
+              <span className="inline-block text-[11px] font-semibold uppercase tracking-widest text-[#f59e0b] mb-1 drop-shadow">
                 {event.tagline}
               </span>
             )}
             <h1 className="text-xl sm:text-3xl font-bold drop-shadow wrap-break-word">
               {event.title}
             </h1>
-            <p className="text-xs sm:text-sm text-zinc-200 mt-1 drop-shadow">
+            <p className="text-xs sm:text-sm text-white/80 mt-1 drop-shadow">
               {formatDateIST(event.startsAt)} · {event.venue}, {event.city}
             </p>
           </div>
@@ -71,14 +71,14 @@ export async function EventDetailScreen({ id }: { id: string }) {
 
         <div className="grid lg:grid-cols-3 gap-8 mt-8">
           {/* Booking card — first on mobile so the CTA is immediately visible */}
-          <aside className="lg:order-last bg-[#171228]/90 backdrop-blur border border-[#2a2450] rounded-2xl p-5 h-fit shadow-xl lg:sticky lg:top-20">
+          <aside className="lg:order-last bg-white/95 backdrop-blur border border-[#e5eaf1] rounded-2xl p-5 h-fit shadow-xl lg:sticky lg:top-20">
             <h2 className="font-semibold mb-4">Tickets</h2>
             <div className="space-y-2 mb-5">
               {tiers.map((tier) => (
                 <div key={tier.id} className="flex justify-between text-sm">
-                  <span className="text-zinc-400">
+                  <span className="text-slate-600">
                     {tier.name}
-                    <span className="text-zinc-600"> · {tier.seats} seats</span>
+                    <span className="text-slate-400"> · {tier.seats} seats</span>
                   </span>
                   <span className="font-medium">{inr(tier.price)}</span>
                 </div>
@@ -87,15 +87,15 @@ export async function EventDetailScreen({ id }: { id: string }) {
 
             <p className="text-sm mb-1">
               {soldOut ? (
-                <span className="text-red-400 font-semibold">Sold out</span>
+                <span className="text-red-700 font-semibold">Sold out</span>
               ) : (
                 <>
                   <span className="font-semibold">{left}</span>
-                  <span className="text-zinc-400"> of {total} seats available</span>
+                  <span className="text-slate-600"> of {total} seats available</span>
                 </>
               )}
             </p>
-            <p className="text-xs text-zinc-500 mb-5">
+            <p className="text-xs text-slate-500 mb-5">
               {reg === "upcoming" && `Bookings open ${formatDateIST(event.registrationOpensAt)}`}
               {reg === "open" && `Bookings close ${formatDateIST(event.registrationClosesAt)}`}
               {reg === "closed" && "Bookings for this event have closed"}
@@ -104,12 +104,12 @@ export async function EventDetailScreen({ id }: { id: string }) {
             {bookable ? (
               <Link
                 href={`/events/${event.id}/book`}
-                className="block text-center bg-[#d99a45] hover:bg-[#bf863a] rounded-lg px-6 py-3 font-semibold text-sm transition-colors"
+                className="block text-center bg-[#1d4ed8] hover:bg-[#1e40af] rounded-lg px-6 py-3 font-semibold text-sm transition-colors"
               >
                 Select seats
               </Link>
             ) : (
-              <span className="block text-center bg-zinc-800 text-zinc-500 rounded-lg px-6 py-3 font-semibold text-sm cursor-not-allowed">
+              <span className="block text-center bg-slate-100 text-slate-500 rounded-lg px-6 py-3 font-semibold text-sm cursor-not-allowed">
                 {soldOut ? "Sold out" : reg === "upcoming" ? "Opening soon" : "Closed"}
               </span>
             )}
@@ -136,7 +136,7 @@ export async function EventDetailScreen({ id }: { id: string }) {
           <div className="lg:col-span-2 space-y-10 min-w-0">
             <section>
               <h2 className="text-lg font-semibold mb-3">About this event</h2>
-              <p className="text-zinc-300 whitespace-pre-line wrap-break-word">
+              <p className="text-slate-700 whitespace-pre-line wrap-break-word">
                 {event.description}
               </p>
             </section>
@@ -146,7 +146,7 @@ export async function EventDetailScreen({ id }: { id: string }) {
                 <h2 className="text-lg font-semibold mb-3">Gallery</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {event.gallery.map((url, i) => (
-                    <div key={url} className="overflow-hidden rounded-xl border border-[#2a2450]">
+                    <div key={url} className="overflow-hidden rounded-xl border border-[#e5eaf1]">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={url}
@@ -188,12 +188,12 @@ export async function EventDetailScreen({ id }: { id: string }) {
                   {event.faqs.map((faq, i) => (
                     <details
                       key={i}
-                      className="bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3"
+                      className="bg-white border border-slate-200 rounded-xl px-4 py-3"
                     >
                       <summary className="cursor-pointer font-medium text-sm wrap-break-word">
                         {faq.question}
                       </summary>
-                      <p className="text-sm text-zinc-400 mt-2 wrap-break-word">{faq.answer}</p>
+                      <p className="text-sm text-slate-600 mt-2 wrap-break-word">{faq.answer}</p>
                     </details>
                   ))}
                 </div>
@@ -209,8 +209,8 @@ export async function EventDetailScreen({ id }: { id: string }) {
 
 function Fact({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-[#171228] border border-[#2a2450] rounded-xl px-4 py-3">
-      <p className="text-[11px] uppercase tracking-widest text-zinc-500 mb-1">{label}</p>
+    <div className="bg-white border border-[#e5eaf1] rounded-xl px-4 py-3">
+      <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-1">{label}</p>
       <p className="text-sm font-semibold wrap-break-word">{value}</p>
     </div>
   );
@@ -218,9 +218,9 @@ function Fact({ label, value }: { label: string; value: string }) {
 
 function GoodToKnow({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
   return (
-    <li className="flex items-start gap-3 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3">
-      <Icon className="w-5 h-5 shrink-0 text-[#d99a45]" aria-hidden="true" />
-      <span className="text-sm text-zinc-300 leading-relaxed">{text}</span>
+    <li className="flex items-start gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3">
+      <Icon className="w-5 h-5 shrink-0 text-[#1d4ed8]" aria-hidden="true" />
+      <span className="text-sm text-slate-700 leading-relaxed">{text}</span>
     </li>
   );
 }

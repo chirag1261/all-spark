@@ -57,7 +57,7 @@ export default function MobileAccountDrawer({ customerName }: { customerName: st
       <button
         onClick={() => setOpen(true)}
         aria-label={customerName ? "Open account menu" : "Sign in"}
-        className="w-9 h-9 inline-flex items-center justify-center rounded-full bg-[#d99a45]/15 text-[#d99a45] font-bold text-xs uppercase"
+        className="w-9 h-9 inline-flex items-center justify-center rounded-full bg-[#1d4ed8]/15 text-[#1d4ed8] font-bold text-xs uppercase"
       >
         {customerName ? customerName.trim().charAt(0) || "?" : <User className="w-4 h-4" aria-hidden="true" />}
       </button>
@@ -75,7 +75,7 @@ export default function MobileAccountDrawer({ customerName }: { customerName: st
               onClick={() => setOpen(false)}
               className="absolute inset-0 bg-black/60 backdrop-blur-xs"
             />
-            <div className="relative w-72 max-w-[80vw] h-full bg-[#171228] border-l border-[#2a2450] p-5 flex flex-col animate-[slide-in_.2s_ease-out]">
+            <div className="relative w-72 max-w-[80vw] h-full bg-white border-l border-[#e5eaf1] p-5 flex flex-col animate-[slide-in_.2s_ease-out]">
               <div className="flex items-center justify-between mb-6">
                 <span className="font-heading text-lg font-semibold truncate">
                   {customerName ? `Hi, ${customerName}` : "Your account"}
@@ -83,7 +83,7 @@ export default function MobileAccountDrawer({ customerName }: { customerName: st
                 <button
                   onClick={() => setOpen(false)}
                   aria-label="Close"
-                  className="w-8 h-8 shrink-0 inline-flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-white/5"
+                  className="w-8 h-8 shrink-0 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                 >
                   <X className="w-4 h-4" aria-hidden="true" />
                 </button>
@@ -97,7 +97,7 @@ export default function MobileAccountDrawer({ customerName }: { customerName: st
                         key={item.href}
                         href={item.href}
                         onClick={() => setOpen(false)}
-                        className="rounded-lg px-3 py-2.5 text-sm text-zinc-300 hover:text-zinc-100 hover:bg-white/5 transition-colors"
+                        className="rounded-lg px-3 py-2.5 text-sm text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors"
                       >
                         {item.label}
                       </Link>
@@ -105,20 +105,20 @@ export default function MobileAccountDrawer({ customerName }: { customerName: st
                   </nav>
                   <button
                     onClick={logout}
-                    className="mt-auto rounded-lg px-3 py-2.5 text-sm text-left text-red-400 hover:bg-white/5 transition-colors"
+                    className="mt-auto rounded-lg px-3 py-2.5 text-sm text-left text-red-700 hover:bg-slate-100 transition-colors"
                   >
                     Logout
                   </button>
                 </>
               ) : (
                 <div className="mt-2">
-                  <p className="text-sm text-zinc-400 mb-4">
+                  <p className="text-sm text-slate-600 mb-4">
                     Sign in to manage your bookings and tickets.
                   </p>
                   <Link
                     href="/login"
                     onClick={() => setOpen(false)}
-                    className="block text-center bg-linear-to-r from-[#d99a45] to-[#e8bd6b] hover:brightness-110 text-white font-semibold rounded-full px-5 py-2.5 shadow-lg shadow-[#d99a45]/25 transition-all"
+                    className="block text-center bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] hover:brightness-110 text-white font-semibold rounded-full px-5 py-2.5 shadow-lg shadow-[#1d4ed8]/25 transition-all"
                   >
                     Sign in
                   </Link>

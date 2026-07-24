@@ -8,14 +8,14 @@ import { BOOKMYSHOW_LOGO_URL } from "@/constants";
  */
 export default function BookMyShowLink({ url }: { url: string }) {
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-[#2a2450] bg-[#171228] px-5 py-4">
+    <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-[#e5eaf1] bg-white px-5 py-4">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={BOOKMYSHOW_LOGO_URL}
         alt="BookMyShow"
         className="h-6 w-auto bg-white rounded px-1.5 py-1"
       />
-      <span className="text-sm text-zinc-300 min-w-0">
+      <span className="text-sm text-slate-700 min-w-0">
         Some seats for this event are also available on BookMyShow.
       </span>
       <a

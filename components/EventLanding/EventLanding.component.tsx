@@ -31,12 +31,12 @@ export default function EventLanding({ event, remaining }: Props) {
   const cta = bookable ? (
     <Link
       href={`/events/${event.id}/book`}
-      className="inline-block w-full sm:w-auto text-center bg-linear-to-r from-[#d99a45] to-[#e8bd6b] hover:brightness-110 hover:scale-[1.02] rounded-2xl px-9 py-4 font-bold text-base transition-all shadow-[0_10px_40px_rgba(217,154,69,0.4)]"
+      className="inline-block w-full sm:w-auto text-center bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] hover:brightness-110 hover:scale-[1.02] rounded-2xl px-9 py-4 font-bold text-base transition-all shadow-[0_10px_40px_rgba(29,78,216,0.4)]"
     >
       Book tickets · from {inr(fromPrice)}
     </Link>
   ) : (
-    <span className="inline-block w-full sm:w-auto text-center bg-zinc-800 text-zinc-400 rounded-xl px-8 py-4 font-bold text-base cursor-not-allowed">
+    <span className="inline-block w-full sm:w-auto text-center bg-slate-100 text-slate-600 rounded-xl px-8 py-4 font-bold text-base cursor-not-allowed">
       {soldOut
         ? "Sold out"
         : reg === "upcoming"
@@ -56,7 +56,7 @@ export default function EventLanding({ event, remaining }: Props) {
           alt={event.title}
         />
         <div className="absolute inset-0 bg-linear-to-t from-[#0d0a1f] via-[#0d0a1f]/55 to-[#0d0a1f]/10" />
-        <div className="relative max-w-6xl mx-auto px-4 pb-10 sm:pb-16 pt-28 sm:pt-40 w-full">
+        <div className="relative max-w-6xl mx-auto px-4 pb-10 sm:pb-16 pt-28 sm:pt-40 w-full text-white">
           {!soldOut && <CountdownTimer targetIso={event.startsAt} />}
           {soldOut && (
             <span className="inline-block bg-red-600 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-widest mb-5">
@@ -64,7 +64,7 @@ export default function EventLanding({ event, remaining }: Props) {
             </span>
           )}
           {event.landing?.presenter && (
-            <p className="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] text-[#e8bd6b] mb-3 drop-shadow">
+            <p className="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] text-[#1d4ed8] mb-3 drop-shadow">
               {event.landing.presenter}
             </p>
           )}
@@ -72,16 +72,16 @@ export default function EventLanding({ event, remaining }: Props) {
             {event.title}
           </h1>
           {event.landing?.heroKicker && (
-            <p className="font-heading text-xl sm:text-3xl text-[#e8bd6b]/90 mt-3 drop-shadow">
+            <p className="font-heading text-xl sm:text-3xl text-[#1d4ed8]/90 mt-3 drop-shadow">
               {event.landing.heroKicker}
             </p>
           )}
           {event.tagline && (
-            <p className="text-lg sm:text-2xl text-zinc-200/90 mt-4 max-w-2xl leading-relaxed drop-shadow wrap-break-word">
+            <p className="text-lg sm:text-2xl text-white/90 mt-4 max-w-2xl leading-relaxed drop-shadow wrap-break-word">
               {event.tagline}
             </p>
           )}
-          <p className="text-sm sm:text-base text-zinc-300 mt-4">
+          <p className="text-sm sm:text-base text-white/80 mt-4">
             {formatDateIST(event.startsAt)} · {event.venue}, {event.city}
           </p>
           <div className="mt-8">{cta}</div>
@@ -106,7 +106,7 @@ export default function EventLanding({ event, remaining }: Props) {
         <section className="grid lg:grid-cols-2 gap-10 items-start">
           <div>
             <SectionTitle>About the event</SectionTitle>
-            <p className="text-zinc-300 whitespace-pre-line leading-relaxed wrap-break-word">
+            <p className="text-slate-700 whitespace-pre-line leading-relaxed wrap-break-word">
               {event.description}
             </p>
           </div>
@@ -115,7 +115,7 @@ export default function EventLanding({ event, remaining }: Props) {
             <img
               src={event.gallery[0]}
               alt={`${event.title} highlight`}
-              className="rounded-2xl w-full aspect-video object-cover border border-zinc-800"
+              className="rounded-2xl w-full aspect-video object-cover border border-slate-200"
             />
           )}
         </section>
@@ -128,15 +128,15 @@ export default function EventLanding({ event, remaining }: Props) {
               {event.landing.whyAttend.map((c, i) => (
                 <div
                   key={i}
-                  className="bg-[#171228] border border-[#2a2450] rounded-3xl p-6 hover:border-[#d99a45]/40 transition-colors duration-300"
+                  className="bg-white border border-[#e5eaf1] rounded-3xl p-6 hover:border-[#1d4ed8]/40 transition-colors duration-300"
                 >
-                  <span className="font-heading text-3xl font-semibold text-[#d99a45]">
+                  <span className="font-heading text-3xl font-semibold text-[#1d4ed8]">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <h3 className="font-heading text-xl font-semibold mt-2 mb-2 wrap-break-word">
                     {c.title}
                   </h3>
-                  <p className="text-sm text-zinc-400 leading-relaxed wrap-break-word">{c.body}</p>
+                  <p className="text-sm text-slate-600 leading-relaxed wrap-break-word">{c.body}</p>
                 </div>
               ))}
             </div>
@@ -151,7 +151,7 @@ export default function EventLanding({ event, remaining }: Props) {
               {event.gallery.slice(1).map((url, i) => (
                 <div
                   key={url}
-                  className={`overflow-hidden rounded-2xl border border-[#2a2450] ${
+                  className={`overflow-hidden rounded-2xl border border-[#e5eaf1] ${
                     i % 5 === 0 ? "md:row-span-2" : ""
                   }`}
                 >
@@ -177,23 +177,23 @@ export default function EventLanding({ event, remaining }: Props) {
               <img
                 src={event.landing.artist.imageUrl}
                 alt={event.landing.artist.name}
-                className="rounded-2xl w-full aspect-4/5 object-cover border border-[#2a2450] shadow-[0_24px_60px_rgba(0,0,0,0.5)]"
+                className="rounded-2xl w-full aspect-4/5 object-cover border border-[#e5eaf1] shadow-[0_16px_40px_rgba(15,23,42,0.10)]"
               />
             )}
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#d99a45] mb-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#1d4ed8] mb-2">
                 Featured artist
               </p>
               <h2 className="font-heading text-3xl sm:text-5xl font-semibold wrap-break-word">
                 {event.landing.artist.name}
               </h2>
               {event.landing.artist.title && (
-                <p className="font-heading italic text-lg text-[#e8bd6b]/90 mt-1">
+                <p className="font-heading italic text-lg text-[#1d4ed8]/90 mt-1">
                   {event.landing.artist.title}
                 </p>
               )}
               {event.landing.artist.bio && (
-                <p className="text-zinc-300/90 leading-relaxed whitespace-pre-line mt-5 wrap-break-word">
+                <p className="text-slate-700/90 leading-relaxed whitespace-pre-line mt-5 wrap-break-word">
                   {event.landing.artist.bio}
                 </p>
               )}
@@ -202,12 +202,12 @@ export default function EventLanding({ event, remaining }: Props) {
                   {event.landing.artist.stats.map((s, i) => (
                     <div
                       key={i}
-                      className="rounded-2xl border border-[#2a2450] bg-[#171228] px-4 py-3 text-center"
+                      className="rounded-2xl border border-[#e5eaf1] bg-white px-4 py-3 text-center"
                     >
-                      <p className="font-heading text-xl font-semibold text-[#d99a45] wrap-break-word">
+                      <p className="font-heading text-xl font-semibold text-[#1d4ed8] wrap-break-word">
                         {s.value}
                       </p>
-                      <p className="text-xs text-zinc-500 mt-0.5 wrap-break-word">{s.label}</p>
+                      <p className="text-xs text-slate-500 mt-0.5 wrap-break-word">{s.label}</p>
                     </div>
                   ))}
                 </div>
@@ -222,10 +222,10 @@ export default function EventLanding({ event, remaining }: Props) {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {tiers.map((tier, i) => {
               const cardCls = `block rounded-2xl border p-6 text-left transition-all duration-300 ${
-                i === 0 ? "border-[#d99a45]/40 bg-[#d99a45]/5" : "border-[#2a2450] bg-[#171228]"
+                i === 0 ? "border-[#1d4ed8]/40 bg-[#1d4ed8]/5" : "border-[#e5eaf1] bg-white"
               } ${
                 bookable
-                  ? "hover:border-[#d99a45] hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(217,154,69,0.12)] cursor-pointer"
+                  ? "hover:border-[#1d4ed8] hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(29,78,216,0.12)] cursor-pointer"
                   : "opacity-60 cursor-not-allowed"
               }`;
 
@@ -234,13 +234,13 @@ export default function EventLanding({ event, remaining }: Props) {
                   <div className="flex items-baseline justify-between gap-2 mb-2">
                     <h3 className="font-bold text-lg wrap-break-word min-w-0">{tier.name}</h3>
                     {i === 0 && (
-                      <span className="text-[10px] font-bold uppercase tracking-wide text-[#d99a45]">
+                      <span className="text-[10px] font-bold uppercase tracking-wide text-[#1d4ed8]">
                         Closest to stage
                       </span>
                     )}
                   </div>
                   <p className="text-3xl font-extrabold mb-3">{inr(tier.price)}</p>
-                  <p className="text-sm text-zinc-400">{tier.seats} seats</p>
+                  <p className="text-sm text-slate-600">{tier.seats} seats</p>
                 </>
               );
 
@@ -269,10 +269,10 @@ export default function EventLanding({ event, remaining }: Props) {
             <SectionTitle>Event details</SectionTitle>
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
               {event.landing.details && event.landing.details.length > 0 && (
-                <div className="rounded-2xl border border-[#2a2450] bg-[#171228] divide-y divide-[#2a2450]">
+                <div className="rounded-2xl border border-[#e5eaf1] bg-white divide-y divide-[#e5eaf1]">
                   {event.landing.details.map((d, i) => (
                     <div key={i} className="px-5 py-4">
-                      <p className="text-[11px] uppercase tracking-widest text-[#d99a45] mb-1">
+                      <p className="text-[11px] uppercase tracking-widest text-[#1d4ed8] mb-1">
                         {d.label}
                       </p>
                       <p className="text-sm font-medium wrap-break-word">{d.value}</p>
@@ -283,14 +283,14 @@ export default function EventLanding({ event, remaining }: Props) {
               {event.landing.schedule && event.landing.schedule.length > 0 && (
                 <div>
                   <h3 className="font-heading text-2xl font-semibold mb-4">Evening schedule</h3>
-                  <ol className="relative border-l border-[#2a2450] ml-2 space-y-6">
+                  <ol className="relative border-l border-[#e5eaf1] ml-2 space-y-6">
                     {event.landing.schedule.map((s, i) => (
                       <li key={i} className="pl-6">
-                        <span className="absolute -left-1.5 mt-1.5 w-3 h-3 rounded-full bg-[#d99a45]" />
-                        <p className="font-mono text-xs font-semibold text-[#d99a45]">{s.time}</p>
+                        <span className="absolute -left-1.5 mt-1.5 w-3 h-3 rounded-full bg-[#1d4ed8]" />
+                        <p className="font-mono text-xs font-semibold text-[#1d4ed8]">{s.time}</p>
                         <p className="font-semibold wrap-break-word">{s.title}</p>
                         {s.description && (
-                          <p className="text-sm text-zinc-400 wrap-break-word">{s.description}</p>
+                          <p className="text-sm text-slate-600 wrap-break-word">{s.description}</p>
                         )}
                       </li>
                     ))}
@@ -309,15 +309,15 @@ export default function EventLanding({ event, remaining }: Props) {
               {event.faqs.map((faq, i) => (
                 <details
                   key={i}
-                  className="bg-zinc-900 border border-zinc-800 rounded-xl px-5 py-4 group"
+                  className="bg-white border border-slate-200 rounded-xl px-5 py-4 group"
                 >
                   <summary className="cursor-pointer font-medium list-none flex items-center gap-3">
                     <span className="wrap-break-word min-w-0">{faq.question}</span>
-                    <span className="ml-auto text-zinc-500 group-open:rotate-45 transition-transform">
+                    <span className="ml-auto text-slate-500 group-open:rotate-45 transition-transform">
                       +
                     </span>
                   </summary>
-                  <p className="text-sm text-zinc-400 mt-3 wrap-break-word">{faq.answer}</p>
+                  <p className="text-sm text-slate-600 mt-3 wrap-break-word">{faq.answer}</p>
                 </details>
               ))}
             </div>
@@ -331,18 +331,18 @@ export default function EventLanding({ event, remaining }: Props) {
               <SectionTitle>The venue</SectionTitle>
               <h3 className="text-xl font-bold wrap-break-word">{event.landing.venue.name}</h3>
               {event.landing.venue.address && (
-                <p className="flex items-center gap-1.5 text-sm text-[#d99a45] mt-1.5">
+                <p className="flex items-center gap-1.5 text-sm text-[#1d4ed8] mt-1.5">
                   <MapPin className="w-4 h-4 shrink-0" aria-hidden="true" />
                   <span className="wrap-break-word">{event.landing.venue.address}</span>
                 </p>
               )}
               {event.landing.venue.description && (
-                <p className="text-zinc-300/90 leading-relaxed mt-4 wrap-break-word">
+                <p className="text-slate-700/90 leading-relaxed mt-4 wrap-break-word">
                   {event.landing.venue.description}
                 </p>
               )}
               {event.landing.venue.accessibility && (
-                <p className="text-sm text-zinc-500 mt-4 wrap-break-word">
+                <p className="text-sm text-slate-500 mt-4 wrap-break-word">
                   {event.landing.venue.accessibility}
                 </p>
               )}
@@ -352,7 +352,7 @@ export default function EventLanding({ event, remaining }: Props) {
               <img
                 src={event.landing.venue.imageUrl}
                 alt={event.landing.venue.name}
-                className="rounded-2xl w-full aspect-video object-cover border border-[#2a2450] shadow-[0_24px_60px_rgba(0,0,0,0.5)]"
+                className="rounded-2xl w-full aspect-video object-cover border border-[#e5eaf1] shadow-[0_16px_40px_rgba(15,23,42,0.10)]"
               />
             )}
           </section>
@@ -361,12 +361,12 @@ export default function EventLanding({ event, remaining }: Props) {
 
       {/* ---- Bottom CTA band ---- */}
       <section className={`relative overflow-hidden bg-linear-to-br ${event.poster}`}>
-        <div className="absolute inset-0 bg-zinc-950/70" />
+        <div className="absolute inset-0 bg-white/90" />
         <div className="section-y relative max-w-6xl mx-auto px-4 text-center">
           <h2 className="text-2xl sm:text-3xl font-extrabold mb-2">
             {soldOut ? "This one's full — see you at the next one!" : "Don't miss it."}
           </h2>
-          <p className="text-zinc-300 mb-6">
+          <p className="text-slate-700 mb-6">
             {formatDateIST(event.startsAt)} · {event.venue}, {event.city}
           </p>
           {cta}
@@ -379,7 +379,7 @@ export default function EventLanding({ event, remaining }: Props) {
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-6 flex items-center gap-3">
-      <span className="w-8 h-1 rounded-full bg-linear-to-r from-[#d99a45] to-[#e8bd6b] inline-block" />
+      <span className="w-8 h-1 rounded-full bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] inline-block" />
       {children}
     </h2>
   );
@@ -388,7 +388,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 function Fact({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-[11px] uppercase tracking-widest text-zinc-500 mb-1">{label}</p>
+      <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-1">{label}</p>
       <p className="text-sm font-semibold wrap-break-word">{value}</p>
     </div>
   );

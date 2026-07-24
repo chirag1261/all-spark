@@ -29,7 +29,7 @@ const ROLE_LABELS: Record<AdminRole, string> = {
 };
 
 const inputCls =
-  "w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#d99a45]";
+  "w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#1d4ed8]";
 
 export default function UserForm({ user, currentUserId, onDone }: Props) {
   const router = useRouter();
@@ -160,13 +160,13 @@ export default function UserForm({ user, currentUserId, onDone }: Props) {
             <button
               type="button"
               onClick={() => setResetting(true)}
-              className="w-full rounded-lg border border-zinc-800 px-4 py-2.5 text-sm text-zinc-400 hover:text-zinc-200 hover:border-zinc-700 transition-colors"
+              className="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm text-slate-600 hover:text-slate-800 hover:border-slate-300 transition-colors"
             >
               Reset password
             </button>
           )}
           {user && resetting && (
-            <p className="text-xs text-zinc-600 mt-1.5">
+            <p className="text-xs text-slate-400 mt-1.5">
               Share the new password with the user directly — they aren&apos;t emailed.
             </p>
           )}
@@ -183,8 +183,8 @@ export default function UserForm({ user, currentUserId, onDone }: Props) {
                 disabled={isSelf && user?.role === "super_admin"}
                 className={`flex-1 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
                   role === r
-                    ? "border-[#d99a45] bg-[#d99a45]/10 text-zinc-100"
-                    : "border-zinc-800 text-zinc-400 hover:text-zinc-200"
+                    ? "border-[#1d4ed8] bg-[#1d4ed8]/10 text-slate-900"
+                    : "border-slate-200 text-slate-600 hover:text-slate-800"
                 }`}
               >
                 {ROLE_LABELS[r]}
@@ -192,7 +192,7 @@ export default function UserForm({ user, currentUserId, onDone }: Props) {
             ))}
           </div>
           {isSelf && user?.role === "super_admin" && (
-            <p className="text-xs text-zinc-600 mt-1.5">
+            <p className="text-xs text-slate-400 mt-1.5">
               You can&apos;t change your own role — ask another super admin.
             </p>
           )}
@@ -205,17 +205,17 @@ export default function UserForm({ user, currentUserId, onDone }: Props) {
               {ADMIN_PERMISSIONS.map((p) => (
                 <label
                   key={p}
-                  className="flex items-start gap-3 bg-zinc-900 border border-zinc-800 rounded-xl p-3 cursor-pointer"
+                  className="flex items-start gap-3 bg-white border border-slate-200 rounded-xl p-3 cursor-pointer"
                 >
                   <input
                     type="checkbox"
                     checked={permissions.includes(p)}
                     onChange={() => togglePermission(p)}
-                    className="w-4 h-4 mt-0.5 accent-[#d99a45]"
+                    className="w-4 h-4 mt-0.5 accent-[#1d4ed8]"
                   />
                   <span className="text-sm">
                     <span className="font-medium">{PERMISSION_LABELS[p]?.label}</span>
-                    <span className="block text-xs text-zinc-500">{PERMISSION_LABELS[p]?.hint}</span>
+                    <span className="block text-xs text-slate-500">{PERMISSION_LABELS[p]?.hint}</span>
                   </span>
                 </label>
               ))}
@@ -223,12 +223,12 @@ export default function UserForm({ user, currentUserId, onDone }: Props) {
           </div>
         )}
         {role === "super_admin" && (
-          <p className="text-xs text-zinc-600">
+          <p className="text-xs text-slate-400">
             Super admins have every permission and can manage other admin users.
           </p>
         )}
         {role === "gate_controller" && (
-          <p className="text-xs text-zinc-600">
+          <p className="text-xs text-slate-400">
             Gate staff can only open the entry scanner to check in tickets — the rest of the
             admin is hidden from them.
           </p>
@@ -238,14 +238,14 @@ export default function UserForm({ user, currentUserId, onDone }: Props) {
           <button
             type="submit"
             disabled={busy}
-            className="bg-[#d99a45] hover:bg-[#bf863a] disabled:opacity-40 rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+            className="bg-[#1d4ed8] hover:bg-[#1e40af] disabled:opacity-40 rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
           >
             {busy ? "Saving…" : user ? "Save changes" : "Create user"}
           </button>
           <button
             type="button"
             onClick={onDone}
-            className="text-sm text-zinc-400 hover:text-zinc-200"
+            className="text-sm text-slate-600 hover:text-slate-800"
           >
             Cancel
           </button>
@@ -254,7 +254,7 @@ export default function UserForm({ user, currentUserId, onDone }: Props) {
               type="button"
               onClick={remove}
               disabled={busy}
-              className="ml-auto text-sm text-red-400 hover:text-red-300 disabled:opacity-40"
+              className="ml-auto text-sm text-red-700 hover:text-red-700 disabled:opacity-40"
             >
               Delete user
             </button>
@@ -268,5 +268,5 @@ export default function UserForm({ user, currentUserId, onDone }: Props) {
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return <label className="block text-xs text-zinc-500 mb-1.5">{children}</label>;
+  return <label className="block text-xs text-slate-500 mb-1.5">{children}</label>;
 }

@@ -84,21 +84,21 @@ export default function AdminUsersPanel({ users, currentUserId }: Props) {
         <h1 className="text-2xl font-bold">Admin users</h1>
         <button
           onClick={() => setDrawer("new")}
-          className="ml-auto inline-flex items-center gap-1.5 bg-[#d99a45] hover:bg-[#bf863a] rounded-lg px-4 py-2 font-semibold text-sm transition-colors"
+          className="ml-auto inline-flex items-center gap-1.5 bg-[#1d4ed8] hover:bg-[#1e40af] rounded-lg px-4 py-2 font-semibold text-sm transition-colors"
         >
           <Plus className="w-4 h-4" aria-hidden="true" /> New admin
         </button>
       </div>
-      <p className="text-sm text-zinc-500 mb-6">
+      <p className="text-sm text-slate-500 mb-6">
         Super admins can create, edit, deactivate and delete admin accounts, control which of
         Events and Bookings each admin can access, and create scanner-only gate staff. Refunds are
         restricted to super admins only.
       </p>
 
-      <div className="overflow-x-auto border border-zinc-800 rounded-xl">
+      <div className="overflow-x-auto border border-slate-200 rounded-xl">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-zinc-500 border-b border-zinc-800 bg-zinc-900/60">
+            <tr className="text-left text-slate-500 border-b border-slate-200 bg-slate-50">
               <th className="px-4 py-3 font-medium">Name</th>
               <th className="px-4 py-3 font-medium">Role</th>
               <th className="px-4 py-3 font-medium">Permissions</th>
@@ -111,7 +111,7 @@ export default function AdminUsersPanel({ users, currentUserId }: Props) {
             {users.map((u) => (
               <tr
                 key={u.id}
-                className={`border-b border-zinc-800/60 last:border-0 ${
+                className={`border-b border-slate-200 last:border-0 ${
                   u.active ? "" : "opacity-60"
                 }`}
               >
@@ -119,34 +119,34 @@ export default function AdminUsersPanel({ users, currentUserId }: Props) {
                   <p className="font-medium">
                     {u.name}
                     {u.id === currentUserId && (
-                      <span className="ml-2 text-[10px] font-bold uppercase tracking-wide bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded">
+                      <span className="ml-2 text-[10px] font-bold uppercase tracking-wide bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
                         You
                       </span>
                     )}
                   </p>
-                  <p className="text-xs text-zinc-500">{u.email}</p>
-                  {u.phone && <p className="text-xs text-zinc-600">{u.phone}</p>}
+                  <p className="text-xs text-slate-500">{u.email}</p>
+                  {u.phone && <p className="text-xs text-slate-400">{u.phone}</p>}
                 </td>
                 <td className="px-4 py-3">
                   <span
                     className={`inline-block text-xs font-semibold px-2 py-0.5 rounded ${
                       u.role === "super_admin"
-                        ? "bg-[#d99a45]/15 text-[#d99a45]"
+                        ? "bg-[#1d4ed8]/15 text-[#1d4ed8]"
                         : u.role === "gate_controller"
-                          ? "bg-sky-500/15 text-sky-400"
-                          : "bg-zinc-500/15 text-zinc-400"
+                          ? "bg-sky-50 text-sky-700"
+                          : "bg-slate-100 text-slate-600"
                     }`}
                   >
                     {ROLE_LABELS[u.role]}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-zinc-400">
+                <td className="px-4 py-3 text-slate-600">
                   {u.role === "super_admin" ? (
-                    <span className="text-zinc-600">All</span>
+                    <span className="text-slate-400">All</span>
                   ) : u.role === "gate_controller" ? (
-                    <span className="text-zinc-600">Scanner only</span>
+                    <span className="text-slate-400">Scanner only</span>
                   ) : u.permissions.length === 0 ? (
-                    <span className="text-zinc-600">None</span>
+                    <span className="text-slate-400">None</span>
                   ) : (
                     u.permissions.map((p) => PERMISSION_LABELS[p]).join(", ")
                   )}
@@ -155,14 +155,14 @@ export default function AdminUsersPanel({ users, currentUserId }: Props) {
                   <span
                     className={`inline-block text-xs font-semibold px-2 py-0.5 rounded ${
                       u.active
-                        ? "bg-emerald-500/15 text-emerald-400"
-                        : "bg-red-500/15 text-red-400"
+                        ? "bg-emerald-50 text-emerald-700"
+                        : "bg-red-50 text-red-700"
                     }`}
                   >
                     {u.active ? "Active" : "Inactive"}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-zinc-400 whitespace-nowrap text-xs">
+                <td className="px-4 py-3 text-slate-600 whitespace-nowrap text-xs">
                   {u.lastLoginAt
                     ? new Date(u.lastLoginAt).toLocaleString("en-IN", {
                         timeZone: "Asia/Kolkata",
@@ -174,7 +174,7 @@ export default function AdminUsersPanel({ users, currentUserId }: Props) {
                 <td className="px-4 py-3 text-right whitespace-nowrap">
                   <button
                     onClick={() => setDrawer(u.id)}
-                    className="text-[#d99a45] hover:underline"
+                    className="text-[#1d4ed8] hover:underline"
                   >
                     Edit
                   </button>
@@ -183,7 +183,7 @@ export default function AdminUsersPanel({ users, currentUserId }: Props) {
                       onClick={() => toggleActive(u)}
                       disabled={busyId === u.id}
                       className={`ml-4 disabled:opacity-40 hover:underline ${
-                        u.active ? "text-red-400" : "text-emerald-400"
+                        u.active ? "text-red-700" : "text-emerald-700"
                       }`}
                     >
                       {u.active ? "Deactivate" : "Activate"}
@@ -204,14 +204,14 @@ export default function AdminUsersPanel({ users, currentUserId }: Props) {
             onClick={() => setDrawer(null)}
             className="absolute inset-0 bg-black/60 backdrop-blur-xs cursor-default"
           />
-          <div className="absolute inset-y-0 right-0 w-full max-w-lg bg-zinc-950 border-l border-zinc-800 shadow-2xl flex flex-col animate-[slide-in_.2s_ease-out]">
-            <div className="flex items-center gap-3 px-6 h-16 border-b border-zinc-800 shrink-0">
+          <div className="absolute inset-y-0 right-0 w-full max-w-lg bg-white border-l border-slate-200 shadow-2xl flex flex-col animate-[slide-in_.2s_ease-out]">
+            <div className="flex items-center gap-3 px-6 h-16 border-b border-slate-200 shrink-0">
               <h2 className="font-bold text-lg">{editing ? "Edit admin" : "New admin"}</h2>
-              {editing && <span className="text-xs text-zinc-500 truncate">{editing.email}</span>}
+              {editing && <span className="text-xs text-slate-500 truncate">{editing.email}</span>}
               <button
                 onClick={() => setDrawer(null)}
                 aria-label="Close"
-                className="ml-auto w-8 h-8 inline-flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800"
+                className="ml-auto w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100"
               >
                 <X className="w-4 h-4" aria-hidden="true" />
               </button>

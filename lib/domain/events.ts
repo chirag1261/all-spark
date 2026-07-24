@@ -302,12 +302,15 @@ export function sanitizeLanding(raw: unknown): EventLandingContent | null {
   };
 }
 
+// Deep blue-family gradients — used as the featured-event hero backdrop
+// behind a photo + legibility scrim with white text, so they stay rich/dark
+// while keeping the site's cobalt identity.
 const POSTERS = [
-  "from-indigo-600 via-purple-700 to-slate-900",
-  "from-amber-500 via-orange-700 to-stone-900",
-  "from-red-600 via-rose-800 to-zinc-900",
-  "from-emerald-600 via-teal-800 to-slate-900",
-  "from-sky-600 via-blue-800 to-slate-950",
+  "from-blue-700 via-indigo-800 to-slate-900",
+  "from-sky-600 via-blue-800 to-slate-900",
+  "from-indigo-600 via-blue-800 to-slate-950",
+  "from-cyan-600 via-blue-800 to-slate-900",
+  "from-violet-600 via-indigo-800 to-slate-900",
 ];
 
 export function posterForIndex(i: number): string {

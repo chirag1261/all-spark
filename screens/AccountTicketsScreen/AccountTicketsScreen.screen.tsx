@@ -15,10 +15,10 @@ export async function AccountTicketsScreen() {
       <h1 className="text-2xl font-bold mb-6">My Tickets</h1>
       {tickets.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-zinc-500 mb-4">No tickets yet — they appear here after a booking.</p>
+          <p className="text-slate-500 mb-4">No tickets yet — they appear here after a booking.</p>
           <Link
             href="/"
-            className="inline-block bg-[#d99a45] hover:bg-[#bf863a] rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
+            className="inline-block bg-[#1d4ed8] hover:bg-[#1e40af] rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
           >
             Browse events
           </Link>
@@ -31,17 +31,17 @@ export async function AccountTicketsScreen() {
               <Link
                 key={t.ticketId}
                 href={`/ticket/${t.ticketId}`}
-                className="bg-zinc-900 border border-zinc-800 hover:border-[#d99a45]/60 rounded-2xl p-5 transition-colors"
+                className="bg-white border border-slate-200 hover:border-[#1d4ed8]/60 rounded-2xl p-5 transition-colors"
               >
                 <p className="font-bold wrap-break-word">{event?.title ?? t.eventId}</p>
-                <p className="text-sm text-zinc-400">
+                <p className="text-sm text-slate-600">
                   {event ? formatDateIST(event.startsAt) : ""}
                 </p>
                 <div className="flex items-center justify-between mt-3 text-sm">
                   <span className="wrap-break-word min-w-0">
                     {t.attendeeName} · Seat <strong>{t.seatId}</strong>
                   </span>
-                  <span className="shrink-0 font-mono text-xs text-[#d99a45]">{t.ticketId}</span>
+                  <span className="shrink-0 font-mono text-xs text-[#1d4ed8]">{t.ticketId}</span>
                 </div>
               </Link>
             );

@@ -20,7 +20,7 @@ export async function HomeScreen() {
   const others = events.filter((e) => e.id !== featured?.id);
 
   return (
-    <div className="min-h-screen text-zinc-100">
+    <div className="min-h-screen text-slate-900">
       <SiteHeader />
       {featured ? (
         <main>

@@ -10,7 +10,7 @@ export default function AccountShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen text-zinc-100">
+    <div className="min-h-screen text-slate-900">
       <SiteHeader />
       <main className="max-w-4xl mx-auto px-4 py-8">
         <AccountTabs active={active} />

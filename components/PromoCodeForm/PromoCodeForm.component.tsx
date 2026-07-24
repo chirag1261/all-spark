@@ -27,7 +27,7 @@ interface Props {
 }
 
 const inputCls =
-  "w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#d99a45]";
+  "w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#1d4ed8]";
 
 /** epoch ms → value for <input type="datetime-local"> in the admin's local tz. */
 function toLocalInput(ms: number | null | undefined): string {
@@ -183,8 +183,8 @@ export default function PromoCodeForm({ promo, cloneFrom, events, onDone }: Prop
                 onClick={() => setDiscountType(t)}
                 className={`flex-1 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${
                   discountType === t
-                    ? "border-[#d99a45] bg-[#d99a45]/10 text-zinc-100"
-                    : "border-zinc-800 text-zinc-400 hover:text-zinc-200"
+                    ? "border-[#1d4ed8] bg-[#1d4ed8]/10 text-slate-900"
+                    : "border-slate-200 text-slate-600 hover:text-slate-800"
                 }`}
               >
                 {t === "percent" ? "Percentage" : "Flat amount"}
@@ -284,23 +284,23 @@ export default function PromoCodeForm({ promo, cloneFrom, events, onDone }: Prop
             className={inputCls}
           />
           {promo && (
-            <p className="text-xs text-zinc-600 mt-1.5">
+            <p className="text-xs text-slate-400 mt-1.5">
               Used so far: {promo.redemptionCount}
             </p>
           )}
         </div>
 
-        <div className="flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+        <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-xl p-4">
           <input
             id="promo-active"
             type="checkbox"
             checked={active}
             onChange={(e) => setActive(e.target.checked)}
-            className="w-4 h-4 accent-[#d99a45]"
+            className="w-4 h-4 accent-[#1d4ed8]"
           />
           <label htmlFor="promo-active" className="text-sm">
             <span className="font-medium">Active</span>
-            <span className="text-zinc-500"> — customers can apply this code at checkout</span>
+            <span className="text-slate-500"> — customers can apply this code at checkout</span>
           </label>
         </div>
 
@@ -308,11 +308,11 @@ export default function PromoCodeForm({ promo, cloneFrom, events, onDone }: Prop
           <button
             type="submit"
             disabled={busy}
-            className="bg-[#d99a45] hover:bg-[#bf863a] disabled:opacity-40 rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+            className="bg-[#1d4ed8] hover:bg-[#1e40af] disabled:opacity-40 rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
           >
             {busy ? "Saving…" : promo ? "Save changes" : "Create promo code"}
           </button>
-          <button type="button" onClick={onDone} className="text-sm text-zinc-400 hover:text-zinc-200">
+          <button type="button" onClick={onDone} className="text-sm text-slate-600 hover:text-slate-800">
             Cancel
           </button>
           {promo && (
@@ -320,7 +320,7 @@ export default function PromoCodeForm({ promo, cloneFrom, events, onDone }: Prop
               type="button"
               onClick={remove}
               disabled={busy}
-              className="ml-auto text-sm text-red-400 hover:text-red-300 disabled:opacity-40"
+              className="ml-auto text-sm text-red-700 hover:text-red-700 disabled:opacity-40"
             >
               Delete
             </button>
@@ -334,5 +334,5 @@ export default function PromoCodeForm({ promo, cloneFrom, events, onDone }: Prop
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return <label className="block text-xs text-zinc-500 mb-1.5">{children}</label>;
+  return <label className="block text-xs text-slate-500 mb-1.5">{children}</label>;
 }
