@@ -1,4 +1,3 @@
-import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 import {
@@ -7,24 +6,29 @@ import {
   createCustomerSessionToken,
   normalizeIdentifier,
 } from "@/lib/auth/customer";
-import { verifyOtp } from "@/lib/auth/otp";
-import { createCustomer, getCustomerByIdentifier, updateCustomer } from "@/lib/db";
+import { signupProof, verifyOtp } from "@/lib/auth/otp";
+import { getCustomerByIdentifier, updateCustomer } from "@/lib/db";
 import { clientKey, rateLimit } from "@/lib/http/ratelimit";
-import { Customer } from "@/types";
 
 /**
- * POST /api/auth/otp/verify — Body: { identifier, code, name? }
- * Verifies the OTP. Existing account → login. New account → signup, which
- * requires `name` (the wizard collects it before sending the code).
- * OTP verification IS the contact verification — the email/phone is marked
- * verified, which checkout later relies on for ticket delivery.
+ * POST /api/auth/otp/verify — Body: { identifier, code, purpose? }
+ *
+ * Two purposes:
+ *  - "signup": verifies one contact of a NEW account. Returns a short-lived
+ *    signed proof; does NOT create an account or a session (the account is
+ *    created by /api/auth/signup once the proof is presented). Currently only
+ *    the email contact is used for signup — phone verification is temporarily
+ *    disabled (Twilio Trial limitation); this endpoint stays channel-agnostic
+ *    so phone can be re-enabled without changes here.
+ *  - "login" (default): verifies an EXISTING account's contact and signs in.
+ *    Unknown identifiers are rejected — accounts are never auto-created here.
  */
 export async function POST(req: NextRequest) {
   if (!rateLimit(`otp-verify:${clientKey(req)}`, 15, 10 * 60_000)) {
     return NextResponse.json({ error: "Too many attempts — try again later" }, { status: 429 });
   }
 
-  let body: { identifier?: unknown; code?: unknown; name?: unknown };
+  let body: { identifier?: unknown; code?: unknown; purpose?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -39,13 +43,23 @@ export async function POST(req: NextRequest) {
   if (!/^\d{6}$/.test(code)) {
     return NextResponse.json({ error: "Enter the 6-digit code" }, { status: 400 });
   }
+  const purpose = body.purpose === "signup" ? "signup" : "login";
 
-  // Check signup requirements BEFORE verifying — verification consumes the
-  // (single-use) code, and a missing name must not burn it.
   const existing = await getCustomerByIdentifier(normalized.identifier);
-  const signupName = typeof body.name === "string" ? body.name.trim() : "";
-  if (!existing && (signupName.length < 2 || signupName.length > 80)) {
-    return NextResponse.json({ error: "Enter your name to create the account" }, { status: 400 });
+
+  // Guard BEFORE verifying (verification consumes the single-use code):
+  if (purpose === "signup" && existing) {
+    const which = normalized.channel === "email" ? "email" : "phone number";
+    return NextResponse.json(
+      { error: `That ${which} is already registered — please sign in instead.` },
+      { status: 409 }
+    );
+  }
+  if (purpose === "login" && !existing) {
+    return NextResponse.json(
+      { error: "No account found — please create one first." },
+      { status: 404 }
+    );
   }
 
   const result = await verifyOtp(normalized.identifier, code);
@@ -62,37 +76,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Incorrect code" }, { status: 400 });
   }
 
-  // Re-read after verification — the account could have been created between
-  // the pre-check and now; getCustomerByIdentifier makes this idempotent.
-  let customer = await getCustomerByIdentifier(normalized.identifier);
-  const now = Date.now();
-  const isNew = !customer;
-
-  if (!customer) {
-    const fresh: Customer = {
-      id: `cus_${crypto.randomBytes(6).toString("hex")}`,
-      name: signupName,
-      email: normalized.channel === "email" ? normalized.identifier : null,
-      phone: normalized.channel === "phone" ? normalized.identifier : null,
-      passwordHash: null,
-      emailVerified: normalized.channel === "email",
-      phoneVerified: normalized.channel === "phone",
-      createdAt: now,
-      updatedAt: now,
-      lastLoginAt: now,
-    };
-    await createCustomer(fresh);
-    customer = fresh;
-  } else {
-    await updateCustomer(customer.id, {
-      lastLoginAt: now,
-      ...(normalized.channel === "email" ? { emailVerified: true } : { phoneVerified: true }),
-    });
+  // ---- Signup: hand back a proof, no account/session yet. ----
+  if (purpose === "signup") {
+    return NextResponse.json({ ok: true, proof: signupProof(normalized.identifier) });
   }
+
+  // ---- Login: mark this contact verified and sign in. ----
+  const customer = existing!;
+  await updateCustomer(customer.id, {
+    lastLoginAt: Date.now(),
+    ...(normalized.channel === "email" ? { emailVerified: true } : { phoneVerified: true }),
+  });
 
   const res = NextResponse.json({
     ok: true,
-    isNew,
     customer: {
       id: customer.id,
       name: customer.name,

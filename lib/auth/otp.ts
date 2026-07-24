@@ -74,3 +74,34 @@ export async function verifyOtp(identifier: string, code: string): Promise<OtpVe
   await consumeOtpChallenge(challenge.id); // single use
   return "ok";
 }
+
+// ---------- Signup verification proofs ----------
+//
+// Signup requires BOTH email and phone verified before the account exists.
+// Rather than hold half-built state server-side, each verified contact yields
+// a short-lived HMAC-signed proof; the final /api/auth/signup call presents
+// both proofs and the account is created atomically only if both validate.
+// Same construction as the customer session token (lib/auth/customer.ts).
+
+const SIGNUP_PROOF_TTL_MS = 15 * 60 * 1000;
+
+function proofSig(payload: string): string {
+  return crypto.createHmac("sha256", sessionSecret()).update(payload).digest("hex");
+}
+
+/** Issues a proof that `identifier` was OTP-verified for signup. */
+export function signupProof(identifier: string): string {
+  const exp = String(Date.now() + SIGNUP_PROOF_TTL_MS);
+  return `${exp}.${proofSig(`signup:${identifier}:${exp}`)}`;
+}
+
+/** Verifies a signup proof for `identifier` (expiry + timing-safe signature). */
+export function verifySignupProof(identifier: string, token: unknown): boolean {
+  if (typeof token !== "string") return false;
+  const [exp, sig] = token.split(".");
+  if (!exp || !sig) return false;
+  if (Number(exp) < Date.now()) return false;
+  const expected = Buffer.from(proofSig(`signup:${identifier}:${exp}`), "utf8");
+  const actual = Buffer.from(sig, "utf8");
+  return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
+}
