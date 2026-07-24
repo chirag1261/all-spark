@@ -212,14 +212,78 @@ h3 {
   animation: confetti-fall var(--confetti-duration, 2.6s) linear var(--confetti-delay, 0s) both;
 }
 
+/* ---------------------------------------------------------------------------
+   Scroll reveal — progressive entrance for landing/about sections.
+   Driven by the <Reveal> client component (IntersectionObserver): it renders
+   `.reveal` server-side and adds `.reveal-in` once the element scrolls into
+   view. Optional variant classes shift the entrance direction.
+--------------------------------------------------------------------------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.reveal-left {
+  transform: translateX(-28px);
+}
+.reveal-right {
+  transform: translateX(28px);
+}
+.reveal-scale {
+  transform: scale(0.96);
+}
+.reveal-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Soft floating drift for decorative hero/section ornaments */
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+.float-slow {
+  animation: float-slow 6s ease-in-out infinite;
+}
+
+/* Slowly panning gradient used behind featured/CTA panels */
+@keyframes gradient-pan {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+.gradient-pan {
+  background-size: 200% 200%;
+  animation: gradient-pan 12s ease infinite;
+}
+
 /* Accessibility: kill decorative motion for users who ask for less of it */
 @media (prefers-reduced-motion: reduce) {
   .page-transition,
   .hero-frame,
   .hero-frame-active,
   .tick-pop,
-  .confetti-piece {
+  .confetti-piece,
+  .float-slow,
+  .gradient-pan {
     animation: none !important;
+  }
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
   }
   * {
     transition-duration: 0.01ms !important;

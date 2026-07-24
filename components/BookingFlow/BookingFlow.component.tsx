@@ -2,16 +2,17 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Check, Tag, Users } from "lucide-react";
+import { AlertTriangle, Check, Tag, Users } from "lucide-react";
 import Link from "next/link";
 
 import { MAX_SEATS_PER_BOOKING } from "@/constants";
-import { seatPrice } from "@/lib/domain/events";
+import { getSeatLayout, seatPrice, totalSeats } from "@/lib/domain/events";
 import { EventItem } from "@/types";
 import { formatDateIST, inr } from "@/utils";
 
 import BackLink from "../BackLink";
 import Confetti from "../Confetti";
+import EventFactStrip from "../EventFactStrip";
 import Loader from "../Loader";
 import { useRouteLoader } from "../RouteLoader";
 import SeatMap from "../SeatMap";
@@ -30,6 +31,27 @@ interface Confirmation {
   emailSent: boolean;
   amount: number;
 }
+
+type PaymentIssueReason = "dismissed" | "verify_failed" | "network_error" | "script_load_failed";
+
+const PAYMENT_ISSUE_COPY: Record<PaymentIssueReason, { title: string; body: string }> = {
+  dismissed: {
+    title: "Payment not completed",
+    body: "You closed the payment window before finishing. Your seats were released — you can pick up right where you left off.",
+  },
+  verify_failed: {
+    title: "We couldn't confirm your payment",
+    body: "If any amount was deducted, it will be automatically refunded within a few working days. Your seats were released.",
+  },
+  network_error: {
+    title: "Payment status unknown",
+    body: "We couldn't reach the server to confirm your payment. If you were charged, don't pay again for the same seats — check My Bookings first.",
+  },
+  script_load_failed: {
+    title: "Couldn't load the payment window",
+    body: "Check your internet connection, then try again.",
+  },
+};
 
 interface Props {
   event: EventItem;
@@ -76,6 +98,14 @@ export default function BookingFlow({
   const [finalizing, setFinalizing] = useState(false);
   const { showToast, toast } = useToast();
   const [confirmed, setConfirmed] = useState<Confirmation | null>(null);
+  // Set the moment /api/orders succeeds so a later failure/retry always has
+  // the order+token needed to explicitly free that hold (locks are keyed by
+  // order id, not customer, so a stale hold from a failed attempt would
+  // otherwise collide with the retry's new order for the same seats).
+  const [lastOrder, setLastOrder] = useState<{ orderId: string; releaseToken: string } | null>(
+    null
+  );
+  const [paymentIssue, setPaymentIssue] = useState<PaymentIssueReason | null>(null);
   // Guided checkout journey: pick seats → name attendees → review → pay.
   const [step, setStep] = useState<"seats" | "attendees" | "summary">("seats");
   // Promo code applied on the summary step (server-validated preview).
@@ -109,6 +139,15 @@ export default function BookingFlow({
   }, [refreshSeats, confirmed]);
 
   const selectedSeats = useMemo(() => [...selected].sort(), [selected]);
+
+  // For the fact strip + the attendee step's per-seat tier label.
+  const totalSeatCount = useMemo(() => totalSeats(event), [event]);
+  const remainingSeats = Math.max(0, totalSeatCount - bookedSeats.size);
+  const tierBySeatId = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const seat of getSeatLayout(event)) map.set(seat.id, seat.tierName);
+    return map;
+  }, [event]);
 
   const totalAmount = useMemo(() => {
     let sum = 0;
@@ -227,6 +266,8 @@ export default function BookingFlow({
         return;
       }
 
+      setLastOrder({ orderId: data.orderId, releaseToken: data.releaseToken });
+
       const ok = await loadRazorpay();
       if (!ok || !window.Razorpay) {
         await fetch("/api/release", {
@@ -234,8 +275,8 @@ export default function BookingFlow({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ orderId: data.orderId, releaseToken: data.releaseToken }),
         }).catch(() => {});
-        showToast("Could not load the payment window. Check your connection and retry.", "error");
         setPaying(false);
+        setPaymentIssue("script_load_failed");
         return;
       }
 
@@ -283,16 +324,12 @@ export default function BookingFlow({
               });
             } else {
               setFinalizing(false);
-              showToast(
-                verifyData.error ??
-                  "Payment verification failed. If money was deducted it will be auto-refunded.",
-                "error"
-              );
+              setPaymentIssue("verify_failed");
               refreshSeats();
             }
           } catch {
             setFinalizing(false);
-            showToast("Could not verify payment — check My Bookings before retrying.", "error");
+            setPaymentIssue("network_error");
           } finally {
             setPaying(false);
           }
@@ -306,6 +343,7 @@ export default function BookingFlow({
               body: JSON.stringify({ orderId: data.orderId, releaseToken: data.releaseToken }),
             }).catch(() => {});
             setPaying(false);
+            setPaymentIssue("dismissed");
             refreshSeats();
           },
         },
@@ -318,38 +356,80 @@ export default function BookingFlow({
     }
   };
 
+  // Explicitly frees the previous attempt's hold before retrying — locks are
+  // keyed by order id, so a still-live hold from the failed order would
+  // otherwise collide with the new order this creates for the same seats.
+  const releaseLastOrder = async () => {
+    if (!lastOrder) return;
+    await fetch("/api/release", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(lastOrder),
+    }).catch(() => {});
+  };
+
+  const retryPayment = async () => {
+    setPaymentIssue(null);
+    await releaseLastOrder();
+    await refreshSeats();
+    pay();
+  };
+
+  const abandonAndReselect = async () => {
+    setPaymentIssue(null);
+    await releaseLastOrder();
+    await refreshSeats();
+    setStep("seats");
+  };
+
   // ---------- Confirmation: one QR ticket per attendee ----------
 
   if (confirmed) {
     return (
-      <div className="max-w-lg mx-auto text-center py-12">
+      <div className="max-w-lg mx-auto py-8">
         <Confetti />
-        <div className="tick-pop w-16 h-16 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center mx-auto mb-5">
-          <Check className="w-8 h-8" aria-hidden="true" />
+
+        {/* Success banner — soft green celebratory panel */}
+        <div className="relative overflow-hidden rounded-3xl border border-emerald-100 bg-linear-to-b from-emerald-50 via-emerald-50/70 to-white px-6 py-10 text-center mb-6 shadow-[0_16px_40px_rgba(16,185,129,0.12)]">
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute -top-12 -right-12 w-44 h-44 rounded-full bg-emerald-200/40 blur-3xl"
+          />
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute -bottom-12 -left-12 w-44 h-44 rounded-full bg-emerald-200/30 blur-3xl"
+          />
+          <div className="relative">
+            <div className="tick-pop w-20 h-20 rounded-full bg-emerald-500 text-white flex items-center justify-center mx-auto mb-5 shadow-[0_12px_30px_rgba(16,185,129,0.35)]">
+              <Check className="w-10 h-10" strokeWidth={3} aria-hidden="true" />
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-2">
+              Booking confirmed!
+            </h1>
+            <p className="text-slate-700 text-sm">
+              {confirmed.tickets.length > 1
+                ? `${confirmed.tickets.length} tickets — each attendee shows their own QR at the gate.`
+                : "Show this QR at the venue gate."}
+            </p>
+            <p className="text-slate-500 text-sm mt-1">
+              {confirmed.emailSent
+                ? `Tickets were emailed to ${customer.email}.`
+                : "Save your tickets — they're also in My Tickets in your account."}
+            </p>
+          </div>
         </div>
-        <h1 className="text-2xl font-bold mb-1">Booking confirmed!</h1>
-        <p className="text-slate-600 text-sm mb-2">
-          {confirmed.tickets.length > 1
-            ? `${confirmed.tickets.length} tickets — each attendee shows their own QR at the gate.`
-            : "Show this QR at the venue gate."}
-        </p>
-        <p className="text-slate-500 text-sm mb-8">
-          {confirmed.emailSent
-            ? `Tickets were emailed to ${customer.email}.`
-            : "Save your tickets — they're also in My Tickets in your account."}
-        </p>
 
         <div className="space-y-4 text-left">
           {confirmed.tickets.map((t) => (
             <div
               key={t.ticketId}
-              className="bg-white border border-slate-200 rounded-2xl p-5 flex items-center gap-5"
+              className="bg-white border border-slate-200 rounded-2xl p-5 flex items-center gap-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)]"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={t.qrDataUrl}
                 alt={`Ticket QR ${t.ticketId}`}
-                className="w-28 h-28 rounded-lg bg-white p-1 shrink-0"
+                className="w-28 h-28 rounded-lg bg-white p-1 shrink-0 border border-slate-100"
               />
               <div className="min-w-0">
                 <p className="font-bold wrap-break-word">{t.name}</p>
@@ -366,7 +446,7 @@ export default function BookingFlow({
           ))}
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 mt-4 text-left space-y-2">
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 mt-4 text-left space-y-2 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
           <Row label="Booking ID" value={confirmed.bookingId} mono />
           <Row label="Event" value={event.title} />
           <Row label="When" value={formatDateIST(event.startsAt)} />
@@ -376,17 +456,85 @@ export default function BookingFlow({
         <div className="flex flex-col sm:flex-row gap-3 mt-6">
           <Link
             href="/account/tickets"
-            className="flex-1 bg-slate-100 hover:bg-slate-200 rounded-lg px-5 py-3 font-semibold text-sm transition-colors"
+            className="flex-1 text-center bg-slate-100 hover:bg-slate-200 rounded-lg px-5 py-3 font-semibold text-sm transition-colors"
           >
             My tickets
           </Link>
           <Link
             href="/"
-            className="flex-1 bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-lg px-5 py-3 font-semibold text-sm transition-colors"
+            className="flex-1 text-center bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-lg px-5 py-3 font-semibold text-sm transition-colors"
           >
             Browse more events
           </Link>
         </div>
+      </div>
+    );
+  }
+
+  // ---------- Payment pending / failed — retry with the same seats ----------
+
+  if (paymentIssue) {
+    const copy = PAYMENT_ISSUE_COPY[paymentIssue];
+    const severe = paymentIssue !== "dismissed";
+    return (
+      <div className="max-w-lg mx-auto text-center py-12">
+        <div
+          className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 ${
+            severe ? "bg-rose-50 text-rose-700" : "bg-amber-50 text-amber-700"
+          }`}
+        >
+          <AlertTriangle className="w-8 h-8" aria-hidden="true" />
+        </div>
+        <h1 className="text-2xl font-bold mb-2">{copy.title}</h1>
+        <p className="text-slate-600 text-sm mb-8">{copy.body}</p>
+
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 text-left mb-6">
+          <p className="font-semibold wrap-break-word">{event.title}</p>
+          <p className="text-xs text-slate-500 mb-3">
+            {event.venue} · {formatDateIST(event.startsAt)}
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {selectedSeats.map((seatId) => (
+              <span
+                key={seatId}
+                className="text-[11px] font-mono font-semibold tracking-wide text-[#1d4ed8] bg-[#1d4ed8]/10 border border-[#1d4ed8]/25 rounded-lg px-2.5 py-1"
+              >
+                {seatId}
+              </span>
+            ))}
+          </div>
+          <div className="flex items-center justify-between pt-3 mt-3 border-t border-slate-200 text-sm">
+            <span className="text-slate-600">Total payable</span>
+            <span className="font-bold">{inr(payable)}</span>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button
+            onClick={abandonAndReselect}
+            className="flex-1 rounded-lg border border-slate-300 px-5 py-3 font-semibold text-sm text-slate-700 hover:text-slate-900 hover:border-slate-400 transition-colors"
+          >
+            Choose different seats
+          </button>
+          <button
+            onClick={retryPayment}
+            disabled={paying}
+            className="flex-1 bg-[#1d4ed8] hover:bg-[#1e40af] text-white disabled:opacity-40 disabled:cursor-not-allowed rounded-lg px-5 py-3 font-semibold text-sm transition-colors"
+          >
+            {paying ? "Processing…" : `Retry payment · ${inr(payable)}`}
+          </button>
+        </div>
+
+        {paymentIssue === "network_error" && (
+          <p className="text-xs text-slate-500 mt-4">
+            Not sure if you were charged?{" "}
+            <Link href="/account/bookings" className="text-[#1d4ed8] hover:underline">
+              Check My Bookings
+            </Link>{" "}
+            first.
+          </p>
+        )}
+        {toast}
       </div>
     );
   }
@@ -399,13 +547,34 @@ export default function BookingFlow({
       <BackLink href={`/events/${event.id}`} className="mb-4">
         Back to event
       </BackLink>
-      <div className="flex flex-wrap items-baseline gap-x-3 mb-1">
-        <h1 className="text-xl font-bold wrap-break-word">{event.title}</h1>
-        <span className="text-sm text-slate-600">
-          {event.venue} · {formatDateIST(event.startsAt)}
-        </span>
+
+      {/* Event header — the same banner + at-a-glance facts as the event page,
+          so the customer keeps full context while booking. */}
+      <div
+        className={`relative rounded-2xl overflow-hidden aspect-video mb-5 bg-linear-to-br ${event.poster}`}
+      >
+        {(event.imageUrl || event.gallery[0]) && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={event.imageUrl || event.gallery[0]}
+            alt={event.title}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        )}
+        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/25 to-transparent" />
+        <div className="absolute bottom-0 p-4 sm:p-5 text-white">
+          <h1 className="text-xl sm:text-2xl font-bold drop-shadow wrap-break-word">
+            {event.title}
+          </h1>
+          <p className="text-xs sm:text-sm text-white/85 mt-1 drop-shadow">
+            {formatDateIST(event.startsAt)} · {event.venue}, {event.city}
+          </p>
+        </div>
       </div>
-      <p className="text-xs text-slate-500 mb-6">
+
+      <EventFactStrip event={event} remaining={remainingSeats} />
+
+      <p className="text-xs text-slate-500 mt-4 mb-6">
         Booking as <span className="text-slate-700">{customer.name}</span> (
         {customer.email ?? customer.phone}).
       </p>
@@ -415,13 +584,15 @@ export default function BookingFlow({
       {/* ---- Step 1: choose seats ---- */}
       {step === "seats" && (
         <div className="mt-6">
-          <SeatMap
-            event={event}
-            bookedSeats={bookedSeats}
-            lockedSeats={lockedSeats}
-            selected={selected}
-            onToggle={toggleSeat}
-          />
+          <div className="rounded-2xl bg-linear-to-b from-slate-900 to-slate-950 border border-slate-800 p-4 sm:p-6 shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
+            <SeatMap
+              event={event}
+              bookedSeats={bookedSeats}
+              lockedSeats={lockedSeats}
+              selected={selected}
+              onToggle={toggleSeat}
+            />
+          </div>
           <div className="sticky bottom-0 mt-6 bg-white border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium">
@@ -450,37 +621,59 @@ export default function BookingFlow({
 
       {/* ---- Step 2: attendee names ---- */}
       {step === "attendees" && (
-        <div className="mt-6 max-w-2xl">
-          <p className="flex items-center gap-1.5 text-xs uppercase tracking-wide text-slate-500 mb-3">
-            <Users className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-            Attendee for each seat
-            {selectedSeats.length > 1 && (
-              <span className="normal-case text-slate-400">
-                — every person gets their own QR ticket
-              </span>
-            )}
-          </p>
-          <div className="grid sm:grid-cols-2 gap-2.5">
+        <div className="mt-6 max-w-3xl">
+          <div className="flex items-start gap-3 rounded-xl bg-[#eff4ff] border border-[#1d4ed8]/15 px-4 py-3 mb-5">
+            <Users className="w-4.5 h-4.5 shrink-0 text-[#1d4ed8] mt-0.5" aria-hidden="true" />
+            <p className="text-sm text-slate-700">
+              <span className="font-semibold">Add a name for every seat.</span>{" "}
+              {selectedSeats.length > 1
+                ? "Each attendee gets their own scannable QR ticket at the gate."
+                : "Your attendee will get a scannable QR ticket at the gate."}
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-3">
             {selectedSeats.map((seatId, i) => (
-              <div key={seatId} className="flex items-center gap-2.5">
-                <span className="h-10 shrink-0 flex items-center justify-center whitespace-nowrap text-[11px] font-mono font-semibold tracking-wide text-[#1d4ed8] bg-[#1d4ed8]/10 border border-[#1d4ed8]/25 rounded-lg px-3">
+              <div
+                key={seatId}
+                className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3"
+              >
+                <span className="shrink-0 flex items-center justify-center whitespace-nowrap text-[11px] font-mono font-semibold tracking-wide text-[#1d4ed8] bg-[#1d4ed8]/10 border border-[#1d4ed8]/25 rounded-lg px-2.5 py-1.5">
                   {seatId}
                 </span>
-                <input
-                  value={nameForSeat(seatId, i)}
-                  onChange={(e) =>
-                    setAttendeeNames((prev) => ({ ...prev, [seatId]: e.target.value }))
-                  }
-                  placeholder={`Attendee name for ${seatId}`}
-                  required
-                  minLength={2}
-                  maxLength={80}
-                  className="h-10 flex-1 min-w-0 bg-white border border-slate-200 rounded-lg px-3 text-sm outline-none focus:border-[#1d4ed8] transition-colors"
-                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-[10px] uppercase tracking-widest text-slate-400 truncate">
+                      {tierBySeatId.get(seatId) ?? "Seat"}
+                    </span>
+                    <span className="shrink-0 text-xs font-semibold text-slate-600">
+                      {inr(seatPrice(event, seatId) ?? 0)}
+                    </span>
+                  </div>
+                  <input
+                    value={nameForSeat(seatId, i)}
+                    onChange={(e) =>
+                      setAttendeeNames((prev) => ({ ...prev, [seatId]: e.target.value }))
+                    }
+                    placeholder="Attendee's full name"
+                    required
+                    minLength={2}
+                    maxLength={80}
+                    className="h-9 w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 text-sm outline-none focus:border-[#1d4ed8] focus:bg-white transition-colors"
+                  />
+                </div>
               </div>
             ))}
           </div>
-          <div className="flex gap-3 mt-6">
+
+          <div className="flex items-center justify-between mt-4 px-1 text-sm text-slate-600">
+            <span>
+              {selected.size} seat{selected.size > 1 ? "s" : ""} selected
+            </span>
+            <span className="font-semibold text-slate-900">{inr(totalAmount)}</span>
+          </div>
+
+          <div className="flex gap-3 mt-5">
             <button
               onClick={() => {
                 clearPromo(); // seats may change → any previewed discount is stale

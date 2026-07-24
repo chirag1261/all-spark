@@ -89,7 +89,7 @@ export default function AdminUsersPanel({ users, currentUserId }: Props) {
           <Plus className="w-4 h-4" aria-hidden="true" /> New admin
         </button>
       </div>
-      <p className="text-sm text-slate-500 mb-6">
+      <p className="text-sm text-slate-800 mb-6">
         Super admins can create, edit, deactivate and delete admin accounts, control which of
         Events and Bookings each admin can access, and create scanner-only gate staff. Refunds are
         restricted to super admins only.
@@ -98,7 +98,7 @@ export default function AdminUsersPanel({ users, currentUserId }: Props) {
       <div className="overflow-x-auto border border-slate-200 rounded-xl">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-slate-500 border-b border-slate-200 bg-slate-50">
+            <tr className="text-left text-slate-800 border-b border-slate-200 bg-slate-50">
               <th className="px-4 py-3 font-medium">Name</th>
               <th className="px-4 py-3 font-medium">Role</th>
               <th className="px-4 py-3 font-medium">Permissions</th>
@@ -124,12 +124,12 @@ export default function AdminUsersPanel({ users, currentUserId }: Props) {
                       </span>
                     )}
                   </p>
-                  <p className="text-xs text-slate-500">{u.email}</p>
-                  {u.phone && <p className="text-xs text-slate-400">{u.phone}</p>}
+                  <p className="text-sm text-slate-800">{u.email}</p>
+                  {u.phone && <p className="text-sm text-slate-700">{u.phone}</p>}
                 </td>
                 <td className="px-4 py-3">
                   <span
-                    className={`inline-block text-xs font-semibold px-2 py-0.5 rounded ${
+                    className={`inline-block text-sm font-semibold px-2 py-0.5 rounded ${
                       u.role === "super_admin"
                         ? "bg-[#1d4ed8]/15 text-[#1d4ed8]"
                         : u.role === "gate_controller"
@@ -142,18 +142,18 @@ export default function AdminUsersPanel({ users, currentUserId }: Props) {
                 </td>
                 <td className="px-4 py-3 text-slate-600">
                   {u.role === "super_admin" ? (
-                    <span className="text-slate-400">All</span>
+                    <span className="text-slate-700">All</span>
                   ) : u.role === "gate_controller" ? (
-                    <span className="text-slate-400">Scanner only</span>
+                    <span className="text-slate-700">Scanner only</span>
                   ) : u.permissions.length === 0 ? (
-                    <span className="text-slate-400">None</span>
+                    <span className="text-slate-700">None</span>
                   ) : (
                     u.permissions.map((p) => PERMISSION_LABELS[p]).join(", ")
                   )}
                 </td>
                 <td className="px-4 py-3">
                   <span
-                    className={`inline-block text-xs font-semibold px-2 py-0.5 rounded ${
+                    className={`inline-block text-sm font-semibold px-2 py-0.5 rounded ${
                       u.active
                         ? "bg-emerald-50 text-emerald-700"
                         : "bg-red-50 text-red-700"
@@ -162,7 +162,7 @@ export default function AdminUsersPanel({ users, currentUserId }: Props) {
                     {u.active ? "Active" : "Inactive"}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-slate-600 whitespace-nowrap text-xs">
+                <td className="px-4 py-3 text-slate-600 whitespace-nowrap text-sm">
                   {u.lastLoginAt
                     ? new Date(u.lastLoginAt).toLocaleString("en-IN", {
                         timeZone: "Asia/Kolkata",
@@ -207,7 +207,7 @@ export default function AdminUsersPanel({ users, currentUserId }: Props) {
           <div className="absolute inset-y-0 right-0 w-full max-w-lg bg-white border-l border-slate-200 shadow-2xl flex flex-col animate-[slide-in_.2s_ease-out]">
             <div className="flex items-center gap-3 px-6 h-16 border-b border-slate-200 shrink-0">
               <h2 className="font-bold text-lg">{editing ? "Edit admin" : "New admin"}</h2>
-              {editing && <span className="text-xs text-slate-500 truncate">{editing.email}</span>}
+              {editing && <span className="text-sm text-slate-800 truncate">{editing.email}</span>}
               <button
                 onClick={() => setDrawer(null)}
                 aria-label="Close"

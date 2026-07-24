@@ -15,6 +15,8 @@ interface Props {
   remaining: Record<string, number>;
   title?: string;
   showSearch?: boolean;
+  /** When false the internal heading is hidden (the page provides its own). */
+  showTitle?: boolean;
 }
 
 /**
@@ -28,6 +30,7 @@ export default function EventList({
   remaining,
   title = "Upcoming events",
   showSearch = true,
+  showTitle = true,
 }: Props) {
   const [query, setQuery] = useState("");
   const [city, setCity] = useState<string | null>(null);
@@ -48,20 +51,26 @@ export default function EventList({
 
   return (
     <>
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-5">
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-          <span className="inline-block w-8 h-1 rounded-full bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] align-middle mr-3" />
-          {title}
-        </h1>
-        {showSearch && (
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search events, venues, cities…"
-            className="sm:ml-auto w-full sm:w-80 bg-white border border-[#e5eaf1] rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#1d4ed8] focus:shadow-[0_0_0_3px_rgba(29,78,216,0.15)] transition-shadow"
-          />
-        )}
-      </div>
+      {(showTitle || showSearch) && (
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-5">
+          {showTitle && (
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              <span className="inline-block w-8 h-1 rounded-full bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] align-middle mr-3" />
+              {title}
+            </h2>
+          )}
+          {showSearch && (
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search events, venues, cities…"
+              className={`${
+                showTitle ? "sm:ml-auto sm:w-80" : "sm:w-96"
+              } w-full bg-white border border-[#e5eaf1] rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#1d4ed8] focus:shadow-[0_0_0_3px_rgba(29,78,216,0.15)] transition-shadow`}
+            />
+          )}
+        </div>
+      )}
 
       {/* Pill filter tags — "what's happening near you" */}
       {showSearch && cities.length > 1 && (

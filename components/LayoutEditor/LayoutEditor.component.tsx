@@ -53,21 +53,21 @@ export default function LayoutEditor({ value, onChange }: Props) {
         <div className="text-sm">
           <span className="text-slate-600">Capacity: </span>
           <span className="font-semibold">{venue.sellable.toLocaleString("en-IN")}</span>
-          <span className="text-slate-500"> on sale</span>
-          <span className="text-slate-400"> · {physical.toLocaleString("en-IN")} total</span>
+          <span className="text-slate-800"> on sale</span>
+          <span className="text-slate-700"> · {physical.toLocaleString("en-IN")} total</span>
         </div>
         <div className="ml-auto flex gap-2">
           <button
             type="button"
             onClick={() => onChange(clone(BABU_JAGAJEEVANRAM_LAYOUT))}
-            className="text-xs border border-slate-300 hover:border-slate-400 rounded-lg px-3 py-1.5 text-slate-700"
+            className="text-sm border border-slate-300 hover:border-slate-400 rounded-lg px-3 py-1.5 text-slate-700"
           >
             Load auditorium template
           </button>
           <button
             type="button"
             onClick={addSection}
-            className="inline-flex items-center gap-1 text-xs bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-lg px-3 py-1.5 font-semibold"
+            className="inline-flex items-center gap-1 text-sm bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-lg px-3 py-1.5 font-semibold"
           >
             <Plus className="w-3.5 h-3.5" /> Section
           </button>
@@ -75,7 +75,7 @@ export default function LayoutEditor({ value, onChange }: Props) {
       </div>
 
       {value.sections.length === 0 && (
-        <p className="text-sm text-slate-500 border border-dashed border-slate-200 rounded-xl px-4 py-8 text-center">
+        <p className="text-sm text-slate-800 border border-dashed border-slate-200 rounded-xl px-4 py-8 text-center">
           No sections yet — add one, or load the auditorium template.
         </p>
       )}
@@ -143,7 +143,7 @@ function SectionCard({
           type="button"
           onClick={onRemove}
           aria-label="Remove section"
-          className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-500 hover:text-red-700"
+          className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-800 hover:text-red-700"
         >
           <X className="w-4 h-4" />
         </button>
@@ -151,7 +151,7 @@ function SectionCard({
 
       {/* Tiers */}
       <div>
-        <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-1.5">Price tiers</p>
+        <p className="text-[12px] uppercase tracking-widest text-slate-800 mb-1.5">Price tiers</p>
         <div className="flex flex-wrap gap-2">
           {section.tiers.map((tier, ti) => (
             <div
@@ -166,7 +166,7 @@ function SectionCard({
                 placeholder="Name"
                 className="bg-transparent w-24 text-sm outline-none"
               />
-              <span className="text-slate-500 text-sm">₹</span>
+              <span className="text-slate-800 text-sm">₹</span>
               <input
                 type="number"
                 min={1}
@@ -186,7 +186,7 @@ function SectionCard({
                 type="button"
                 onClick={() => patch((d) => d.tiers.splice(ti, 1))}
                 aria-label="Remove tier"
-                className="text-slate-400 hover:text-red-700"
+                className="text-slate-700 hover:text-red-700"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -203,7 +203,7 @@ function SectionCard({
                 })
               )
             }
-            className="inline-flex items-center gap-1 text-xs border border-slate-300 hover:border-slate-400 rounded-lg px-2.5 py-1 text-slate-700"
+            className="inline-flex items-center gap-1 text-sm border border-slate-300 hover:border-slate-400 rounded-lg px-2.5 py-1 text-slate-700"
           >
             <Plus className="w-3.5 h-3.5" /> Tier
           </button>
@@ -212,7 +212,7 @@ function SectionCard({
 
       {/* Rows */}
       <div>
-        <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-1.5">Rows</p>
+        <p className="text-[12px] uppercase tracking-widest text-slate-800 mb-1.5">Rows</p>
         <div className="space-y-1.5">
           {section.rows.map((row, ri) => (
             <RowEditor
@@ -235,7 +235,7 @@ function SectionCard({
               })
             )
           }
-          className="mt-2 inline-flex items-center gap-1 text-xs border border-slate-300 hover:border-slate-400 rounded-lg px-2.5 py-1 text-slate-700"
+          className="mt-2 inline-flex items-center gap-1 text-sm border border-slate-300 hover:border-slate-400 rounded-lg px-2.5 py-1 text-slate-700"
         >
           <Plus className="w-3.5 h-3.5" /> Row
         </button>
@@ -282,7 +282,7 @@ function RowEditor({
           </option>
         ))}
       </select>
-      <label className="flex items-center gap-1 text-xs text-slate-600 px-1">
+      <label className="flex items-center gap-1 text-sm text-slate-600 px-1">
         <input
           type="checkbox"
           checked={Boolean(row.blocked)}
@@ -292,7 +292,7 @@ function RowEditor({
         Block row
       </label>
 
-      <span className="text-slate-400">·</span>
+      <span className="text-slate-700">·</span>
 
       {row.segments.map((seg, gi) => (
         <div
@@ -320,7 +320,7 @@ function RowEditor({
                   })
               )
             }
-            className="bg-transparent text-xs outline-none text-slate-600"
+            className="bg-transparent text-sm outline-none text-slate-600"
             aria-label="Block placement"
           >
             <option value="">Center</option>
@@ -335,7 +335,7 @@ function RowEditor({
               )
             }
             title={seg.blocked ? "Blocked — click to unblock" : "On sale — click to block"}
-            className={`text-xs px-1 rounded ${seg.blocked ? "text-red-700" : "text-slate-400 hover:text-slate-600"}`}
+            className={`text-sm px-1 rounded ${seg.blocked ? "text-red-700" : "text-slate-700 hover:text-slate-900"}`}
           >
             {seg.blocked ? "blocked" : "open"}
           </button>
@@ -344,7 +344,7 @@ function RowEditor({
               type="button"
               onClick={() => patch((d) => d.segments.splice(gi, 1))}
               aria-label="Remove block"
-              className="text-slate-400 hover:text-red-700"
+              className="text-slate-700 hover:text-red-700"
             >
               <X className="w-3 h-3" />
             </button>
@@ -354,18 +354,18 @@ function RowEditor({
       <button
         type="button"
         onClick={() => patch((d) => d.segments.push({ count: 5 }))}
-        className="text-slate-500 hover:text-slate-700"
+        className="text-slate-800 hover:text-slate-900"
         aria-label="Add seat block"
       >
         <Plus className="w-3.5 h-3.5" />
       </button>
 
-      <span className="ml-auto text-[11px] text-slate-500 tabular-nums">{rowSeats} seats</span>
+      <span className="ml-auto text-[12px] text-slate-800 tabular-nums">{rowSeats} seats</span>
       <button
         type="button"
         onClick={onRemove}
         aria-label="Remove row"
-        className="text-slate-400 hover:text-red-700"
+        className="text-slate-700 hover:text-red-700"
       >
         <X className="w-4 h-4" />
       </button>

@@ -1,4 +1,4 @@
-import { Pool } from "pg";
+import { Pool, type QueryResult } from "pg";
 
 import { logger } from "@/lib/logger";
 
@@ -40,10 +40,49 @@ function createPool(): Pool {
   }
 
   const useSsl = process.env.DATABASE_SSL === "true" || urlWantsSsl;
-  return new Pool({
+  const p = new Pool({
     connectionString,
     ssl: useSsl ? { rejectUnauthorized: false } : undefined,
+    keepAlive: true,
   });
+
+  // Hosted/serverless Postgres (autosuspending compute, a proxy in front of the
+  // DB, etc.) can silently kill a pooled connection while it sits idle. Without
+  // a listener here that surfaces as an unhandled 'error' event on the pool —
+  // at best a scary log, at worst a process crash — so always drain it.
+  p.on("error", (err) => {
+    logger.server.error("Postgres pool idle client error", { err: String(err) });
+  });
+
+  // The very next query over that now-dead connection still fails outright
+  // ("Connection terminated unexpectedly") before the pool has replaced it.
+  // Every call site in lib/db/index.ts goes through `db().query(...)`, so
+  // wrapping it once here — retry a single time on a connection-loss error —
+  // covers all of them without touching each call site. (Doesn't cover
+  // transaction clients from `pool.connect()`; those are freshly checked out
+  // and query immediately, so they aren't exposed to this specific staleness.)
+  const rawQuery = p.query.bind(p);
+  p.query = ((text: string, values?: unknown[]): Promise<QueryResult> => {
+    return rawQuery(text, values as never[]).catch(async (err: unknown) => {
+      if (!isConnectionLossError(err)) throw err;
+      logger.server.error("Postgres query failed (connection lost) — retrying once", {
+        err: String(err),
+      });
+      return rawQuery(text, values as never[]);
+    });
+  }) as Pool["query"];
+
+  return p;
+}
+
+function isConnectionLossError(err: unknown): boolean {
+  const message = err instanceof Error ? err.message : String(err);
+  return (
+    message.includes("Connection terminated") ||
+    message.includes("terminating connection") ||
+    message.includes("ECONNRESET") ||
+    message.includes("Client has encountered a connection error")
+  );
 }
 
 function pool(): Pool {

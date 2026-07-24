@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import BackLink from "@/components/BackLink";
+import EventFactStrip from "@/components/EventFactStrip";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import WhatsAppShare from "@/components/WhatsAppShare";
@@ -32,7 +33,7 @@ export async function EventDetailScreen({ id }: { id: string }) {
 
         {/* Banner */}
         <div
-          className={`relative mt-4 rounded-3xl overflow-hidden shadow-[0_16px_40px_rgba(15,23,42,0.10)] aspect-video sm:aspect-21/9 bg-linear-to-br ${event.poster}`}
+          className={`relative mt-4 rounded-3xl overflow-hidden shadow-[0_16px_40px_rgba(15,23,42,0.10)] aspect-video bg-linear-to-br ${event.poster}`}
         >
           {(event.imageUrl || event.gallery[0]) && (
             // Falls back to the first gallery photo when no dedicated banner is set.
@@ -60,14 +61,8 @@ export async function EventDetailScreen({ id }: { id: string }) {
         </div>
 
         {/* Quick facts strip */}
-        <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <Fact label="When" value={formatDateIST(event.startsAt)} />
-          <Fact label="Where" value={`${event.venue}, ${event.city}`} />
-          <Fact
-            label="Availability"
-            value={soldOut ? "Sold out" : `${left} of ${total} seats left`}
-          />
-          <Fact label="Tickets from" value={inr(fromPrice)} />
+        <div className="mt-6">
+          <EventFactStrip event={event} remaining={left} />
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8 mt-8">
@@ -135,12 +130,13 @@ export async function EventDetailScreen({ id }: { id: string }) {
 
             <div className="mt-3">
               <WhatsAppShare
+                imageUrl={event.imageUrl || event.gallery[0]}
                 lines={[
                   `🎉 *${event.title}*`,
                   event.tagline || "",
-                  `🗓️ ${formatDateIST(event.startsAt)}`,
+                  `📅 ${formatDateIST(event.startsAt)}`,
                   `📍 ${event.venue}${event.city ? `, ${event.city}` : ""}`,
-                  soldOut ? "" : `🎟️ Tickets from ${inr(fromPrice)}`,
+                  soldOut ? "" : `🎫 Tickets from ${inr(fromPrice)}`,
                   "",
                   "Book your seats:",
                 ].filter(Boolean)}
@@ -218,15 +214,6 @@ export async function EventDetailScreen({ id }: { id: string }) {
         </div>
       </main>
       <SiteFooter />
-    </div>
-  );
-}
-
-function Fact({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="bg-white border border-[#e5eaf1] rounded-xl px-4 py-3">
-      <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-1">{label}</p>
-      <p className="text-sm font-semibold wrap-break-word">{value}</p>
     </div>
   );
 }

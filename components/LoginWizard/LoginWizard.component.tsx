@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 
+
+
+import PasswordInput from "../PasswordInput";
 import { useRouteLoader } from "../RouteLoader";
 import { useToast } from "../Toast";
 
@@ -28,6 +31,8 @@ type SignupStep = "details" | "verify-email"; // | "verify-phone" — disabled, 
 
 const inputCls =
   "w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#1d4ed8]";
+const passwordCls =
+  "w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus-within:border-[#1d4ed8]";
 const primaryBtn =
   "w-full bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] hover:brightness-110 text-white disabled:opacity-40 rounded-xl px-6 py-2.5 font-semibold text-sm transition-all";
 const otpInputCls = `${inputCls} text-center font-mono text-xl tracking-[0.5em]`;
@@ -209,9 +214,9 @@ export default function LoginWizard({ next }: { next: string }) {
   // ---------------- Render ----------------
 
   return (
-    <div className="bg-white border border-[#e5eaf1] rounded-3xl p-8 shadow-[0_16px_40px_rgba(15,23,42,0.10)]">
+    <div>
       {/* Mode toggle */}
-      <div className="flex gap-1 mb-6 bg-white/90 border border-slate-200 rounded-xl p-1">
+      <div className="flex gap-1 mb-6 bg-slate-100 rounded-xl p-1">
         {(["signin", "signup"] as const).map((m) => (
           <button
             key={m}
@@ -252,15 +257,14 @@ export default function LoginWizard({ next }: { next: string }) {
           <p className="text-sm text-slate-500 mb-4">
             Signing in as <span className="text-slate-700">{identifier}</span>
           </p>
-          <input
-            type="password"
+          <PasswordInput
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
             autoComplete="current-password"
             required
             autoFocus
-            className={inputCls}
+            className={passwordCls}
           />
           <button type="submit" disabled={busy || !password} className={`${primaryBtn} mt-4`}>
             {busy ? "Signing in…" : "Sign in"}
@@ -333,15 +337,14 @@ export default function LoginWizard({ next }: { next: string }) {
             className={inputCls}
           />
           {/* Phone field disabled for now — see note at top of file. */}
-          <input
-            type="password"
+          <PasswordInput
             value={signupPassword}
             onChange={(e) => setSignupPassword(e.target.value)}
             placeholder="Create a password (min 8 characters)"
             autoComplete="new-password"
             required
             minLength={8}
-            className={inputCls}
+            className={passwordCls}
           />
           <button type="submit" disabled={busy} className={primaryBtn}>
             {busy ? "Sending code…" : "Continue"}

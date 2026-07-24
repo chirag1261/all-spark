@@ -15,6 +15,8 @@ interface Props {
   links: NavLink[];
   /** Where the "Book Seats" CTA points. */
   bookHref: string;
+  /** Recolors the hamburger trigger for a dark header. */
+  onDark?: boolean;
 }
 
 /**
@@ -22,7 +24,7 @@ interface Props {
  * links as the desktop header plus the Book Seats CTA. Profile/account access
  * lives in the separate right-side MobileAccountDrawer. Rendered only below `md`.
  */
-export default function MobileMenu({ links, bookHref }: Props) {
+export default function MobileMenu({ links, bookHref, onDark = false }: Props) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -39,7 +41,9 @@ export default function MobileMenu({ links, bookHref }: Props) {
       <button
         onClick={() => setOpen(true)}
         aria-label="Open menu"
-        className="w-9 h-9 inline-flex items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100"
+        className={`w-9 h-9 inline-flex items-center justify-center rounded-lg ${
+          onDark ? "text-white hover:bg-white/10" : "text-slate-700 hover:bg-slate-100"
+        }`}
       >
         <Menu className="w-5 h-5" aria-hidden="true" />
       </button>

@@ -11,11 +11,54 @@ import {
   listEvents,
   sweepStalePending,
 } from "@/lib/db";
-import { totalSeats } from "@/lib/domain/events";
+import { registrationState, totalSeats } from "@/lib/domain/events";
 import { Booking } from "@/types";
 import { inr } from "@/utils";
 
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const WEEK_MS = 7 * DAY_MS;
+
+interface RevenueBucket {
+  label: string;
+  amount: number;
+}
+
+/** Confirmed-booking revenue for each of the last `days` calendar days, oldest first. */
+function dailyRevenue(bookings: Booking[], days: number): RevenueBucket[] {
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const buckets: RevenueBucket[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const from = startOfToday.getTime() - i * DAY_MS;
+    const to = from + DAY_MS;
+    const amount = bookings
+      .filter((b) => b.status === "CONFIRMED" && b.createdAt >= from && b.createdAt < to)
+      .reduce((sum, b) => sum + b.amount, 0);
+    buckets.push({
+      label: new Date(from).toLocaleDateString("en-IN", { weekday: "short", day: "numeric" }),
+      amount,
+    });
+  }
+  return buckets;
+}
+
+/** Confirmed-booking revenue for each of the last `weeks` 7-day windows, oldest first. */
+function weeklyRevenue(bookings: Booking[], weeks: number): RevenueBucket[] {
+  const now = Date.now();
+  const buckets: RevenueBucket[] = [];
+  for (let i = weeks - 1; i >= 0; i--) {
+    const from = now - (i + 1) * WEEK_MS;
+    const to = now - i * WEEK_MS;
+    const amount = bookings
+      .filter((b) => b.status === "CONFIRMED" && b.createdAt >= from && b.createdAt < to)
+      .reduce((sum, b) => sum + b.amount, 0);
+    buckets.push({
+      label: new Date(from).toLocaleDateString("en-IN", { day: "numeric", month: "short" }),
+      amount,
+    });
+  }
+  return buckets;
+}
 
 interface Trend {
   pct: number;
@@ -68,13 +111,21 @@ export async function AdminDashboardScreen() {
     totals.remaining += totalSeats(event) - sold;
   }
 
+  const refunded = bookings.filter((b) => b.status === "REFUNDED");
+  const refundTotal = refunded.reduce((sum, b) => sum + b.amount, 0);
+  const activeEvents = events.filter(
+    (e) => e.published && registrationState(e) === "open"
+  ).length;
+
   // Week-over-week trends from confirmed-booking timestamps.
   const trends = weekTrends(bookings);
+  const daily = dailyRevenue(bookings, 7);
+  const weekly = weeklyRevenue(bookings, 8);
 
   return (
     <AdminShell user={{ name: currentUser.name, role: currentUser.role }}>
       <h1 className="font-heading text-3xl font-semibold mb-1">Dashboard</h1>
-      <p className="text-sm text-slate-500 mb-8">
+      <p className="text-sm text-slate-800 mb-8">
         Live totals across all events. Trends compare the last 7 days with the 7 days before.
       </p>
 
@@ -103,6 +154,37 @@ export async function AdminDashboardScreen() {
           value={String(totals.remaining)}
           tip="Seats still available to sell across all events (total capacity minus sold and blocked seats)."
         />
+        <Stat
+          label="Active events"
+          value={String(activeEvents)}
+          tip="Published events currently open for booking (registration window is open and hasn't started yet)."
+        />
+        <Stat
+          label="Total events"
+          value={String(events.length)}
+          tip="Every event on record, including drafts and past/closed events."
+        />
+        <Stat
+          label="Refunds"
+          value={String(refunded.length)}
+          tip="Bookings that were refunded, with the total amount returned to customers."
+          tone="down"
+          sub={refunded.length > 0 ? inr(refundTotal) : undefined}
+        />
+      </div>
+
+      {/* Revenue reports */}
+      <div className="grid sm:grid-cols-2 gap-4 mb-10">
+        <RevenueReport
+          title="Daily revenue"
+          tip="Confirmed-booking revenue for each of the last 7 days."
+          data={daily}
+        />
+        <RevenueReport
+          title="Weekly revenue"
+          tip="Confirmed-booking revenue for each of the last 8 weeks."
+          data={weekly}
+        />
       </div>
 
       {/* Audit trail: every admin action touching money, bookings or accounts */}
@@ -116,9 +198,9 @@ export async function AdminDashboardScreen() {
             <ActivityFeed entries={recentActivity} />
           ) : (
             <div className="border border-dashed border-slate-200 rounded-xl px-4 py-10 text-center">
-              <ClipboardList className="w-8 h-8 mx-auto mb-2 text-slate-500" aria-hidden="true" />
+              <ClipboardList className="w-8 h-8 mx-auto mb-2 text-slate-800" aria-hidden="true" />
               <p className="text-sm text-slate-600">No admin activity yet.</p>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-sm text-slate-700 mt-1">
                 Creating events, issuing refunds and managing admins will show up here.
               </p>
             </div>
@@ -134,23 +216,31 @@ function Stat({
   value,
   tip,
   trend,
+  tone,
+  sub,
 }: {
   label: string;
   value: string;
   tip: string;
   trend?: Trend | null;
+  /** "down" tints the value red — for metrics where a higher number is bad (e.g. refunds). */
+  tone?: "down";
+  /** Small secondary line under the value (e.g. a refunded amount). */
+  sub?: string;
 }) {
   return (
     <div className="bg-white border border-slate-200 rounded-xl p-5">
-      <p className="text-xs uppercase tracking-wide text-slate-500 mb-1 flex items-center gap-1.5">
+      <p className="text-sm uppercase tracking-wide text-slate-800 mb-1 flex items-center gap-1.5">
         {label}
         <InfoTip text={tip} />
       </p>
       <div className="flex items-baseline gap-2">
-        <p className="text-2xl font-bold">{value}</p>
+        <p className={`text-2xl font-bold ${tone === "down" && value !== "0" ? "text-red-700" : ""}`}>
+          {value}
+        </p>
         {trend && (
           <span
-            className={`text-xs font-semibold ${
+            className={`text-sm font-semibold ${
               trend.dir === "up" ? "text-emerald-700" : "text-red-700"
             }`}
             title="vs. the previous 7 days"
@@ -158,6 +248,45 @@ function Stat({
             {trend.dir === "up" ? "▲" : "▼"} {trend.pct}%
           </span>
         )}
+      </div>
+      {sub && <p className="text-xs text-slate-500 mt-0.5">{sub}</p>}
+    </div>
+  );
+}
+
+function RevenueReport({
+  title,
+  tip,
+  data,
+}: {
+  title: string;
+  tip: string;
+  data: { label: string; amount: number }[];
+}) {
+  const max = Math.max(1, ...data.map((d) => d.amount));
+  const total = data.reduce((sum, d) => sum + d.amount, 0);
+  return (
+    <div className="bg-white border border-slate-200 rounded-xl p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-semibold flex items-center gap-1.5">
+          {title}
+          <InfoTip text={tip} />
+        </h3>
+        <span className="text-sm font-bold">{inr(total)}</span>
+      </div>
+      <div className="space-y-2.5">
+        {data.map((d, i) => (
+          <div key={`${d.label}-${i}`} className="flex items-center gap-3">
+            <span className="w-16 shrink-0 text-xs text-slate-600">{d.label}</span>
+            <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+              <div
+                className="h-full bg-[#1d4ed8] rounded-full"
+                style={{ width: `${(d.amount / max) * 100}%` }}
+              />
+            </div>
+            <span className="w-20 shrink-0 text-xs font-semibold text-right">{inr(d.amount)}</span>
+          </div>
+        ))}
       </div>
     </div>
   );

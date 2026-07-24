@@ -76,7 +76,7 @@ export async function TicketScreen({ ticketId }: { ticketId: string }) {
         <div className="mt-5">
           <WhatsAppShare
             lines={[
-              `🎟️ *${event?.title ?? "Event ticket"}*`,
+              `🎫 *${event?.title ?? "Event ticket"}*`,
               event ? `${formatDateIST(event.startsAt)} · ${event.venue}, ${event.city}` : "",
               `Attendee: ${ticket.attendeeName}`,
               `Seat: ${ticket.seatId}`,

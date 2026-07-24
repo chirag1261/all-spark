@@ -177,7 +177,7 @@ export default function ScanConsole({ events }: { events: EventOption[] }) {
     return (
       <div className="max-w-sm mx-auto space-y-4">
         <div>
-          <label className="block text-xs text-slate-500 mb-1.5">Select event to scan</label>
+          <label className="block text-sm text-slate-800 mb-1.5">Select event to scan</label>
           <select
             value={pendingEventId}
             onChange={(e) => setPendingEventId(e.target.value)}
@@ -213,7 +213,7 @@ export default function ScanConsole({ events }: { events: EventOption[] }) {
           <button
             type="button"
             onClick={() => setEventId("")}
-            className="ml-auto text-xs text-[#1d4ed8] hover:underline"
+            className="ml-auto text-sm text-[#1d4ed8] hover:underline"
           >
             Change event
           </button>
@@ -226,7 +226,7 @@ export default function ScanConsole({ events }: { events: EventOption[] }) {
             <Stat label="Checked in" value={counts.checkedIn} accent="text-emerald-700" />
             <div className="h-8 w-px bg-slate-100" />
             <Stat label="Tickets sold" value={counts.sold} accent="text-slate-800" />
-            <div className="ml-auto text-xs text-slate-500">
+            <div className="ml-auto text-sm text-slate-800">
               {counts.sold - counts.checkedIn} pending
             </div>
           </div>
@@ -238,7 +238,7 @@ export default function ScanConsole({ events }: { events: EventOption[] }) {
         <div
           className={`flex items-center gap-4 rounded-2xl border p-5 min-h-26 transition-colors ${
             !copy
-              ? "border-slate-200 bg-slate-50 text-slate-500"
+              ? "border-slate-200 bg-slate-50 text-slate-800"
               : copy.ok
                 ? "border-emerald-500/40 bg-emerald-50"
                 : "border-red-500/40 bg-red-50"
@@ -265,7 +265,7 @@ export default function ScanConsole({ events }: { events: EventOption[] }) {
                   </p>
                 )}
                 {outcome?.result === "ALREADY_USED" && outcome.scannedByName && (
-                  <p className="text-xs text-slate-600">
+                  <p className="text-sm text-slate-600">
                     First scanned by {outcome.scannedByName}
                     {outcome.scannedAt
                       ? ` at ${new Date(outcome.scannedAt).toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata" })}`
@@ -273,7 +273,7 @@ export default function ScanConsole({ events }: { events: EventOption[] }) {
                   </p>
                 )}
                 {outcome?.result === "WRONG_EVENT" && outcome.ticketEvent && (
-                  <p className="text-xs text-slate-600">This ticket is for {outcome.ticketEvent}</p>
+                  <p className="text-sm text-slate-600">This ticket is for {outcome.ticketEvent}</p>
                 )}
               </div>
             </>
@@ -282,11 +282,11 @@ export default function ScanConsole({ events }: { events: EventOption[] }) {
 
         {/* Session log */}
         <div className="rounded-2xl border border-slate-200 overflow-hidden">
-          <p className="px-4 py-2.5 text-xs font-semibold uppercase tracking-widest text-slate-500 border-b border-slate-200 bg-slate-50">
+          <p className="px-4 py-2.5 text-sm font-semibold uppercase tracking-widest text-slate-800 border-b border-slate-200 bg-slate-50">
             This session
           </p>
           {log.length === 0 ? (
-            <p className="px-4 py-6 text-sm text-slate-400 text-center">No scans yet.</p>
+            <p className="px-4 py-6 text-sm text-slate-700 text-center">No scans yet.</p>
           ) : (
             <ul className="divide-y divide-slate-200 max-h-72 overflow-y-auto">
               {log.map((o, i) => {
@@ -301,7 +301,7 @@ export default function ScanConsole({ events }: { events: EventOption[] }) {
                     <span className="truncate">
                       {o.name ? `${o.name} · Seat ${o.seat}` : c.title}
                     </span>
-                    <span className="ml-auto text-xs text-slate-400">
+                    <span className="ml-auto text-sm text-slate-700">
                       {new Date(o.at).toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata" })}
                     </span>
                   </li>
@@ -319,7 +319,7 @@ function Stat({ label, value, accent }: { label: string; value: number; accent: 
   return (
     <div>
       <p className={`text-2xl font-bold ${accent}`}>{value}</p>
-      <p className="text-xs text-slate-500">{label}</p>
+      <p className="text-sm text-slate-800">{label}</p>
     </div>
   );
 }

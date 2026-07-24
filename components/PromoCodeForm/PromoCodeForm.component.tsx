@@ -162,8 +162,14 @@ export default function PromoCodeForm({ promo, cloneFrom, events, onDone }: Prop
   return (
     <>
       <form onSubmit={submit} className="space-y-6">
+        <p className="text-sm text-slate-700">
+          <span className="text-red-600" aria-hidden="true">
+            *
+          </span>{" "}
+          Required fields
+        </p>
         <div>
-          <Label>Code</Label>
+          <Label required>Code</Label>
           <input
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
@@ -195,7 +201,9 @@ export default function PromoCodeForm({ promo, cloneFrom, events, onDone }: Prop
 
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <Label>{discountType === "percent" ? "Discount (%)" : "Discount amount (₹)"}</Label>
+            <Label required>
+              {discountType === "percent" ? "Discount (%)" : "Discount amount (₹)"}
+            </Label>
             <input
               type="number"
               value={discountValue}
@@ -210,7 +218,7 @@ export default function PromoCodeForm({ promo, cloneFrom, events, onDone }: Prop
           </div>
           {discountType === "percent" && (
             <div>
-              <Label>Max discount cap (₹)</Label>
+              <Label required>Max discount cap (₹)</Label>
               <input
                 type="number"
                 value={maxDiscount}
@@ -284,7 +292,7 @@ export default function PromoCodeForm({ promo, cloneFrom, events, onDone }: Prop
             className={inputCls}
           />
           {promo && (
-            <p className="text-xs text-slate-400 mt-1.5">
+            <p className="text-sm text-slate-700 mt-1.5">
               Used so far: {promo.redemptionCount}
             </p>
           )}
@@ -300,7 +308,7 @@ export default function PromoCodeForm({ promo, cloneFrom, events, onDone }: Prop
           />
           <label htmlFor="promo-active" className="text-sm">
             <span className="font-medium">Active</span>
-            <span className="text-slate-500"> — customers can apply this code at checkout</span>
+            <span className="text-slate-800"> — customers can apply this code at checkout</span>
           </label>
         </div>
 
@@ -333,6 +341,15 @@ export default function PromoCodeForm({ promo, cloneFrom, events, onDone }: Prop
   );
 }
 
-function Label({ children }: { children: React.ReactNode }) {
-  return <label className="block text-xs text-slate-500 mb-1.5">{children}</label>;
+function Label({ children, required }: { children: React.ReactNode; required?: boolean }) {
+  return (
+    <label className="block text-sm text-slate-800 mb-1.5">
+      {children}
+      {required && (
+        <span className="text-red-600 ml-0.5" aria-hidden="true">
+          *
+        </span>
+      )}
+    </label>
+  );
 }

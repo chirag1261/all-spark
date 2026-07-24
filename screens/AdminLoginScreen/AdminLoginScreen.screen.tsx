@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import BackLink from "@/components/BackLink";
+import PasswordInput from "@/components/PasswordInput";
 import { useRouteLoader } from "@/components/RouteLoader";
 import { useToast } from "@/components/Toast";
 
@@ -89,14 +90,14 @@ export function AdminLoginScreen() {
           className="w-full max-w-md bg-white border border-[#e5eaf1] rounded-2xl p-8 shadow-[0_16px_40px_rgba(15,23,42,0.10)]"
         >
           <h1 className="font-heading text-3xl font-semibold mb-1">Sign in</h1>
-          <p className="text-sm text-slate-500 mb-7">Access the Utsav Events admin dashboard.</p>
+          <p className="text-sm text-slate-800 mb-7">Access the Utsav Events admin dashboard.</p>
           {idleExpired && (
-            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-400/20 rounded-lg px-3 py-2 mb-5">
+            <p className="text-sm text-amber-700 bg-amber-50 border border-amber-400/20 rounded-lg px-3 py-2 mb-5">
               Your session expired due to inactivity. Please sign in again.
             </p>
           )}
 
-          <label className="block text-xs text-slate-500 mb-1.5">Email</label>
+          <label className="block text-sm text-slate-800 mb-1.5">Email</label>
           <input
             type="email"
             name="email"
@@ -109,16 +110,15 @@ export function AdminLoginScreen() {
             className="w-full bg-white border border-[#e5eaf1] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#1d4ed8] mb-4"
           />
 
-          <label className="block text-xs text-slate-500 mb-1.5">Password</label>
-          <input
-            type="password"
+          <label className="block text-sm text-slate-800 mb-1.5">Password</label>
+          <PasswordInput
             name="password"
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter your password"
             required
-            className="w-full bg-white border border-[#e5eaf1] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#1d4ed8] mb-7"
+            className="w-full bg-white border border-[#e5eaf1] rounded-lg px-3 py-2.5 text-sm focus-within:border-[#1d4ed8] mb-7"
           />
 
           <button
@@ -130,7 +130,7 @@ export function AdminLoginScreen() {
           </button>
 
           <p className="flex justify-center mt-6">
-            <BackLink href="/" className="text-slate-500 hover:text-slate-700">
+            <BackLink href="/" className="text-slate-800 hover:text-slate-900">
               Back to site
             </BackLink>
           </p>

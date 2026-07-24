@@ -106,12 +106,12 @@ export async function AdminBookingsScreen({
       </form>
 
       {bookings.length === 0 ? (
-        <p className="text-slate-500">No bookings found.</p>
+        <p className="text-slate-800">No bookings found.</p>
       ) : (
         <div className="overflow-x-auto border border-slate-200 rounded-xl">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-slate-500 border-b border-slate-200 bg-slate-50">
+              <tr className="text-left text-slate-800 border-b border-slate-200 bg-slate-50">
                 <th className="px-4 py-3 font-medium">Attendee</th>
                 <th className="px-4 py-3 font-medium">Event</th>
                 <th className="px-4 py-3 font-medium">Seats</th>
@@ -127,7 +127,7 @@ export async function AdminBookingsScreen({
                 <tr key={b.razorpayOrderId} className="border-b border-slate-200 last:border-0">
                   <td className="px-4 py-3">
                     <p className="font-medium">{b.attendeeName}</p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-sm text-slate-800">
                       {b.customerEmail} · {b.customerPhone}
                     </p>
                   </td>
@@ -139,30 +139,30 @@ export async function AdminBookingsScreen({
                     {b.ticketId ? (
                       <Link
                         href={`/ticket/${b.ticketId}`}
-                        className="font-mono text-xs text-[#1d4ed8] hover:underline"
+                        className="font-mono text-sm text-[#1d4ed8] hover:underline"
                       >
                         {b.ticketId}
                       </Link>
                     ) : (
-                      <span className="text-slate-400">—</span>
+                      <span className="text-slate-700">—</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-right">{inr(b.amount)}</td>
                   <td className="px-4 py-3">
                     <span
-                      className={`inline-block text-xs font-semibold px-2 py-0.5 rounded ${STATUS_TONES[b.status]}`}
+                      className={`inline-block text-sm font-semibold px-2 py-0.5 rounded ${STATUS_TONES[b.status]}`}
                     >
                       {b.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-slate-600 whitespace-nowrap text-xs">
+                  <td className="px-4 py-3 text-slate-600 whitespace-nowrap text-sm">
                     {new Date(b.createdAt).toLocaleString("en-IN", {
                       timeZone: "Asia/Kolkata",
                       dateStyle: "medium",
                       timeStyle: "short",
                     })}
                   </td>
-                  <td className="px-4 py-3 text-right text-xs">
+                  <td className="px-4 py-3 text-right text-sm">
                     {b.status === "CONFIRMED" && canRefund && (
                       <RefundButton orderId={b.razorpayOrderId} amountInr={inr(b.amount)} />
                     )}
@@ -175,7 +175,7 @@ export async function AdminBookingsScreen({
         </div>
       )}
 
-      <p className="text-xs text-slate-400 mt-4">
+      <p className="text-sm text-slate-700 mt-4">
         {bookings.length} booking{bookings.length === 1 ? "" : "s"} shown. Refunds are full refunds
         via Razorpay and release the seats back to sale.
       </p>

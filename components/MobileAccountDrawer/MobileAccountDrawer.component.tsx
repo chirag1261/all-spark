@@ -24,7 +24,13 @@ const MENU = [
  * this component doesn't need its own idle-logout listener. Rendered only
  * below `md`.
  */
-export default function MobileAccountDrawer({ customerName }: { customerName: string | null }) {
+export default function MobileAccountDrawer({
+  customerName,
+  onDark = false,
+}: {
+  customerName: string | null;
+  onDark?: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const routeLoader = useRouteLoader();
   const { confirm, dialog } = useConfirm();
@@ -57,7 +63,9 @@ export default function MobileAccountDrawer({ customerName }: { customerName: st
       <button
         onClick={() => setOpen(true)}
         aria-label={customerName ? "Open account menu" : "Sign in"}
-        className="w-9 h-9 inline-flex items-center justify-center rounded-full bg-[#1d4ed8]/15 text-[#1d4ed8] font-bold text-xs uppercase"
+        className={`w-9 h-9 inline-flex items-center justify-center rounded-full font-bold text-xs uppercase ${
+          onDark ? "bg-white/20 text-white" : "bg-[#1d4ed8]/15 text-[#1d4ed8]"
+        }`}
       >
         {customerName ? customerName.trim().charAt(0) || "?" : <User className="w-4 h-4" aria-hidden="true" />}
       </button>
