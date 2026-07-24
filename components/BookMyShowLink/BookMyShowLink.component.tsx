@@ -13,7 +13,7 @@ export default function BookMyShowLink({ url }: { url: string }) {
       <img
         src={BOOKMYSHOW_LOGO_URL}
         alt="BookMyShow"
-        className="h-6 w-auto bg-white rounded px-1.5 py-1"
+        className="h-10 w-auto bg-white rounded px-1.5 py-1"
       />
       <span className="text-sm text-slate-700 min-w-0">
         Some seats for this event are also available on BookMyShow.
