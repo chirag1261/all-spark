@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { validateImageUpload } from "@/constants";
 import { getCurrentAdmin, hasPermission } from "@/lib/auth/admin";
 import { cloudinaryConfigured, uploadToCloudinary } from "@/lib/integrations/cloudinary";
+import { logger } from "@/lib/logger";
 
 /**
  * POST /api/admin/upload — multipart form with a "file" image field.
@@ -12,9 +13,11 @@ export async function POST(req: NextRequest) {
   const user = await getCurrentAdmin();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (!hasPermission(user, "events")) {
+    logger.be.warn("Upload denied — missing permission", { userId: user.id });
     return NextResponse.json({ error: "Missing events permission" }, { status: 403 });
   }
   if (!cloudinaryConfigured()) {
+    logger.be.error("Upload attempted with Cloudinary not configured");
     return NextResponse.json(
       {
         error:
@@ -42,6 +45,7 @@ export async function POST(req: NextRequest) {
 
   const result = await uploadToCloudinary(file);
   if (!result.ok) {
+    logger.be.error("Cloudinary upload failed", { fileName: file.name, error: result.error });
     return NextResponse.json({ error: result.error }, { status: 502 });
   }
   return NextResponse.json({ url: result.url });

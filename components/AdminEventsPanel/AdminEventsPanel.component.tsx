@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import { Eye, Mic, Pencil, Plus, Ticket, X } from "lucide-react";
+import { Copy, Eye, Mic, Pencil, Plus, Ticket, X } from "lucide-react";
 import Link from "next/link";
 
 import { EventItem } from "@/types";
@@ -169,6 +169,12 @@ export default function AdminEventsPanel({ rows, cloudinaryEnabled }: Props) {
                         <IconButton title="Edit event" onClick={() => setDrawer(event.id)}>
                           <Pencil className="w-4 h-4" />
                         </IconButton>
+                        <IconLink
+                          title="Duplicate event"
+                          href={`/admin/events/new?cloneFrom=${event.id}`}
+                        >
+                          <Copy className="w-4 h-4" />
+                        </IconLink>
                         <IconLink
                           title="View registrations"
                           href={`/admin/bookings?eventId=${event.id}`}

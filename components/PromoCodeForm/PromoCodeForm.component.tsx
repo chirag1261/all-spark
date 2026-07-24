@@ -16,6 +16,12 @@ interface EventOption {
 
 interface Props {
   promo?: PromoCode;
+  /**
+   * Prefills the form from an existing promo code without editing it — used
+   * by the "Clone" action. Submitting still creates a brand-new code (POST),
+   * never a PUT against the source. Ignored if `promo` is also set.
+   */
+  cloneFrom?: PromoCode;
   events: EventOption[];
   onDone: () => void;
 }
@@ -31,32 +37,44 @@ function toLocalInput(ms: number | null | undefined): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-export default function PromoCodeForm({ promo, events, onDone }: Props) {
+/** Suggests an unused-looking code for a clone — final uniqueness is server-validated on save. */
+function suggestCloneCode(code: string): string {
+  const base = code.replace(/[^A-Z0-9]/g, "");
+  const suffix = "COPY";
+  return `${base.slice(0, 20 - suffix.length)}${suffix}`;
+}
+
+export default function PromoCodeForm({ promo, cloneFrom, events, onDone }: Props) {
   const router = useRouter();
   const { confirm, dialog } = useConfirm();
   const { showToast, toast } = useToast();
+  const source = promo ?? cloneFrom;
 
-  const [code, setCode] = useState(promo?.code ?? "");
+  const [code, setCode] = useState(
+    promo ? promo.code : cloneFrom ? suggestCloneCode(cloneFrom.code) : ""
+  );
   const [discountType, setDiscountType] = useState<PromoDiscountType>(
-    promo?.discountType ?? "percent"
+    source?.discountType ?? "percent"
   );
   // For flat, discountValue is paise → show rupees; for percent it's the % itself.
   const [discountValue, setDiscountValue] = useState(
-    promo ? String(promo.discountType === "flat" ? promo.discountValue / 100 : promo.discountValue) : ""
+    source ? String(source.discountType === "flat" ? source.discountValue / 100 : source.discountValue) : ""
   );
   const [maxDiscount, setMaxDiscount] = useState(
-    promo?.maxDiscount != null ? String(promo.maxDiscount / 100) : ""
+    source?.maxDiscount != null ? String(source.maxDiscount / 100) : ""
   );
   const [minOrderAmount, setMinOrderAmount] = useState(
-    promo?.minOrderAmount ? String(promo.minOrderAmount / 100) : ""
+    source?.minOrderAmount ? String(source.minOrderAmount / 100) : ""
   );
-  const [eventId, setEventId] = useState(promo?.eventId ?? "");
-  const [validFrom, setValidFrom] = useState(toLocalInput(promo?.validFrom));
-  const [validTo, setValidTo] = useState(toLocalInput(promo?.validTo));
+  const [eventId, setEventId] = useState(source?.eventId ?? "");
+  const [validFrom, setValidFrom] = useState(toLocalInput(source?.validFrom));
+  const [validTo, setValidTo] = useState(toLocalInput(source?.validTo));
   const [maxRedemptions, setMaxRedemptions] = useState(
-    promo?.maxRedemptions != null ? String(promo.maxRedemptions) : ""
+    source?.maxRedemptions != null ? String(source.maxRedemptions) : ""
   );
-  const [active, setActive] = useState(promo?.active ?? true);
+  // A clone never inherits "active" — it must be reviewed/renamed before it
+  // can be redeemed by anyone.
+  const [active, setActive] = useState(promo ? promo.active : !cloneFrom);
   const [busy, setBusy] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
@@ -240,7 +258,7 @@ export default function PromoCodeForm({ promo, events, onDone }: Props) {
               type="datetime-local"
               value={validFrom}
               onChange={(e) => setValidFrom(e.target.value)}
-              className={inputCls}
+              className={`${inputCls} dt-input`}
             />
           </div>
           <div>
@@ -249,7 +267,7 @@ export default function PromoCodeForm({ promo, events, onDone }: Props) {
               type="datetime-local"
               value={validTo}
               onChange={(e) => setValidTo(e.target.value)}
-              className={inputCls}
+              className={`${inputCls} dt-input`}
             />
           </div>
         </div>

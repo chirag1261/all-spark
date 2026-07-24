@@ -11,12 +11,14 @@ import {
   getAdminUserById,
   updateAdminUser,
 } from "@/lib/db";
+import { logger } from "@/lib/logger";
 import { AdminUser } from "@/types";
 
 async function requireSuperAdmin(): Promise<{ user?: AdminUser; error?: NextResponse }> {
   const user = await getCurrentAdmin();
   if (!user) return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
   if (user.role !== "super_admin") {
+    logger.be.warn("Admin user action denied — not a super admin", { userId: user.id });
     return {
       error: NextResponse.json(
         { error: "Only super admins can manage admin users" },
@@ -57,6 +59,7 @@ export async function PUT(req: NextRequest, ctx: RouteContext<"/api/admin/users/
 
   const emailOwner = await getAdminUserByEmail(parsed.value.email);
   if (emailOwner && emailOwner.id !== id) {
+    logger.be.warn("Admin user update blocked — duplicate email", { id, email: parsed.value.email });
     return NextResponse.json({ error: "An admin with that email already exists" }, { status: 409 });
   }
 
@@ -66,20 +69,27 @@ export async function PUT(req: NextRequest, ctx: RouteContext<"/api/admin/users/
     parsed.value.role !== "super_admin" &&
     (await countSuperAdmins()) <= 1
   ) {
+    logger.be.warn("Admin user update blocked — would demote the last super admin", { id });
     return NextResponse.json(
       { error: "Cannot demote the last super admin — promote another admin first" },
       { status: 409 }
     );
   }
 
-  const updated = await updateAdminUser(id, {
-    name: parsed.value.name,
-    email: parsed.value.email,
-    phone: parsed.value.phone,
-    role: parsed.value.role,
-    permissions: parsed.value.permissions,
-    ...(parsed.value.password ? { passwordHash: hashPassword(parsed.value.password) } : {}),
-  });
+  let updated;
+  try {
+    updated = await updateAdminUser(id, {
+      name: parsed.value.name,
+      email: parsed.value.email,
+      phone: parsed.value.phone,
+      role: parsed.value.role,
+      permissions: parsed.value.permissions,
+      ...(parsed.value.password ? { passwordHash: hashPassword(parsed.value.password) } : {}),
+    });
+  } catch (err) {
+    logger.be.error("Admin user update failed", { id, err: String(err) });
+    return NextResponse.json({ error: "Could not update the admin user" }, { status: 500 });
+  }
   await audit(
     "user.update",
     "admin_user",
@@ -100,16 +110,23 @@ export async function DELETE(_req: NextRequest, ctx: RouteContext<"/api/admin/us
   if (!target) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
   if (target.id === auth.user!.id) {
+    logger.be.warn("Admin user delete blocked — self-delete attempt", { id });
     return NextResponse.json(
       { error: "You can't delete your own account — ask another super admin" },
       { status: 400 }
     );
   }
   if (target.role === "super_admin" && (await countSuperAdmins()) <= 1) {
+    logger.be.warn("Admin user delete blocked — would remove the last super admin", { id });
     return NextResponse.json({ error: "Cannot delete the last super admin" }, { status: 409 });
   }
 
-  await deleteAdminUser(id);
+  try {
+    await deleteAdminUser(id);
+  } catch (err) {
+    logger.be.error("Admin user delete failed", { id, err: String(err) });
+    return NextResponse.json({ error: "Could not delete the admin user" }, { status: 500 });
+  }
   await audit(
     "user.delete",
     "admin_user",

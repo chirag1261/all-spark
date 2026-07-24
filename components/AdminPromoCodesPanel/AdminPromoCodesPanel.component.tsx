@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { Plus, X } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { PromoCode } from "@/types";
@@ -171,6 +172,12 @@ export default function AdminPromoCodesPanel({ codes, events }: Props) {
                     >
                       {c.active ? "Deactivate" : "Activate"}
                     </button>
+                    <Link
+                      href={`/admin/promocodes/new?cloneFrom=${c.id}`}
+                      className="ml-4 text-zinc-400 hover:text-zinc-200 hover:underline"
+                    >
+                      Clone
+                    </Link>
                   </td>
                 </tr>
               ))

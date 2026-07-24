@@ -5,6 +5,7 @@ import { getCurrentAdmin } from "@/lib/auth/admin";
 import { toPublicUser, validateAdminUserInput } from "@/lib/auth/admin-users";
 import { hashPassword } from "@/lib/auth/password";
 import { audit, createAdminUser, getAdminUserByEmail, listAdminUsers } from "@/lib/db";
+import { logger } from "@/lib/logger";
 
 /** GET /api/admin/users — list all admin users (super admin only). */
 export async function GET() {
@@ -24,6 +25,7 @@ export async function POST(req: NextRequest) {
   const user = await getCurrentAdmin();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (user.role !== "super_admin") {
+    logger.be.warn("Admin user create denied — not a super admin", { userId: user.id });
     return NextResponse.json(
       { error: "Only super admins can manage admin users" },
       { status: 403 }
@@ -41,6 +43,7 @@ export async function POST(req: NextRequest) {
   if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
 
   if (await getAdminUserByEmail(parsed.value.email)) {
+    logger.be.warn("Admin user create blocked — duplicate email", { email: parsed.value.email });
     return NextResponse.json({ error: "An admin with that email already exists" }, { status: 409 });
   }
 
@@ -57,7 +60,12 @@ export async function POST(req: NextRequest) {
     createdAt: now,
     updatedAt: now,
   };
-  await createAdminUser(newUser);
+  try {
+    await createAdminUser(newUser);
+  } catch (err) {
+    logger.be.error("Admin user create failed", { email: newUser.email, err: String(err) });
+    return NextResponse.json({ error: "Could not create the admin user" }, { status: 500 });
+  }
   await audit(
     "user.create",
     "admin_user",

@@ -55,6 +55,22 @@ h3 {
   background: transparent;
 }
 
+/* Native <input type="datetime-local"/date/time"> pickers default to a
+   light-mode calendar icon + popup, which reads as broken on this dark
+   theme. color-scheme flips both the icon and the OS-rendered popup to dark. */
+.dt-input {
+  color-scheme: dark;
+}
+.dt-input::-webkit-calendar-picker-indicator {
+  opacity: 0.7;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.dt-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+  background-color: rgba(217, 154, 69, 0.15);
+}
+
 /* ---------------------------------------------------------------------------
    Motion system
 --------------------------------------------------------------------------- */

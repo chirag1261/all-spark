@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentAdmin, hasPermission } from "@/lib/auth/admin";
 import { audit, createEvent, listEvents } from "@/lib/db";
 import { posterForIndex, validateEventInput } from "@/lib/domain/events";
+import { logger } from "@/lib/logger";
 
 /** GET /api/admin/events — all events (including unpublished). */
 export async function GET() {
@@ -20,6 +21,7 @@ export async function POST(req: NextRequest) {
   const user = await getCurrentAdmin();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (!hasPermission(user, "events")) {
+    logger.be.warn("Event create denied — missing permission", { userId: user.id });
     return NextResponse.json({ error: "Missing events permission" }, { status: 403 });
   }
 
@@ -43,7 +45,12 @@ export async function POST(req: NextRequest) {
     createdAt: now,
     updatedAt: now,
   };
-  await createEvent(event);
+  try {
+    await createEvent(event);
+  } catch (err) {
+    logger.be.error("Event create failed", { title: event.title, err: String(err) });
+    return NextResponse.json({ error: "Could not create the event" }, { status: 500 });
+  }
   await audit("event.create", "event", event.id, `Created "${event.title}"`);
   return NextResponse.json({ event }, { status: 201 });
 }

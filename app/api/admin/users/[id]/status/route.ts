@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentAdmin } from "@/lib/auth/admin";
 import { toPublicUser } from "@/lib/auth/admin-users";
 import { audit, countActiveSuperAdmins, getAdminUserById, setAdminUserActive } from "@/lib/db";
+import { logger } from "@/lib/logger";
 
 /**
  * POST /api/admin/users/[id]/status — Body: { active: boolean }
@@ -12,14 +13,14 @@ import { audit, countActiveSuperAdmins, getAdminUserById, setAdminUserActive } f
 export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const user = await getCurrentAdmin();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { id } = await ctx.params;
   if (user.role !== "super_admin") {
+    logger.be.warn("Admin user status change denied — not a super admin", { userId: user.id, id });
     return NextResponse.json(
       { error: "Only super admins can manage admin users" },
       { status: 403 }
     );
   }
-
-  const { id } = await ctx.params;
 
   let body: { active?: unknown };
   try {
@@ -37,6 +38,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
 
   if (!active) {
     if (target.id === user.id) {
+      logger.be.warn("Admin user deactivate blocked — self-deactivate attempt", { id });
       return NextResponse.json(
         { error: "You can't deactivate your own account — ask another super admin" },
         { status: 400 }
@@ -44,6 +46,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     }
     // Never lock the system out of its last usable super admin.
     if (target.role === "super_admin" && target.active && (await countActiveSuperAdmins()) <= 1) {
+      logger.be.warn("Admin user deactivate blocked — last active super admin", { id });
       return NextResponse.json(
         { error: "Cannot deactivate the last active super admin" },
         { status: 409 }
@@ -51,7 +54,13 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     }
   }
 
-  const updated = await setAdminUserActive(id, active);
+  let updated;
+  try {
+    updated = await setAdminUserActive(id, active);
+  } catch (err) {
+    logger.be.error("Admin user status change failed", { id, err: String(err) });
+    return NextResponse.json({ error: "Could not update the admin user" }, { status: 500 });
+  }
   await audit(
     active ? "user.activate" : "user.deactivate",
     "admin_user",

@@ -43,6 +43,12 @@ interface FaqDraft {
 
 interface Props {
   event?: EventItem;
+  /**
+   * Prefills the form from an existing event without editing it — used by the
+   * "Clone" action. Submitting still creates a brand-new event (POST), never
+   * a PUT against the source. Ignored if `event` is also set.
+   */
+  cloneFrom?: EventItem;
   /** Called after a successful save/delete (drawer closes itself). */
   onDone: () => void;
   cloudinaryEnabled: boolean;
@@ -59,39 +65,46 @@ function toLocalInput(iso: string): string {
 const inputCls =
   "w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#d99a45]";
 
-export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
+export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled }: Props) {
   const router = useRouter();
   const { confirm, dialog } = useConfirm();
   const { showToast, toast } = useToast();
-  const [title, setTitle] = useState(event?.title ?? "");
-  const [tagline, setTagline] = useState(event?.tagline ?? "");
-  const [description, setDescription] = useState(event?.description ?? "");
-  const [venue, setVenue] = useState(event?.venue ?? "");
-  const [city, setCity] = useState(event?.city ?? "");
-  const [startsAt, setStartsAt] = useState(toLocalInput(event?.startsAt ?? ""));
-  const [opensAt, setOpensAt] = useState(toLocalInput(event?.registrationOpensAt ?? ""));
-  const [closesAt, setClosesAt] = useState(toLocalInput(event?.registrationClosesAt ?? ""));
-  const [imageUrl, setImageUrl] = useState(event?.imageUrl ?? "");
-  const [bookMyShowUrl, setBookMyShowUrl] = useState(event?.bookMyShowUrl ?? "");
-  const [gallery, setGallery] = useState<string[]>(event?.gallery ?? []);
+  // Prefill source for everything EXCEPT title/featured/published, which get
+  // clone-specific treatment below (never editing `event` in place here).
+  const source = event ?? cloneFrom;
+  const [title, setTitle] = useState(
+    event ? event.title : cloneFrom ? `${cloneFrom.title} (Copy)` : ""
+  );
+  const [tagline, setTagline] = useState(source?.tagline ?? "");
+  const [description, setDescription] = useState(source?.description ?? "");
+  const [venue, setVenue] = useState(source?.venue ?? "");
+  const [city, setCity] = useState(source?.city ?? "");
+  const [startsAt, setStartsAt] = useState(toLocalInput(source?.startsAt ?? ""));
+  const [opensAt, setOpensAt] = useState(toLocalInput(source?.registrationOpensAt ?? ""));
+  const [closesAt, setClosesAt] = useState(toLocalInput(source?.registrationClosesAt ?? ""));
+  const [imageUrl, setImageUrl] = useState(source?.imageUrl ?? "");
+  const [bookMyShowUrl, setBookMyShowUrl] = useState(source?.bookMyShowUrl ?? "");
+  const [gallery, setGallery] = useState<string[]>(source?.gallery ?? []);
   const [galleryUrl, setGalleryUrl] = useState("");
-  const [featured, setFeatured] = useState(event?.featured ?? false);
-  const [published, setPublished] = useState(event?.published ?? false);
+  // A clone never inherits "featured" (only one event may hold it) or
+  // "published" (an unreviewed copy must never go live automatically).
+  const [featured, setFeatured] = useState(event ? event.featured : false);
+  const [published, setPublished] = useState(event ? event.published : false);
   const [categories, setCategories] = useState<CategoryDraft[]>(
-    event?.categories.map((c) => ({
-      id: c.id,
+    source?.categories.map((c) => ({
+      id: event ? c.id : undefined,
       name: c.name,
       priceInr: String(c.price / 100),
       rows: String(c.rows),
       seatsPerRow: String(c.seatsPerRow),
     })) ?? [{ name: "General", priceInr: "499", rows: "5", seatsPerRow: "12" }]
   );
-  const [faqs, setFaqs] = useState<FaqDraft[]>(event?.faqs ?? []);
+  const [faqs, setFaqs] = useState<FaqDraft[]>(source?.faqs ?? []);
   const [seatingMode, setSeatingMode] = useState<"simple" | "layout">(
-    event?.layout && event.layout.sections?.length ? "layout" : "simple"
+    source?.layout && source.layout.sections?.length ? "layout" : "simple"
   );
-  const [layout, setLayout] = useState<EventLayout>(event?.layout ?? EMPTY_LAYOUT);
-  const [blockedInput, setBlockedInput] = useState(event?.blockedSeats.join(", ") ?? "");
+  const [layout, setLayout] = useState<EventLayout>(source?.layout ?? EMPTY_LAYOUT);
+  const [blockedInput, setBlockedInput] = useState(source?.blockedSeats.join(", ") ?? "");
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState<"banner" | "gallery" | "artist" | "venue" | null>(
     null
@@ -102,7 +115,7 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
   const venueFileRef = useRef<HTMLInputElement>(null);
 
   // ---- Rich landing-page content (all optional) ----
-  const l = event?.landing;
+  const l = source?.landing;
   const [presenter, setPresenter] = useState(l?.presenter ?? "");
   const [heroKicker, setHeroKicker] = useState(l?.heroKicker ?? "");
   const [whyAttend, setWhyAttend] = useState<LandingWhyCard[]>(l?.whyAttend ?? []);
@@ -562,7 +575,7 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
                 value={startsAt}
                 onChange={(e) => setStartsAt(e.target.value)}
                 required
-                className={inputCls}
+                className={`${inputCls} dt-input`}
               />
             </div>
             <div>
@@ -572,7 +585,7 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
                 value={opensAt}
                 onChange={(e) => setOpensAt(e.target.value)}
                 required
-                className={inputCls}
+                className={`${inputCls} dt-input`}
               />
             </div>
             <div>
@@ -582,7 +595,7 @@ export default function EventForm({ event, onDone, cloudinaryEnabled }: Props) {
                 value={closesAt}
                 onChange={(e) => setClosesAt(e.target.value)}
                 required
-                className={inputCls}
+                className={`${inputCls} dt-input`}
               />
             </div>
           </div>

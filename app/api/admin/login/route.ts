@@ -8,10 +8,12 @@ import {
 } from "@/lib/auth/admin";
 import { getAdminUserByEmail, updateAdminUser } from "@/lib/db";
 import { clientKey, rateLimit } from "@/lib/http/ratelimit";
+import { logger } from "@/lib/logger";
 
 /** POST /api/admin/login — Body: { email, password } */
 export async function POST(req: NextRequest) {
   if (!(await adminConfigured())) {
+    logger.be.error("Admin login attempted with no admin account configured");
     return NextResponse.json(
       {
         error: "No admin account exists yet. Set ADMIN_EMAIL and ADMIN_PASSWORD to bootstrap one.",
@@ -44,6 +46,8 @@ export async function POST(req: NextRequest) {
 
   const user = await getAdminUserByEmail(email);
   if (!user || !verifyPassword(password, user.passwordHash)) {
+    // Never log the password itself — only that an attempt for this email failed.
+    logger.be.warn("Admin login failed — incorrect email or password", { email });
     // Same message for unknown email and wrong password — don't leak which.
     return NextResponse.json({ error: "Incorrect email or password" }, { status: 401 });
   }
@@ -51,6 +55,7 @@ export async function POST(req: NextRequest) {
   // Only surfaced after correct credentials, so it doesn't reveal which
   // emails exist. Deactivated accounts can't hold a session.
   if (!user.active) {
+    logger.be.warn("Admin login blocked — account deactivated", { userId: user.id, email });
     return NextResponse.json(
       { error: "This account has been deactivated. Contact a super admin." },
       { status: 403 }
