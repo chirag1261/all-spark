@@ -1,10 +1,20 @@
 /**
  * Centralised logger — structured console output on every tier (FE/BE/DB/Server)
- * plus optional WhatsApp group alerts via a webhook URL.
+ * plus optional WhatsApp + email alerts on warn/error.
  *
- * Set WHATSAPP_WEBHOOK_URL in .env.local to a CallMeBot / Green-API / Meta
- * Cloud API endpoint that accepts { text } in the POST body.
- * Without it, alerts are only written to the console.
+ * WhatsApp: via CallMeBot (https://www.callmebot.com/blog/free-api-whatsapp-messages/).
+ * Set WHATSAPP_ALERT_PHONE (full international format, e.g. "+917323058176")
+ * and CALLMEBOT_API_KEY in .env.local. The API key comes from CallMeBot itself:
+ * message "I allow callmebot to send me messages" to their WhatsApp number
+ * (+34 644 59 71 67) and they reply with your personal key.
+ *
+ * Email: via Resend (see lib/notifications/email.ts) — reuses the same
+ * RESEND_API_KEY/EMAIL_FROM already configured for OTP/ticket emails. Set
+ * LOG_ALERT_EMAIL to choose a recipient, or leave unset to fall back to
+ * ADMIN_EMAIL.
+ *
+ * Each channel is independently optional — without its env vars, that channel
+ * is skipped and alerts are still always written to the console.
  */
 
 type Level = "info" | "warn" | "error" | "debug";
@@ -30,16 +40,29 @@ function write(entry: LogEntry) {
   else console.log(line);
 }
 
-/** Fire-and-forget WhatsApp alert for warn/error events. */
+/** Fire-and-forget WhatsApp alert for warn/error events, via CallMeBot. */
 async function alertWhatsApp(entry: LogEntry) {
-  const url = process.env.WHATSAPP_WEBHOOK_URL;
-  if (!url) return;
+  const phone = process.env.WHATSAPP_ALERT_PHONE;
+  const apiKey = process.env.CALLMEBOT_API_KEY;
+  if (!phone || !apiKey) return;
   try {
-    await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: fmt(entry) }),
-    });
+    const url =
+      `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(phone)}` +
+      `&text=${encodeURIComponent(fmt(entry))}&apikey=${encodeURIComponent(apiKey)}`;
+    await fetch(url);
+  } catch {
+    // Never let an alert failure break the main flow.
+  }
+}
+
+/** Fire-and-forget email alert for warn/error events, via Resend. */
+async function alertEmail(entry: LogEntry) {
+  try {
+    const { sendLogAlertEmail } = await import("@/lib/notifications/email");
+    await sendLogAlertEmail(
+      `[Utsav Events] ${entry.level.toUpperCase()} · ${entry.tier}: ${entry.message}`,
+      fmt(entry)
+    );
   } catch {
     // Never let an alert failure break the main flow.
   }
@@ -50,6 +73,7 @@ function log(tier: Tier, level: Level, message: string, data?: unknown) {
   write(entry);
   if (level === "warn" || level === "error") {
     void alertWhatsApp(entry);
+    void alertEmail(entry);
   }
 }
 

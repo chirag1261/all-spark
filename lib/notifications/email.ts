@@ -117,6 +117,30 @@ export async function sendContactMessage(msg: {
   }
 }
 
+/** Where server warn/error log alerts are delivered (falls back to ADMIN_EMAIL). */
+const LOG_ALERT_TO = () => process.env.LOG_ALERT_EMAIL || process.env.ADMIN_EMAIL;
+
+/**
+ * Fire-and-forget alert email for a warn/error log line (see lib/logger.ts).
+ * Never throws, and silently no-ops without RESEND_API_KEY or a recipient —
+ * a failed/missing alert must never break the code path that triggered it.
+ */
+export async function sendLogAlertEmail(subject: string, text: string): Promise<{ sent: boolean }> {
+  const to = LOG_ALERT_TO();
+  if (!to || !emailConfigured()) return { sent: false };
+  try {
+    const { error } = await client().emails.send({ from: FROM(), to, subject, text });
+    if (error) {
+      console.error("Log alert email failed:", error);
+      return { sent: false };
+    }
+    return { sent: true };
+  } catch (err) {
+    console.error("Log alert email failed:", err);
+    return { sent: false };
+  }
+}
+
 /**
  * Emails ALL of a booking's tickets — one QR per attendee/seat, each with its
  * own shareable link. Never throws — a failed email must not fail a paid
