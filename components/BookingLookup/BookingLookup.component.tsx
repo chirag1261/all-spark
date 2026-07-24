@@ -101,7 +101,7 @@ export default function BookingLookup() {
         <button
           type="submit"
           disabled={busy || !bookingId.trim() || !email.trim()}
-          className="w-full bg-[#1d4ed8] hover:bg-[#1e40af] disabled:opacity-40 rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+          className="w-full bg-[#1d4ed8] hover:bg-[#1e40af] text-white disabled:opacity-40 rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
         >
           {busy ? "Checking…" : "Check status"}
         </button>
@@ -136,7 +136,7 @@ export default function BookingLookup() {
                 <Link
                   key={t.ticketId}
                   href={`/ticket/${t.ticketId}`}
-                  className="block text-center bg-[#1d4ed8] hover:bg-[#1e40af] rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+                  className="block text-center bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
                 >
                   View ticket — {t.name} · Seat {t.seatId}
                 </Link>

@@ -29,7 +29,7 @@ type SignupStep = "details" | "verify-email"; // | "verify-phone" — disabled, 
 const inputCls =
   "w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#1d4ed8]";
 const primaryBtn =
-  "w-full bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] hover:brightness-110 disabled:opacity-40 rounded-xl px-6 py-2.5 font-semibold text-sm shadow-lg shadow-[#1d4ed8]/20 transition-all";
+  "w-full bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] hover:brightness-110 text-white disabled:opacity-40 rounded-xl px-6 py-2.5 font-semibold text-sm transition-all";
 const otpInputCls = `${inputCls} text-center font-mono text-xl tracking-[0.5em]`;
 
 export default function LoginWizard({ next }: { next: string }) {

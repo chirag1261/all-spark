@@ -11,7 +11,7 @@ export default function WhatsAppShare({ lines }: { lines: string[] }) {
   return (
     <button
       onClick={share}
-      className="w-full inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1fb457] text-emerald-950 rounded-lg px-5 py-3 font-semibold text-sm transition-colors"
+      className="w-full inline-flex items-center justify-center gap-2 bg-[#1fb457] hover:bg-[#189a4a] text-white rounded-lg px-5 py-3 font-semibold text-sm transition-colors"
     >
       <Share2 className="w-4 h-4" aria-hidden="true" />
       Share on WhatsApp

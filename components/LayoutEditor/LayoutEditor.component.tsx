@@ -67,7 +67,7 @@ export default function LayoutEditor({ value, onChange }: Props) {
           <button
             type="button"
             onClick={addSection}
-            className="inline-flex items-center gap-1 text-xs bg-[#1d4ed8] hover:bg-[#1e40af] rounded-lg px-3 py-1.5 font-semibold"
+            className="inline-flex items-center gap-1 text-xs bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-lg px-3 py-1.5 font-semibold"
           >
             <Plus className="w-3.5 h-3.5" /> Section
           </button>

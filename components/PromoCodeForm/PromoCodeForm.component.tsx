@@ -308,7 +308,7 @@ export default function PromoCodeForm({ promo, cloneFrom, events, onDone }: Prop
           <button
             type="submit"
             disabled={busy}
-            className="bg-[#1d4ed8] hover:bg-[#1e40af] disabled:opacity-40 rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+            className="bg-[#1d4ed8] hover:bg-[#1e40af] text-white disabled:opacity-40 rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
           >
             {busy ? "Saving…" : promo ? "Save changes" : "Create promo code"}
           </button>

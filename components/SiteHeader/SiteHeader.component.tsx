@@ -45,7 +45,7 @@ export default async function SiteHeader() {
         <div className="ml-auto flex items-center gap-3">
           <Link
             href={bookHref}
-            className="hidden md:inline-block bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] hover:brightness-110 text-white font-semibold rounded-full px-5 py-2 shadow-lg shadow-[#1d4ed8]/25 transition-all"
+            className="hidden md:inline-block bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] hover:brightness-110 text-white font-semibold rounded-full px-5 py-2 transition-all"
           >
             Book Seats
           </Link>

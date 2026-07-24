@@ -82,7 +82,7 @@ export default function AdminEventsPanel({ rows, cloudinaryEnabled }: Props) {
         <h2 className="text-lg font-semibold">Events</h2>
         <Link
           href="/admin/events/new"
-          className="ml-auto inline-flex items-center gap-1.5 bg-[#1d4ed8] hover:bg-[#1e40af] rounded-lg px-4 py-2 font-semibold text-sm transition-colors"
+          className="ml-auto inline-flex items-center gap-1.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-lg px-4 py-2 font-semibold text-sm transition-colors"
         >
           <Plus className="w-4 h-4" aria-hidden="true" /> New event
         </Link>
@@ -292,7 +292,7 @@ function EmptyState() {
       </p>
       <Link
         href="/admin/events/new"
-        className="inline-flex items-center gap-1.5 bg-[#1d4ed8] hover:bg-[#1e40af] rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
+        className="inline-flex items-center gap-1.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
       >
         <Plus className="w-4 h-4" aria-hidden="true" /> New event
       </Link>

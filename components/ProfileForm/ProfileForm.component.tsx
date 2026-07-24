@@ -129,7 +129,7 @@ export default function ProfileForm({ profile }: Props) {
         <button
           type="submit"
           disabled={busy || name.trim().length < 2}
-          className="bg-[#1d4ed8] hover:bg-[#1e40af] disabled:opacity-40 rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
+          className="bg-[#1d4ed8] hover:bg-[#1e40af] text-white disabled:opacity-40 rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
         >
           Save profile
         </button>

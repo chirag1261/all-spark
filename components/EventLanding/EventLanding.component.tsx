@@ -31,7 +31,7 @@ export default function EventLanding({ event, remaining }: Props) {
   const cta = bookable ? (
     <Link
       href={`/events/${event.id}/book`}
-      className="inline-block w-full sm:w-auto text-center bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] hover:brightness-110 hover:scale-[1.02] rounded-2xl px-9 py-4 font-bold text-base transition-all shadow-[0_10px_40px_rgba(29,78,216,0.4)]"
+      className="inline-block w-full sm:w-auto text-center bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] hover:brightness-110 text-white hover:scale-[1.02] rounded-2xl px-9 py-4 font-bold text-base transition-all"
     >
       Book tickets · from {inr(fromPrice)}
     </Link>

@@ -205,7 +205,7 @@ export async function AboutScreen() {
             </p>
             <Link
               href={ctaHref}
-              className="inline-block bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] hover:brightness-110 text-white font-semibold rounded-full px-8 py-3 shadow-lg shadow-[#1d4ed8]/25 transition-all"
+              className="inline-block bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] hover:brightness-110 text-white font-semibold rounded-full px-8 py-3 transition-all"
             >
               {featured ? "View the event" : "Browse events"}
             </Link>

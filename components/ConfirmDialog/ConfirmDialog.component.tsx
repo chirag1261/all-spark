@@ -132,8 +132,8 @@ function ConfirmDialogView({
             onClick={onConfirm}
             className={`flex-1 text-sm font-semibold px-4 py-2.5 rounded-lg shadow-lg transition-colors ${
               danger
-                ? "bg-red-600 hover:bg-red-500 text-white shadow-red-600/20"
-                : "bg-[#1d4ed8] hover:bg-[#1e40af] text-white shadow-[#1d4ed8]/20"
+                ? "bg-red-600 hover:bg-red-500 text-white"
+                : "bg-[#1d4ed8] hover:bg-[#1e40af] text-white"
             }`}
           >
             {confirmLabel}

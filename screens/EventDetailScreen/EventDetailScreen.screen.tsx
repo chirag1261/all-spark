@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import BackLink from "@/components/BackLink";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
+import WhatsAppShare from "@/components/WhatsAppShare";
 import { BOOKMYSHOW_LOGO_URL } from "@/constants";
 import { getBookedSeats, getEvent } from "@/lib/db";
 import { minPrice, registrationState, ticketTiers, totalSeats } from "@/lib/domain/events";
@@ -104,7 +105,7 @@ export async function EventDetailScreen({ id }: { id: string }) {
             {bookable ? (
               <Link
                 href={`/events/${event.id}/book`}
-                className="block text-center bg-[#1d4ed8] hover:bg-[#1e40af] rounded-lg px-6 py-3 font-semibold text-sm transition-colors"
+                className="block text-center bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-lg px-6 py-3 font-semibold text-sm transition-colors"
               >
                 Select seats
               </Link>
@@ -131,6 +132,20 @@ export async function EventDetailScreen({ id }: { id: string }) {
                 <ExternalLink className="w-4 h-4" aria-hidden="true" />
               </a>
             )}
+
+            <div className="mt-3">
+              <WhatsAppShare
+                lines={[
+                  `🎉 *${event.title}*`,
+                  event.tagline || "",
+                  `🗓️ ${formatDateIST(event.startsAt)}`,
+                  `📍 ${event.venue}${event.city ? `, ${event.city}` : ""}`,
+                  soldOut ? "" : `🎟️ Tickets from ${inr(fromPrice)}`,
+                  "",
+                  "Book your seats:",
+                ].filter(Boolean)}
+              />
+            </div>
           </aside>
 
           <div className="lg:col-span-2 space-y-10 min-w-0">

@@ -195,7 +195,7 @@ export default function ScanConsole({ events }: { events: EventOption[] }) {
           type="button"
           onClick={startScanning}
           disabled={!pendingEventId}
-          className="w-full bg-[#1d4ed8] hover:bg-[#1e40af] disabled:opacity-40 disabled:cursor-not-allowed rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+          className="w-full bg-[#1d4ed8] hover:bg-[#1e40af] text-white disabled:opacity-40 disabled:cursor-not-allowed rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
         >
           Start scanning
         </button>

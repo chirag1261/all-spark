@@ -171,7 +171,7 @@ function FilterPill({
       onClick={onClick}
       className={`inline-flex items-center gap-1 rounded-full px-4 py-1.5 text-sm font-medium border transition-all duration-200 ${
         active
-          ? "bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] border-transparent text-white shadow-lg shadow-[#1d4ed8]/25"
+          ? "bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] border-transparent text-white"
           : "bg-white border-[#e5eaf1] text-slate-600 hover:text-slate-900 hover:border-slate-400"
       }`}
     >

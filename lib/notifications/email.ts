@@ -48,14 +48,16 @@ export async function sendOtpEmail(to: string, code: string): Promise<{ sent: bo
       subject: `${code} is your Utsav Events verification code`,
       text: `Your verification code is ${code}. It is valid for 5 minutes.\n\nIf you didn't request this, you can ignore this email.`,
       html: `
-        <div style="max-width:420px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;background:#18181b;color:#fafafa;border-radius:16px;overflow:hidden">
-          <div style="background:#f84464;padding:16px 24px">
-            <h1 style="margin:0;font-size:18px;color:#fff">Verification code</h1>
-          </div>
-          <div style="padding:24px;text-align:center">
-            <p style="margin:0 0 12px;font-size:14px;color:#a1a1aa">Use this code to continue signing in:</p>
-            <p style="font-family:monospace;font-size:32px;letter-spacing:8px;margin:0">${code}</p>
-            <p style="font-size:12px;color:#a1a1aa;margin:16px 0 0">Valid for 5 minutes. If you didn't request this, ignore this email.</p>
+        <div style="background:#f5f8ff;padding:24px 0">
+          <div style="max-width:420px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;background:#ffffff;color:#0f172a;border:1px solid #e5eaf1;border-radius:16px;overflow:hidden">
+            <div style="background:#1d4ed8;padding:16px 24px">
+              <h1 style="margin:0;font-size:18px;color:#ffffff">Verification code</h1>
+            </div>
+            <div style="padding:24px;text-align:center">
+              <p style="margin:0 0 12px;font-size:14px;color:#64748b">Use this code to continue signing in:</p>
+              <p style="font-family:monospace;font-size:32px;letter-spacing:8px;margin:0;color:#1d4ed8"><strong>${code}</strong></p>
+              <p style="font-size:12px;color:#64748b;margin:16px 0 0">Valid for 5 minutes. If you didn't request this, ignore this email.</p>
+            </div>
           </div>
         </div>`,
     });
@@ -168,18 +170,23 @@ export async function sendTicketEmail(
     for (let i = 0; i < tickets.length; i++) {
       const t = tickets[i];
       const qrDataUrl = await ticketQrDataUrl(t, booking);
-      // Also attached as a downloadable file, in addition to being shown inline below.
+      // Inline the QR via a Content-ID (cid:) attachment, NOT a data: URI —
+      // Gmail and most clients strip inline `data:` images from email bodies
+      // (which rendered the QR as an empty/dark square). A cid attachment
+      // renders inline reliably and isn't duplicated in the attachment list.
+      const cid = `qr-${t.ticketId}`;
       attachments.push({
         filename: `${t.ticketId}.png`,
         content: Buffer.from(qrDataUrl.split(",")[1], "base64"),
+        contentId: cid,
       });
       const ticketUrl = `${origin}/ticket/${encodeURIComponent(t.ticketId)}`;
       ticketBlocksHtml.push(`
-        <div style="border:1px solid #3f3f46;border-radius:12px;padding:16px;margin:12px 0;text-align:center">
-          <p style="margin:0 0 4px;font-weight:bold">${t.attendeeName} · Seat ${t.seatId}</p>
-          <img src="${qrDataUrl}" alt="Ticket QR ${t.ticketId}" width="160" height="160" style="border-radius:8px;background:#fff;padding:6px"/>
-          <p style="font-family:monospace;font-size:15px;letter-spacing:1px;margin:8px 0 4px">${t.ticketId}</p>
-          <a href="${ticketUrl}" style="font-size:13px;color:#f84464">View / share this ticket</a>
+        <div style="border:1px solid #e5eaf1;border-radius:12px;padding:16px;margin:12px 0;text-align:center;background:#ffffff">
+          <p style="margin:0 0 8px;font-weight:bold;color:#0f172a">${t.attendeeName} · Seat ${t.seatId}</p>
+          <img src="cid:${cid}" alt="Ticket QR ${t.ticketId}" width="180" height="180" style="border-radius:8px;background:#ffffff;padding:6px;display:block;margin:0 auto"/>
+          <p style="font-family:monospace;font-size:15px;letter-spacing:1px;margin:10px 0 4px;color:#0f172a">${t.ticketId}</p>
+          <a href="${ticketUrl}" style="font-size:13px;color:#1d4ed8;font-weight:600">View / share this ticket</a>
         </div>`);
       ticketBlocksText.push(
         `- ${t.attendeeName} · Seat ${t.seatId} · ${t.ticketId} · ${ticketUrl}`
@@ -205,19 +212,21 @@ export async function sendTicketEmail(
         ...ticketBlocksText,
       ].join("\n"),
       html: `
-        <div style="max-width:480px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;background:#18181b;color:#fafafa;border-radius:16px;overflow:hidden">
-          <div style="background:#f84464;padding:20px 24px">
-            <h1 style="margin:0;font-size:20px;color:#fff">Booking confirmed 🎉</h1>
-          </div>
-          <div style="padding:24px">
-            <p style="margin:0 0 4px;font-size:15px">Hi ${booking.attendeeName}, your ${tickets.length > 1 ? `${tickets.length} tickets are` : "ticket is"} ready for <strong>${event?.title ?? "your event"}</strong>.</p>
-            <p style="margin:0 0 16px;font-size:13px;color:#a1a1aa">${event ? `${eventDate(event.startsAt)} · ${event.venue}, ${event.city}` : ""}</p>
-            ${ticketBlocksHtml.join("")}
-            <table style="width:100%;font-size:14px;border-collapse:collapse;margin-top:8px">
-              <tr><td style="padding:6px 0;color:#a1a1aa">Booking ID</td><td style="text-align:right;font-family:monospace">${booking.bookingId}</td></tr>
-              <tr><td style="padding:10px 0;color:#a1a1aa;border-top:1px solid #3f3f46">Amount paid</td><td style="text-align:right;border-top:1px solid #3f3f46;font-size:16px"><strong>${amountInr}</strong></td></tr>
-            </table>
-            <p style="font-size:12px;color:#a1a1aa;margin:20px 0 0">Each attendee shows their own QR at the venue gate. Keep ticket IDs private — anyone with an ID can view that ticket.</p>
+        <div style="background:#f5f8ff;padding:24px 0">
+          <div style="max-width:480px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;background:#ffffff;color:#0f172a;border:1px solid #e5eaf1;border-radius:16px;overflow:hidden">
+            <div style="background:#1d4ed8;padding:20px 24px">
+              <h1 style="margin:0;font-size:20px;color:#ffffff">Booking confirmed 🎉</h1>
+            </div>
+            <div style="padding:24px">
+              <p style="margin:0 0 4px;font-size:15px;color:#0f172a">Hi ${booking.attendeeName}, your ${tickets.length > 1 ? `${tickets.length} tickets are` : "ticket is"} ready for <strong>${event?.title ?? "your event"}</strong>.</p>
+              <p style="margin:0 0 16px;font-size:13px;color:#64748b">${event ? `${eventDate(event.startsAt)} · ${event.venue}, ${event.city}` : ""}</p>
+              ${ticketBlocksHtml.join("")}
+              <table style="width:100%;font-size:14px;border-collapse:collapse;margin-top:8px">
+                <tr><td style="padding:6px 0;color:#64748b">Booking ID</td><td style="text-align:right;font-family:monospace;color:#0f172a">${booking.bookingId}</td></tr>
+                <tr><td style="padding:10px 0;color:#64748b;border-top:1px solid #e5eaf1">Amount paid</td><td style="text-align:right;border-top:1px solid #e5eaf1;font-size:16px;color:#0f172a"><strong>${amountInr}</strong></td></tr>
+              </table>
+              <p style="font-size:12px;color:#64748b;margin:20px 0 0">Each attendee shows their own QR at the venue gate. Keep ticket IDs private — anyone with an ID can view that ticket.</p>
+            </div>
           </div>
         </div>`,
       attachments,

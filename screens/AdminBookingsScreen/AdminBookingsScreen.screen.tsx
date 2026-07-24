@@ -99,7 +99,7 @@ export async function AdminBookingsScreen({
         </select>
         <button
           type="submit"
-          className="bg-[#1d4ed8] hover:bg-[#1e40af] rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
+          className="bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
         >
           Search
         </button>

@@ -124,7 +124,7 @@ export function AdminLoginScreen() {
           <button
             type="submit"
             disabled={busy || !email || !password}
-            className="w-full bg-[#1d4ed8] hover:bg-[#1e40af] text-[#ffffff] disabled:opacity-40 rounded-lg px-6 py-3 font-semibold text-sm transition-colors"
+            className="w-full bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-[#ffffff] disabled:opacity-40 rounded-lg px-6 py-3 font-semibold text-sm transition-colors"
           >
             {busy ? "Signing in…" : "Sign in"}
           </button>

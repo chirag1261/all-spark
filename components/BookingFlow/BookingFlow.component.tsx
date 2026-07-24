@@ -382,7 +382,7 @@ export default function BookingFlow({
           </Link>
           <Link
             href="/"
-            className="flex-1 bg-[#1d4ed8] hover:bg-[#1e40af] rounded-lg px-5 py-3 font-semibold text-sm transition-colors"
+            className="flex-1 bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-lg px-5 py-3 font-semibold text-sm transition-colors"
           >
             Browse more events
           </Link>
@@ -440,7 +440,7 @@ export default function BookingFlow({
             <button
               onClick={goToAttendees}
               disabled={selected.size === 0}
-              className="bg-[#1d4ed8] hover:bg-[#1e40af] disabled:opacity-40 disabled:cursor-not-allowed rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+              className="bg-[#1d4ed8] hover:bg-[#1e40af] text-white disabled:opacity-40 disabled:cursor-not-allowed rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
             >
               Continue
             </button>
@@ -492,7 +492,7 @@ export default function BookingFlow({
             </button>
             <button
               onClick={goToSummary}
-              className="flex-1 sm:flex-none bg-[#1d4ed8] hover:bg-[#1e40af] rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+              className="flex-1 sm:flex-none bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
             >
               Continue
             </button>
@@ -600,7 +600,7 @@ export default function BookingFlow({
             <button
               onClick={pay}
               disabled={paying || selected.size === 0}
-              className="flex-1 bg-[#1d4ed8] hover:bg-[#1e40af] disabled:opacity-40 disabled:cursor-not-allowed rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+              className="flex-1 bg-[#1d4ed8] hover:bg-[#1e40af] text-white disabled:opacity-40 disabled:cursor-not-allowed rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
             >
               {paying ? "Processing…" : `Proceed to payment · ${inr(payable)}`}
             </button>
