@@ -34,6 +34,8 @@ export * from "./Confetti";
 export * from "./MobileMenu";
 export * from "./MobileAccountDrawer";
 export * from "./ContactForm";
+export * from "./PromoCodeForm";
+export * from "./AdminPromoCodesPanel";
 export * from "./RouteLoader";
 export * from "./PolicyPage";
 export * from "./BookMyShowLink";

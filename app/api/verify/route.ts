@@ -1,7 +1,13 @@
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
-import { confirmSeats, getBooking, releaseSeats, saveBooking } from "@/lib/db";
+import {
+  confirmSeats,
+  getBooking,
+  incrementPromoRedemption,
+  releaseSeats,
+  saveBooking,
+} from "@/lib/db";
 import { ensureTicketsForBooking, ticketQrDataUrl } from "@/lib/domain/tickets";
 import { sendTicketEmail } from "@/lib/notifications/email";
 import { Booking, TicketRecord } from "@/types";
@@ -90,6 +96,13 @@ export async function POST(req: NextRequest) {
   }
 
   await confirmSeats(booking.eventId, booking.seatIds, orderId);
+
+  // Count the promo redemption exactly once, on the confirm path only (the
+  // idempotent replay above returns before reaching here, so a double-verify
+  // never double-counts).
+  if (booking.promoCode) {
+    await incrementPromoRedemption(booking.promoCode).catch(() => {});
+  }
 
   // ---- Per-attendee ticket generation ----
   const confirmed = {

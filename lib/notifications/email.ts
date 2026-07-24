@@ -152,7 +152,7 @@ export async function sendTicketEmail(
   origin: string
 ): Promise<{ sent: boolean; error?: string }> {
   if (!emailConfigured()) {
-    return { sent: false, error: "SMTP not configured" };
+    return { sent: false, error: "Resend is not configured (RESEND_API_KEY missing)" };
   }
   if (!booking.customerEmail) {
     return { sent: false, error: "No email on the account" };

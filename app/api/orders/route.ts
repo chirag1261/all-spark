@@ -4,8 +4,9 @@ import Razorpay from "razorpay";
 
 import { MAX_SEATS_PER_BOOKING } from "@/constants";
 import { getCurrentCustomer } from "@/lib/auth/customer";
-import { getEvent, lockSeats, releaseSeats, saveBooking } from "@/lib/db";
+import { getEvent, getPromoCodeByCode, lockSeats, releaseSeats, saveBooking } from "@/lib/db";
 import { isValidSeatId, registrationState, seatPrice } from "@/lib/domain/events";
+import { evaluatePromo } from "@/lib/domain/promocodes";
 import { releaseToken } from "@/lib/domain/tickets";
 import { clientKey, rateLimit } from "@/lib/http/ratelimit";
 import { BookingAttendee } from "@/types";
@@ -102,7 +103,25 @@ export async function POST(req: NextRequest) {
   }
 
   // ---- Server-side amount computation ----
-  const amount = seatIds.reduce((sum, seatId) => sum + (seatPrice(event, seatId) ?? 0), 0);
+  const subtotal = seatIds.reduce((sum, seatId) => sum + (seatPrice(event, seatId) ?? 0), 0);
+
+  // ---- Promo code (server-authoritative; the client-sent discount is ignored) ----
+  // A code that's since become invalid is silently dropped rather than failing
+  // a legitimate booking — the customer just pays the full price.
+  let appliedCode: string | undefined;
+  let discountAmount = 0;
+  const rawCode = typeof body.promoCode === "string" ? body.promoCode.trim().toUpperCase() : "";
+  if (rawCode) {
+    const promo = await getPromoCodeByCode(rawCode);
+    if (promo) {
+      const result = evaluatePromo(promo, { eventId, subtotal, now: Date.now() });
+      if (result.ok) {
+        appliedCode = promo.code;
+        discountAmount = result.discount;
+      }
+    }
+  }
+  const amount = subtotal - discountAmount;
 
   // ---- Lock seats BEFORE creating the payment order ----
   // A provisional lock key ties the lock to the order we're about to create.
@@ -145,11 +164,16 @@ export async function POST(req: NextRequest) {
       customerEmail: customer.email ?? "",
       customerPhone: customer.phone ?? "",
       createdAt: Date.now(),
+      promoCode: appliedCode,
+      discountAmount: appliedCode ? discountAmount : undefined,
     });
 
     return NextResponse.json({
       orderId: order.id,
-      amount,
+      amount, // discounted total actually charged
+      subtotal,
+      discount: discountAmount,
+      promoCode: appliedCode ?? null,
       currency: "INR",
       keyId, // publishable key for Checkout.js
       releaseToken: releaseToken(order.id), // required to voluntarily release the hold
