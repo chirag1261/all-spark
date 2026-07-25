@@ -16,10 +16,8 @@ import { clientKey, rateLimit } from "@/lib/http/ratelimit";
  * Two purposes:
  *  - "signup": verifies one contact of a NEW account. Returns a short-lived
  *    signed proof; does NOT create an account or a session (the account is
- *    created by /api/auth/signup once the proof is presented). Currently only
- *    the email contact is used for signup — phone verification is temporarily
- *    disabled (Twilio Trial limitation); this endpoint stays channel-agnostic
- *    so phone can be re-enabled without changes here.
+ *    created by /api/auth/signup once both the email and phone proofs are
+ *    presented). Channel-agnostic — called once for email, once for phone.
  *  - "login" (default): verifies an EXISTING account's contact and signs in.
  *    Unknown identifiers are rejected — accounts are never auto-created here.
  */
