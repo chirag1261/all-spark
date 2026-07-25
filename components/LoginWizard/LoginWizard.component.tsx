@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 
-
-
 import PasswordInput from "../PasswordInput";
 import { useRouteLoader } from "../RouteLoader";
 import { useToast } from "../Toast";
@@ -15,19 +13,15 @@ import { useToast } from "../Toast";
  *  "use a one-time code" switch) or OTP → signed in. Unknown identifiers are
  *  offered the Create-account flow instead (never auto-created).
  *
- *  CREATE ACCOUNT (new accounts): name + email + password → verify the email
- *  OTP → account created and signed in.
- *
- *  NOTE: phone OTP verification is temporarily DISABLED here (and in
- *  /api/auth/signup) — our Twilio account is still in Trial mode (SMS only
- *  deliverable to manually-verified numbers), so requiring it would block
- *  every real signup. Re-enable by uncommenting the phone bits once Twilio
- *  has billing enabled.
+ *  CREATE ACCOUNT (new accounts): name + email + phone + password → verify the
+ *  email OTP → verify the phone OTP → account created and signed in. Both
+ *  contacts must be proven before the account is created (see the matching
+ *  two-proof check in /api/auth/signup).
  */
 
 type Mode = "signin" | "signup";
 type SigninStep = "identifier" | "password" | "otp";
-type SignupStep = "details" | "verify-email"; // | "verify-phone" — disabled, see note above
+type SignupStep = "details" | "verify-email" | "verify-phone";
 
 const inputCls =
   "w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#1d4ed8]";
@@ -55,12 +49,11 @@ export default function LoginWizard({ next }: { next: string }) {
   const [signupStep, setSignupStep] = useState<SignupStep>("details");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  // const [phone, setPhone] = useState(""); — disabled, see note above
+  const [phone, setPhone] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
-  // const [emailProof, setEmailProof] = useState(""); — only needed once the
-  // phone step returns (submitEmailCode currently uses the proof immediately)
+  const [emailProof, setEmailProof] = useState("");
   const [emailCode, setEmailCode] = useState("");
-  // const [phoneCode, setPhoneCode] = useState("");
+  const [phoneCode, setPhoneCode] = useState("");
 
   const [busy, setBusy] = useState(false);
 
@@ -152,9 +145,8 @@ export default function LoginWizard({ next }: { next: string }) {
     if (name.trim().length < 2) return showToast("Enter your name", "error");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
       return showToast("Enter a valid email address", "error");
-    // Phone collection/verification disabled for now — see note above.
-    // if (phone.replace(/[\s()-]/g, "").replace(/^\+/, "").length < 8)
-    //   return showToast("Enter a valid phone number", "error");
+    if (phone.replace(/[\s()-]/g, "").replace(/^\+/, "").length < 8)
+      return showToast("Enter a valid phone number", "error");
     if (signupPassword.length < 8) return showToast("Password must be at least 8 characters", "error");
 
     const sent = await api("/api/auth/otp/send", { identifier: email.trim() });
@@ -171,40 +163,32 @@ export default function LoginWizard({ next }: { next: string }) {
       purpose: "signup",
     });
     if (!verified) return;
-    // Phone verification step disabled for now — sign up directly on email proof.
-    // const sent = await api("/api/auth/otp/send", { identifier: phone.trim() });
-    // if (!sent) return;
-    // setPhoneCode("");
-    // setSignupStep("verify-phone");
+    setEmailProof(verified.proof as string);
+    // Email proven — now prove the phone number before the account is created.
+    const sent = await api("/api/auth/otp/send", { identifier: phone.trim() });
+    if (!sent) return;
+    setPhoneCode("");
+    setSignupStep("verify-phone");
+  };
+
+  const submitPhoneCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const verified = await api("/api/auth/otp/verify", {
+      identifier: phone.trim(),
+      code: phoneCode,
+      purpose: "signup",
+    });
+    if (!verified) return;
     const data = await api("/api/auth/signup", {
       name: name.trim(),
       email: email.trim(),
+      phone: phone.trim(),
       password: signupPassword,
-      emailProof: verified.proof as string,
+      emailProof,
+      phoneProof: verified.proof as string,
     });
     if (data) finish();
   };
-
-  // Disabled for now — Twilio is Trial-only (see note above). Uncomment and
-  // wire back into submitEmailCode's flow once phone OTP verification returns.
-  // const submitPhoneCode = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   const verified = await api("/api/auth/otp/verify", {
-  //     identifier: phone.trim(),
-  //     code: phoneCode,
-  //     purpose: "signup",
-  //   });
-  //   if (!verified) return;
-  //   const data = await api("/api/auth/signup", {
-  //     name: name.trim(),
-  //     email: email.trim(),
-  //     phone: phone.trim(),
-  //     password: signupPassword,
-  //     emailProof,
-  //     phoneProof: verified.proof as string,
-  //   });
-  //   if (data) finish();
-  // };
 
   const resend = (identifierValue: string) => async () => {
     const sent = await api("/api/auth/otp/send", { identifier: identifierValue });
@@ -314,7 +298,7 @@ export default function LoginWizard({ next }: { next: string }) {
       {mode === "signup" && signupStep === "details" && (
         <form onSubmit={submitDetails} className="space-y-3">
           <p className="text-sm text-slate-500 mb-1">
-            We&apos;ll verify your email with a one-time code.
+            We&apos;ll verify your email and phone with one-time codes.
           </p>
           <input
             value={name}
@@ -336,7 +320,15 @@ export default function LoginWizard({ next }: { next: string }) {
             required
             className={inputCls}
           />
-          {/* Phone field disabled for now — see note at top of file. */}
+          <input
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="Phone number"
+            autoComplete="tel"
+            required
+            className={inputCls}
+          />
           <PasswordInput
             value={signupPassword}
             onChange={(e) => setSignupPassword(e.target.value)}
@@ -354,7 +346,7 @@ export default function LoginWizard({ next }: { next: string }) {
 
       {mode === "signup" && signupStep === "verify-email" && (
         <form onSubmit={submitEmailCode}>
-          <h2 className="font-semibold mb-1">Verify your email</h2>
+          <h2 className="font-semibold mb-1">Step 1 of 2 · Verify your email</h2>
           <p className="text-sm text-slate-500 mb-4">
             Enter the 6-digit code we sent to <span className="text-slate-700">{email}</span>.
           </p>
@@ -374,7 +366,7 @@ export default function LoginWizard({ next }: { next: string }) {
             disabled={busy || emailCode.length !== 6}
             className={`${primaryBtn} mt-4`}
           >
-            {busy ? "Creating account…" : "Verify & create account"}
+            {busy ? "Sending code…" : "Verify email"}
           </button>
           <button
             type="button"
@@ -388,7 +380,6 @@ export default function LoginWizard({ next }: { next: string }) {
         </form>
       )}
 
-      {/* Phone verification step disabled for now — see note at top of file.
       {mode === "signup" && signupStep === "verify-phone" && (
         <form onSubmit={submitPhoneCode}>
           <h2 className="font-semibold mb-1">Step 2 of 2 · Verify phone</h2>
@@ -424,7 +415,7 @@ export default function LoginWizard({ next }: { next: string }) {
           </button>
           <BackLink onClick={() => setSignupStep("details")}>Edit my details</BackLink>
         </form>
-      )} */}
+      )}
       {toast}
     </div>
   );
