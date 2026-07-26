@@ -7,12 +7,11 @@
     "build": "next build",
     "start": "next start -p ${PORT:-3000}",
     "lint": "eslint",
-    "format": "prettier --write \"{app,components,screens,hooks,lib,utils,constants,types}/**/*.{ts,tsx}\""
+    "format": "prettier --write \"{app,components,screens,lib,utils,constants,types}/**/*.{ts,tsx}\""
   },
   "dependencies": {
     "@zxing/browser": "^0.2.1",
     "@zxing/library": "^0.23.0",
-    "clsx": "^2.1.1",
     "lucide-react": "^1.25.0",
     "next": "16.2.10",
     "pg": "^8.22.0",
@@ -20,8 +19,7 @@
     "razorpay": "^2.9.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "resend": "^6.18.0",
-    "tailwind-merge": "^3.6.0"
+    "resend": "^6.18.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
