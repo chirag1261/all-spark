@@ -98,7 +98,7 @@ export default function AdminUsersPanel({ users, currentUserId }: Props) {
       <div className="overflow-x-auto border border-slate-200 rounded-xl">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-slate-800 border-b border-slate-200 bg-slate-50">
+            <tr className="text-left text-white bg-[#1d4ed8]">
               <th className="px-4 py-3 font-medium">Name</th>
               <th className="px-4 py-3 font-medium">Role</th>
               <th className="px-4 py-3 font-medium">Permissions</th>

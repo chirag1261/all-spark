@@ -40,6 +40,11 @@ export default function SiteFooter() {
               </Link>
             </li>
             <li>
+              <Link href="/organizers" className="hover:text-white transition-colors">
+                Organizers
+              </Link>
+            </li>
+            <li>
               <Link href="/my-booking" className="hover:text-white transition-colors">
                 Find my booking
               </Link>

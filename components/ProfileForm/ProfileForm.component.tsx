@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { useRouter } from "next/navigation";
 
+import PasswordInput from "../PasswordInput";
 import { useToast } from "../Toast";
 
 interface Props {
@@ -19,6 +20,8 @@ interface Props {
 
 const inputCls =
   "w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#1d4ed8]";
+const passwordCls =
+  "w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus-within:border-[#1d4ed8]";
 
 export default function ProfileForm({ profile }: Props) {
   const router = useRouter();
@@ -150,27 +153,25 @@ export default function ProfileForm({ profile }: Props) {
         {profile.hasPassword && (
           <div>
             <Label>Current password</Label>
-            <input
-              type="password"
+            <PasswordInput
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               autoComplete="current-password"
               required
-              className={inputCls}
+              className={passwordCls}
             />
           </div>
         )}
         <div>
           <Label>New password (min 8 characters)</Label>
-          <input
-            type="password"
+          <PasswordInput
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             autoComplete="new-password"
             required
             minLength={8}
             maxLength={128}
-            className={inputCls}
+            className={passwordCls}
           />
         </div>
         <button

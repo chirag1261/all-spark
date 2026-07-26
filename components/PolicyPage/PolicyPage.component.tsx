@@ -55,7 +55,16 @@ export default function PolicyPage({ title, updated, intro, sections }: Props) {
         </div>
 
         <p className="text-xs text-slate-500 mt-12 border-t border-slate-200 pt-6">
-          Questions about this policy? Email{" "}
+          Questions about this policy? Visit{" "}
+          <a
+            href="https://utsavevents.live"
+            className="text-[#1d4ed8] hover:underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            utsavevents.live
+          </a>{" "}
+          or email{" "}
           <a href="mailto:utsavevents.tech@gmail.com" className="text-[#1d4ed8] hover:underline">
             utsavevents.tech@gmail.com
           </a>

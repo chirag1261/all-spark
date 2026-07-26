@@ -19,7 +19,10 @@ type ScanResult =
   | "NOT_CONFIRMED"
   | "NOT_FOUND"
   | "INVALID"
-  | "UNREADABLE";
+  | "UNREADABLE"
+  | "SESSION_EXPIRED"
+  | "FORBIDDEN"
+  | "SCAN_FAILED";
 
 interface Outcome {
   result: ScanResult;
@@ -39,6 +42,13 @@ const RESULT_COPY: Record<ScanResult, { title: string; ok: boolean }> = {
   NOT_FOUND: { title: "Ticket not found", ok: false },
   INVALID: { title: "Invalid / forged QR", ok: false },
   UNREADABLE: { title: "Unrecognized code", ok: false },
+  // Distinct from INVALID — the ticket was never actually evaluated. The
+  // scan API returns 200 for every real scan outcome (including a genuinely
+  // forged QR); a non-2xx here always means the gate device itself has a
+  // problem (expired session, no permission, bad request), not the ticket.
+  SESSION_EXPIRED: { title: "Session expired — sign in again", ok: false },
+  FORBIDDEN: { title: "You don't have permission to scan", ok: false },
+  SCAN_FAILED: { title: "Scan failed — try again", ok: false },
 };
 
 /** WebAudio feedback — no asset files. Rising two-tone for success, low buzz for failure. */
@@ -145,7 +155,12 @@ export default function ScanConsole({ events }: { events: EventOption[] }) {
         });
         const data = await res.json();
         if (!res.ok) {
-          record({ result: "INVALID", at: now });
+          // A non-2xx means the ticket was never evaluated — the gate device
+          // has a problem, not the QR. Report that distinctly instead of
+          // telling gate staff a valid ticket is "invalid / forged".
+          const result =
+            res.status === 401 ? "SESSION_EXPIRED" : res.status === 403 ? "FORBIDDEN" : "SCAN_FAILED";
+          record({ result, at: now });
         } else {
           record({ ...data, at: now });
           if (data.result === "VALID") refreshCounts();

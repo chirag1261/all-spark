@@ -78,7 +78,7 @@ export default function EventsCarousel({ events, compact = false }: Props) {
         href={`/events/${event.id}`}
         className="absolute inset-0 flex flex-col justify-end p-5 text-white"
       >
-        <span className="self-start mb-2 text-[10px] font-bold uppercase tracking-widest bg-[#1d4ed8]/90 text-[#ffffff] px-2.5 py-1 rounded-full">
+        <span className="self-start mb-2 whitespace-nowrap text-[10px] font-bold uppercase tracking-widest bg-[#1d4ed8]/90 text-[#ffffff] px-2.5 py-1 rounded-full">
           Now booking
         </span>
         <p className="font-heading text-xl font-semibold leading-snug drop-shadow wrap-break-word">

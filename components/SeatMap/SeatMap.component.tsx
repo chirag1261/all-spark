@@ -46,10 +46,10 @@ export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onT
           ))}
         </div>
 
-        {/* Stage */}
-        <div className="w-3/5 mb-4">
-          <div className="h-1.5 rounded-[50%] bg-linear-to-r from-transparent via-[#60a5fa] to-transparent shadow-[0_8px_24px_rgba(96,165,250,0.4)]" />
-          <p className="text-center text-[10px] text-slate-400 mt-1.5 tracking-widest uppercase">
+        {/* Stage — a big curved "screen" bar, BookMyShow-style */}
+        <div className="w-11/12 sm:w-4/5 mb-6">
+          <div className="h-3 sm:h-4 rounded-t-[100%] bg-linear-to-r from-transparent via-[#60a5fa] to-transparent shadow-[0_12px_36px_rgba(96,165,250,0.55)]" />
+          <p className="text-center text-xs sm:text-sm font-bold text-slate-300 mt-2.5 tracking-[0.3em] uppercase">
             Stage this way
           </p>
         </div>
@@ -86,7 +86,9 @@ export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onT
                         <div
                           key={gi}
                           className={`flex items-center gap-1 ${gi > 0 ? "ml-2.5 sm:ml-3.5" : ""} ${
-                            group.side ? "px-1 rounded bg-white/5" : ""
+                            group.side
+                              ? "px-1.5 py-1 rounded-md border border-white/25 bg-white/5"
+                              : ""
                           }`}
                         >
                           {group.seats.map((seat) => (

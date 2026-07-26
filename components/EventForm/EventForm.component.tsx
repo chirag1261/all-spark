@@ -65,6 +65,22 @@ function toLocalInput(iso: string): string {
 const inputCls =
   "w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#1d4ed8]";
 
+/**
+ * Suggests a clone title that's unmistakably distinct from the source —
+ * timestamped to the moment of cloning, not the original's creation date, so
+ * repeated clones of the same event never look identical in the events list.
+ */
+function suggestCloneTitle(title: string): string {
+  const stamp = new Date().toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    day: "numeric",
+    month: "short",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  return `${title} (Copy — ${stamp})`;
+}
+
 export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled }: Props) {
   const router = useRouter();
   const { confirm, dialog } = useConfirm();
@@ -73,7 +89,7 @@ export default function EventForm({ event, cloneFrom, onDone, cloudinaryEnabled 
   // clone-specific treatment below (never editing `event` in place here).
   const source = event ?? cloneFrom;
   const [title, setTitle] = useState(
-    event ? event.title : cloneFrom ? `${cloneFrom.title} (Copy)` : ""
+    event ? event.title : cloneFrom ? suggestCloneTitle(cloneFrom.title) : ""
   );
   const [tagline, setTagline] = useState(source?.tagline ?? "");
   const [description, setDescription] = useState(source?.description ?? "");

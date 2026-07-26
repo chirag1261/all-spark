@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 
+import { EVENT_GUIDELINES } from "@/constants";
 import { getEvent } from "@/lib/db";
 import { ticketQrDataUrl } from "@/lib/domain/tickets";
 import { Booking, TicketRecord } from "@/types";
@@ -210,6 +211,9 @@ export async function sendTicketEmail(
         ``,
         `Tickets (each person shows their own QR at the gate):`,
         ...ticketBlocksText,
+        ``,
+        `Event guidelines:`,
+        ...EVENT_GUIDELINES.map((g, i) => `${i + 1}. ${g}`),
       ].join("\n"),
       html: `
         <div style="background:#f5f8ff;padding:24px 0">
@@ -219,13 +223,24 @@ export async function sendTicketEmail(
             </div>
             <div style="padding:24px">
               <p style="margin:0 0 4px;font-size:15px;color:#0f172a">Hi ${booking.attendeeName}, your ${tickets.length > 1 ? `${tickets.length} tickets are` : "ticket is"} ready for <strong>${event?.title ?? "your event"}</strong>.</p>
-              <p style="margin:0 0 16px;font-size:13px;color:#64748b">${event ? `${eventDate(event.startsAt)} · ${event.venue}, ${event.city}` : ""}</p>
+              ${
+                event
+                  ? `<p style="margin:0 0 2px;font-size:13px;color:#64748b">${eventDate(event.startsAt)}</p>
+              <p style="margin:0 0 16px;font-size:13px;color:#64748b">${event.venue}, ${event.city}</p>`
+                  : ""
+              }
               ${ticketBlocksHtml.join("")}
               <table style="width:100%;font-size:14px;border-collapse:collapse;margin-top:8px">
                 <tr><td style="padding:6px 0;color:#64748b">Booking ID</td><td style="text-align:right;font-family:monospace;color:#0f172a">${booking.bookingId}</td></tr>
                 <tr><td style="padding:10px 0;color:#64748b;border-top:1px solid #e5eaf1">Amount paid</td><td style="text-align:right;border-top:1px solid #e5eaf1;font-size:16px;color:#0f172a"><strong>${amountInr}</strong></td></tr>
               </table>
               <p style="font-size:12px;color:#64748b;margin:20px 0 0">Each attendee shows their own QR at the venue gate. Keep ticket IDs private — anyone with an ID can view that ticket.</p>
+              <div style="margin-top:20px;padding-top:16px;border-top:1px solid #e5eaf1">
+                <p style="font-size:13px;font-weight:bold;color:#0f172a;margin:0 0 8px">Event guidelines</p>
+                <ol style="margin:0;padding-left:18px;font-size:12px;color:#64748b;line-height:1.7">
+                  ${EVENT_GUIDELINES.map((g) => `<li>${g}</li>`).join("")}
+                </ol>
+              </div>
             </div>
           </div>
         </div>`,

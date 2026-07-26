@@ -7,7 +7,7 @@ import Link from "next/link";
 
 import { MAX_SEATS_PER_BOOKING } from "@/constants";
 import { getSeatLayout, seatPrice, totalSeats } from "@/lib/domain/events";
-import { EventItem } from "@/types";
+import { AttendeeGender, EventItem } from "@/types";
 import { formatDateIST, inr } from "@/utils";
 
 import BackLink from "../BackLink";
@@ -92,6 +92,10 @@ export default function BookingFlow({
   const [lockedSeats, setLockedSeats] = useState<Set<string>>(new Set(initialLockedSeats));
   // seatId -> attendee name; the first seat defaults to the purchaser's name
   const [attendeeNames, setAttendeeNames] = useState<Record<string, string>>({});
+  // seatId -> optional extra contact details for that attendee
+  const [attendeePhones, setAttendeePhones] = useState<Record<string, string>>({});
+  const [attendeeEmails, setAttendeeEmails] = useState<Record<string, string>>({});
+  const [attendeeGenders, setAttendeeGenders] = useState<Record<string, AttendeeGender | "">>({});
   const [paying, setPaying] = useState(false);
   // True from the moment payment succeeds until the tickets are confirmed and
   // we've navigated / rendered them — drives the full-screen loader.
@@ -228,6 +232,9 @@ export default function BookingFlow({
     const attendees = selectedSeats.map((seatId, i) => ({
       seatId,
       name: nameForSeat(seatId, i).trim(),
+      phone: (attendeePhones[seatId] ?? "").trim(),
+      email: (attendeeEmails[seatId] ?? "").trim(),
+      gender: attendeeGenders[seatId] || undefined,
     }));
     const missing = attendees.find((a) => a.name.length < 2);
     if (missing) {
@@ -636,13 +643,13 @@ export default function BookingFlow({
             {selectedSeats.map((seatId, i) => (
               <div
                 key={seatId}
-                className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3"
+                className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-3"
               >
-                <span className="shrink-0 flex items-center justify-center whitespace-nowrap text-[11px] font-mono font-semibold tracking-wide text-[#1d4ed8] bg-[#1d4ed8]/10 border border-[#1d4ed8]/25 rounded-lg px-2.5 py-1.5">
+                <span className="shrink-0 flex items-center justify-center whitespace-nowrap text-[11px] font-mono font-semibold tracking-wide text-[#1d4ed8] bg-[#1d4ed8]/10 border border-[#1d4ed8]/25 rounded-lg px-2.5 py-1.5 mt-0.5">
                   {seatId}
                 </span>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2 mb-1">
+                <div className="flex-1 min-w-0 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
                     <span className="text-[10px] uppercase tracking-widest text-slate-400 truncate">
                       {tierBySeatId.get(seatId) ?? "Seat"}
                     </span>
@@ -661,9 +668,50 @@ export default function BookingFlow({
                     maxLength={80}
                     className="h-9 w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 text-sm outline-none focus:border-[#1d4ed8] focus:bg-white transition-colors"
                   />
+                  <input
+                    type="tel"
+                    value={attendeePhones[seatId] ?? ""}
+                    onChange={(e) =>
+                      setAttendeePhones((prev) => ({ ...prev, [seatId]: e.target.value }))
+                    }
+                    placeholder="Phone number (optional)"
+                    className="h-9 w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 text-sm outline-none focus:border-[#1d4ed8] focus:bg-white transition-colors"
+                  />
+                  <input
+                    type="email"
+                    value={attendeeEmails[seatId] ?? ""}
+                    onChange={(e) =>
+                      setAttendeeEmails((prev) => ({ ...prev, [seatId]: e.target.value }))
+                    }
+                    placeholder="Email address (optional)"
+                    className="h-9 w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 text-sm outline-none focus:border-[#1d4ed8] focus:bg-white transition-colors"
+                  />
+                  <select
+                    value={attendeeGenders[seatId] ?? ""}
+                    onChange={(e) =>
+                      setAttendeeGenders((prev) => ({
+                        ...prev,
+                        [seatId]: e.target.value as AttendeeGender | "",
+                      }))
+                    }
+                    className="h-9 w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 text-sm outline-none focus:border-[#1d4ed8] focus:bg-white transition-colors text-slate-700"
+                  >
+                    <option value="">Gender (optional)</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="boy">Boy</option>
+                    <option value="girl">Girl</option>
+                  </select>
                 </div>
               </div>
             ))}
+          </div>
+
+          <div className="flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 mt-4">
+            <AlertTriangle className="w-4.5 h-4.5 shrink-0 text-amber-700 mt-0.5" aria-hidden="true" />
+            <p className="text-sm text-amber-800">
+              Please carry a valid Government-issued ID proof for verification at the venue.
+            </p>
           </div>
 
           <div className="flex items-center justify-between mt-4 px-1 text-sm text-slate-600">
@@ -696,6 +744,14 @@ export default function BookingFlow({
       {/* ---- Step 3: review & pay ---- */}
       {step === "summary" && (
         <div className="mt-6 max-w-2xl">
+          <div className="flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 mb-4">
+            <AlertTriangle className="w-4.5 h-4.5 shrink-0 text-amber-700 mt-0.5" aria-hidden="true" />
+            <p className="text-sm text-amber-800">
+              Please verify your seat selection and attendee details before proceeding with
+              payment. Changes may not be possible after booking confirmation.
+            </p>
+          </div>
+
           <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-200">
               <p className="font-semibold">{event.title}</p>

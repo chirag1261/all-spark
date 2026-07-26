@@ -12,9 +12,12 @@ import { logger } from "@/lib/logger";
 export async function POST(req: NextRequest) {
   const user = await getCurrentAdmin();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (!hasPermission(user, "events")) {
+  if (!hasPermission(user, "events") && !hasPermission(user, "organizers")) {
     logger.be.warn("Upload denied — missing permission", { userId: user.id });
-    return NextResponse.json({ error: "Missing events permission" }, { status: 403 });
+    return NextResponse.json(
+      { error: "Missing events or organizers permission" },
+      { status: 403 }
+    );
   }
   if (!cloudinaryConfigured()) {
     logger.be.error("Upload attempted with Cloudinary not configured");

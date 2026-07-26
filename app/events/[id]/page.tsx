@@ -20,10 +20,10 @@ export async function generateMetadata({
 
   const where = `${formatDateIST(event.startsAt)} · ${event.venue}${event.city ? `, ${event.city}` : ""}`;
   const banner = event.imageUrl || event.gallery[0] || undefined;
-  const base = process.env.NEXT_PUBLIC_BASE_URL;
+  const base = process.env.NEXT_PUBLIC_BASE_URL || "https://utsavevents.live";
 
   return {
-    ...(base ? { metadataBase: new URL(base) } : {}),
+    metadataBase: new URL(base),
     title: `${event.title} — Utsav Events`,
     description: event.tagline || where,
     openGraph: {

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import SiteHeader from "@/components/SiteHeader";
 import WhatsAppShare from "@/components/WhatsAppShare";
+import { EVENT_GUIDELINES } from "@/constants";
 import { getBookingByBookingId, getEvent, getTicket } from "@/lib/db";
 import { ticketQrDataUrl } from "@/lib/domain/tickets";
 import { formatDateIST } from "@/utils";
@@ -75,14 +76,34 @@ export async function TicketScreen({ ticketId }: { ticketId: string }) {
 
         <div className="mt-5">
           <WhatsAppShare
+            imageUrl={event?.imageUrl || event?.gallery[0]}
             lines={[
               `🎫 *${event?.title ?? "Event ticket"}*`,
-              event ? `${formatDateIST(event.startsAt)} · ${event.venue}, ${event.city}` : "",
-              `Attendee: ${ticket.attendeeName}`,
-              `Seat: ${ticket.seatId}`,
-              `Ticket: ${ticket.ticketId}`,
+              event ? `📅 ${formatDateIST(event.startsAt)}` : "",
+              event ? `📍 ${event.venue}, ${event.city}` : "",
+              "",
+              "*Booking details*",
+              `👤 Attendee: ${ticket.attendeeName}`,
+              `💺 Seat: ${ticket.seatId}`,
+              `Ticket ID: ${ticket.ticketId}`,
+              "",
+              "*Event guidelines*",
+              ...EVENT_GUIDELINES.map((g, i) => `${i + 1}. ${g}`),
+              "",
+              "🔗 View / share this ticket:",
             ].filter(Boolean)}
           />
+        </div>
+
+        <div className="mt-5 bg-white border border-[#e5eaf1] rounded-2xl p-5">
+          <p className="text-sm font-semibold mb-2.5">Event guidelines</p>
+          <ol className="list-decimal list-inside space-y-1.5 text-xs text-slate-600 leading-relaxed marker:text-[#1d4ed8]">
+            {EVENT_GUIDELINES.map((g, i) => (
+              <li key={i} className="wrap-break-word">
+                {g}
+              </li>
+            ))}
+          </ol>
         </div>
 
         <p className="text-center mt-8">

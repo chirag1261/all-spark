@@ -48,3 +48,5 @@ export * from "./PasswordInput";
 export * from "./Reveal";
 export * from "./CountUp";
 export * from "./EventFactStrip";
+export * from "./OrganizerForm";
+export * from "./AdminOrganizersPanel";

@@ -20,6 +20,7 @@ export default async function SiteHeader() {
     { href: "/", label: "Home" },
     { href: "/events", label: "Events" },
     { href: "/about", label: "About" },
+    { href: "/organizers", label: "Organizers" },
     { href: "/contact", label: "Contact" },
   ];
 

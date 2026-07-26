@@ -241,6 +241,19 @@ const SCHEMA = `
     updated_at BIGINT NOT NULL
   );
   CREATE INDEX IF NOT EXISTS promo_codes_code_idx ON promo_codes (code);
+
+  CREATE TABLE IF NOT EXISTS organizers (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    role TEXT NOT NULL DEFAULT '',
+    bio TEXT NOT NULL DEFAULT '',
+    photo_url TEXT NOT NULL DEFAULT '',
+    display_order INTEGER NOT NULL DEFAULT 0,
+    published BOOLEAN NOT NULL DEFAULT true,
+    created_at BIGINT NOT NULL,
+    updated_at BIGINT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS organizers_display_order_idx ON organizers (display_order);
 `;
 
 async function ensureSchema(): Promise<void> {
