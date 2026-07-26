@@ -105,3 +105,26 @@ export function verifySignupProof(identifier: string, token: unknown): boolean {
   const actual = Buffer.from(sig, "utf8");
   return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
 }
+
+/**
+ * Password-reset proof: same short-lived signed-token construction as the
+ * signup proof, but with a distinct "reset:" domain tag so a signup proof can
+ * never be replayed as a reset proof (or vice versa) for the same identifier.
+ * Issued once an EXISTING account's contact OTP is verified; presented to
+ * /api/auth/password/reset to authorize setting a new password.
+ */
+export function resetProof(identifier: string): string {
+  const exp = String(Date.now() + SIGNUP_PROOF_TTL_MS);
+  return `${exp}.${proofSig(`reset:${identifier}:${exp}`)}`;
+}
+
+/** Verifies a password-reset proof for `identifier`. */
+export function verifyResetProof(identifier: string, token: unknown): boolean {
+  if (typeof token !== "string") return false;
+  const [exp, sig] = token.split(".");
+  if (!exp || !sig) return false;
+  if (Number(exp) < Date.now()) return false;
+  const expected = Buffer.from(proofSig(`reset:${identifier}:${exp}`), "utf8");
+  const actual = Buffer.from(sig, "utf8");
+  return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
+}
