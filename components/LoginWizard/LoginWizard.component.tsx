@@ -10,8 +10,10 @@ import { useToast } from "../Toast";
  * Customer auth wizard with two modes:
  *
  *  SIGN IN (existing accounts): enter email or phone → password (if set, with a
- *  "use a one-time code" switch) or OTP → signed in. Unknown identifiers are
- *  offered the Create-account flow instead (never auto-created).
+ *  "use a one-time code" switch and a "Forgot password?" link) or OTP → signed
+ *  in. Unknown identifiers are offered the Create-account flow instead (never
+ *  auto-created). Forgot-password branch: verify the account's own OTP
+ *  (purpose "reset") → set a new password (/api/auth/password/reset) → signed in.
  *
  *  CREATE ACCOUNT (new accounts): name + email + phone + password → verify the
  *  email OTP → verify the phone OTP → account created and signed in. Both
@@ -20,7 +22,7 @@ import { useToast } from "../Toast";
  */
 
 type Mode = "signin" | "signup";
-type SigninStep = "identifier" | "password" | "otp";
+type SigninStep = "identifier" | "password" | "otp" | "reset-otp" | "reset-password";
 type SignupStep = "details" | "verify-email" | "verify-phone";
 
 const inputCls =
@@ -44,6 +46,12 @@ export default function LoginWizard({ next }: { next: string }) {
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
+
+  // Forgot-password sub-flow (a branch of sign-in): verify the account's own
+  // OTP → set a new password → signed in.
+  const [resetCode, setResetCode] = useState("");
+  const [resetProofToken, setResetProofToken] = useState("");
+  const [newResetPassword, setNewResetPassword] = useState("");
 
   // Sign-up state
   const [signupStep, setSignupStep] = useState<SignupStep>("details");
@@ -88,6 +96,9 @@ export default function LoginWizard({ next }: { next: string }) {
     setPassword("");
     setCode("");
     setNotice(null);
+    setResetCode("");
+    setResetProofToken("");
+    setNewResetPassword("");
   };
 
   // ---------------- Sign in ----------------
@@ -135,6 +146,41 @@ export default function LoginWizard({ next }: { next: string }) {
   const submitSigninOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     const data = await api("/api/auth/otp/verify", { identifier, code, purpose: "login" });
+    if (data) finish();
+  };
+
+  // ---------------- Forgot password ----------------
+
+  const startForgotPassword = async () => {
+    const sent = await api("/api/auth/otp/send", { identifier });
+    if (!sent) return;
+    setNotice(`We sent a 6-digit code to ${identifier} to reset your password.`);
+    setResetCode("");
+    setSigninStep("reset-otp");
+  };
+
+  const submitResetOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const verified = await api("/api/auth/otp/verify", {
+      identifier,
+      code: resetCode,
+      purpose: "reset",
+    });
+    if (!verified) return;
+    setResetProofToken(verified.proof as string);
+    setNewResetPassword("");
+    setSigninStep("reset-password");
+  };
+
+  const submitNewPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newResetPassword.length < 8)
+      return showToast("Password must be at least 8 characters", "error");
+    const data = await api("/api/auth/password/reset", {
+      identifier,
+      proof: resetProofToken,
+      newPassword: newResetPassword,
+    });
     if (data) finish();
   };
 
@@ -261,6 +307,14 @@ export default function LoginWizard({ next }: { next: string }) {
           >
             Sign in with a one-time code instead
           </button>
+          <button
+            type="button"
+            onClick={startForgotPassword}
+            disabled={busy}
+            className="w-full mt-2 text-sm text-slate-600 hover:text-slate-800 disabled:opacity-40"
+          >
+            Forgot password?
+          </button>
           <BackLink onClick={() => setSigninStep("identifier")}>Use a different account</BackLink>
         </form>
       )}
@@ -289,6 +343,71 @@ export default function LoginWizard({ next }: { next: string }) {
             className="w-full mt-3 text-sm text-slate-600 hover:text-slate-800 disabled:opacity-40"
           >
             Resend code
+          </button>
+          <BackLink onClick={() => setSigninStep("identifier")}>Use a different account</BackLink>
+        </form>
+      )}
+
+      {/* ---- Forgot password: verify OTP ---- */}
+      {mode === "signin" && signinStep === "reset-otp" && (
+        <form onSubmit={submitResetOtp}>
+          <h2 className="font-semibold mb-1">Reset your password</h2>
+          <p className="text-sm text-slate-500 mb-4">{notice}</p>
+          <input
+            value={resetCode}
+            onChange={(e) => setResetCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            placeholder="6-digit code"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            required
+            pattern="\d{6}"
+            autoFocus
+            className={otpInputCls}
+          />
+          <button
+            type="submit"
+            disabled={busy || resetCode.length !== 6}
+            className={`${primaryBtn} mt-4`}
+          >
+            {busy ? "Verifying…" : "Verify & continue"}
+          </button>
+          <button
+            type="button"
+            onClick={resend(identifier)}
+            disabled={busy}
+            className="w-full mt-3 text-sm text-slate-600 hover:text-slate-800 disabled:opacity-40"
+          >
+            Resend code
+          </button>
+          <BackLink onClick={() => setSigninStep("password")}>Back to sign in</BackLink>
+        </form>
+      )}
+
+      {/* ---- Forgot password: set a new password ---- */}
+      {mode === "signin" && signinStep === "reset-password" && (
+        <form onSubmit={submitNewPassword}>
+          <h2 className="font-semibold mb-1">Set a new password</h2>
+          <p className="text-sm text-slate-500 mb-4">
+            Verified! Choose a new password for{" "}
+            <span className="text-slate-700">{identifier}</span>.
+          </p>
+          <PasswordInput
+            value={newResetPassword}
+            onChange={(e) => setNewResetPassword(e.target.value)}
+            placeholder="New password (min 8 characters)"
+            autoComplete="new-password"
+            required
+            minLength={8}
+            maxLength={128}
+            autoFocus
+            className={passwordCls}
+          />
+          <button
+            type="submit"
+            disabled={busy || newResetPassword.length < 8}
+            className={`${primaryBtn} mt-4`}
+          >
+            {busy ? "Saving…" : "Set password & sign in"}
           </button>
           <BackLink onClick={() => setSigninStep("identifier")}>Use a different account</BackLink>
         </form>

@@ -75,22 +75,25 @@ export async function TicketScreen({ ticketId }: { ticketId: string }) {
         </div>
 
         <div className="mt-5">
+          {/* Plain text + WhatsApp *bold* only — no emoji. Astral-plane emoji
+              get mangled to "�" by some WhatsApp share transports, while
+              WhatsApp's own bold markdown renders reliably. */}
           <WhatsAppShare
             imageUrl={event?.imageUrl || event?.gallery[0]}
             lines={[
-              `🎫 *${event?.title ?? "Event ticket"}*`,
-              event ? `📅 ${formatDateIST(event.startsAt)}` : "",
-              event ? `📍 ${event.venue}, ${event.city}` : "",
+              `*${event?.title ?? "Event ticket"}*`,
+              event ? formatDateIST(event.startsAt) : "",
+              event ? `${event.venue}, ${event.city}` : "",
               "",
               "*Booking details*",
-              `👤 Attendee: ${ticket.attendeeName}`,
-              `💺 Seat: ${ticket.seatId}`,
+              `Attendee: ${ticket.attendeeName}`,
+              `Seat: ${ticket.seatId}`,
               `Ticket ID: ${ticket.ticketId}`,
               "",
               "*Event guidelines*",
               ...EVENT_GUIDELINES.map((g, i) => `${i + 1}. ${g}`),
               "",
-              "🔗 View / share this ticket:",
+              "View / share this ticket:",
             ].filter(Boolean)}
           />
         </div>

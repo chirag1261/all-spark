@@ -115,8 +115,12 @@ export async function POST(req: NextRequest) {
   await saveBooking(confirmed);
 
   // Email failure must never fail a paid booking — the tickets are still
-  // shown on screen and the response says the email didn't go out.
-  const email = await sendTicketEmail(confirmed, tickets, req.nextUrl.origin);
+  // shown on screen and the response says the email didn't go out. Prefer the
+  // configured public base URL: on hosted platforms (Railway etc.) the request
+  // origin is the internal host (e.g. localhost:8080), which would make the
+  // "View ticket" links in the email unreachable.
+  const origin = process.env.NEXT_PUBLIC_BASE_URL ?? req.nextUrl.origin;
+  const email = await sendTicketEmail(confirmed, tickets, origin);
   await saveBooking({ ...confirmed, emailSent: email.sent });
 
   return NextResponse.json({

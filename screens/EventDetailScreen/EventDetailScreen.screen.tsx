@@ -129,14 +129,16 @@ export async function EventDetailScreen({ id }: { id: string }) {
             )}
 
             <div className="mt-3">
+              {/* Plain text + WhatsApp *bold* only — no emoji (astral-plane
+                  emoji get mangled to "�" by some WhatsApp share transports). */}
               <WhatsAppShare
                 imageUrl={event.imageUrl || event.gallery[0]}
                 lines={[
-                  `🎉 *${event.title}*`,
+                  `*${event.title}*`,
                   event.tagline || "",
-                  `📅 ${formatDateIST(event.startsAt)}`,
-                  `📍 ${event.venue}${event.city ? `, ${event.city}` : ""}`,
-                  soldOut ? "" : `🎫 Tickets from ${inr(fromPrice)}`,
+                  formatDateIST(event.startsAt),
+                  `${event.venue}${event.city ? `, ${event.city}` : ""}`,
+                  soldOut ? "" : `Tickets from ${inr(fromPrice)}`,
                   "",
                   "Book your seats:",
                 ].filter(Boolean)}

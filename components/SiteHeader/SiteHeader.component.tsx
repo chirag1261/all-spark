@@ -25,7 +25,7 @@ export default async function SiteHeader() {
   ];
 
   return (
-    <header className="sticky top-0 z-20 bg-[#1e3a8a]/95 backdrop-blur-xl border-b border-white/10 shadow-[0_6px_20px_rgba(15,23,42,0.18)]">
+    <header className="sticky top-0 z-20 bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] border-b border-white/10 shadow-[0_6px_20px_rgba(15,23,42,0.18)]">
       <div className="relative max-w-6xl mx-auto px-4 h-16 flex items-center gap-3">
         {/* Mobile hamburger — opens the left nav drawer */}
         <MobileMenu links={links} bookHref={bookHref} onDark />

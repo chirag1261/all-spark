@@ -6,18 +6,21 @@ import {
   createCustomerSessionToken,
   normalizeIdentifier,
 } from "@/lib/auth/customer";
-import { signupProof, verifyOtp } from "@/lib/auth/otp";
+import { resetProof, signupProof, verifyOtp } from "@/lib/auth/otp";
 import { getCustomerByIdentifier, updateCustomer } from "@/lib/db";
 import { clientKey, rateLimit } from "@/lib/http/ratelimit";
 
 /**
  * POST /api/auth/otp/verify — Body: { identifier, code, purpose? }
  *
- * Two purposes:
+ * Three purposes:
  *  - "signup": verifies one contact of a NEW account. Returns a short-lived
  *    signed proof; does NOT create an account or a session (the account is
  *    created by /api/auth/signup once both the email and phone proofs are
  *    presented). Channel-agnostic — called once for email, once for phone.
+ *  - "reset": verifies an EXISTING account's contact for a password reset.
+ *    Returns a short-lived signed proof; does NOT sign in (the new password
+ *    is set by /api/auth/password/reset, which signs the user in afterward).
  *  - "login" (default): verifies an EXISTING account's contact and signs in.
  *    Unknown identifiers are rejected — accounts are never auto-created here.
  */
@@ -41,7 +44,8 @@ export async function POST(req: NextRequest) {
   if (!/^\d{6}$/.test(code)) {
     return NextResponse.json({ error: "Enter the 6-digit code" }, { status: 400 });
   }
-  const purpose = body.purpose === "signup" ? "signup" : "login";
+  const purpose =
+    body.purpose === "signup" ? "signup" : body.purpose === "reset" ? "reset" : "login";
 
   const existing = await getCustomerByIdentifier(normalized.identifier);
 
@@ -53,7 +57,8 @@ export async function POST(req: NextRequest) {
       { status: 409 }
     );
   }
-  if (purpose === "login" && !existing) {
+  // Both login and reset act on an existing account.
+  if ((purpose === "login" || purpose === "reset") && !existing) {
     return NextResponse.json(
       { error: "No account found — please create one first." },
       { status: 404 }
@@ -77,6 +82,12 @@ export async function POST(req: NextRequest) {
   // ---- Signup: hand back a proof, no account/session yet. ----
   if (purpose === "signup") {
     return NextResponse.json({ ok: true, proof: signupProof(normalized.identifier) });
+  }
+
+  // ---- Reset: hand back a proof, no session yet (the password-reset endpoint
+  //      sets the new password and signs the user in). ----
+  if (purpose === "reset") {
+    return NextResponse.json({ ok: true, proof: resetProof(normalized.identifier) });
   }
 
   // ---- Login: mark this contact verified and sign in. ----

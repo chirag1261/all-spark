@@ -156,7 +156,7 @@ export default function AdminShell({ user, children }: Props) {
   useIdleLogout(idleLogout);
 
   const sidebar = (
-    <div className="flex h-full flex-col bg-[#1d4ed8]">
+    <div className="flex h-full flex-col bg-linear-to-b from-[#1d4ed8] to-[#3b82f6]">
       {/* Brand — wordmark only; the logo mark lives in the top-right profile dropdown */}
       <div className="h-16 flex items-center px-5 border-b border-white/15 shrink-0">
         <span className="font-heading text-xl font-semibold leading-none text-white">
@@ -284,7 +284,7 @@ export default function AdminShell({ user, children }: Props) {
       {/* Content column */}
       <div className="flex-1 min-w-0 flex flex-col">
         {/* Topbar */}
-        <header className="h-16 shrink-0 sticky top-0 z-30 flex items-center gap-3 px-4 sm:px-6 bg-[#1d4ed8] border-b border-white/15">
+        <header className="h-16 shrink-0 sticky top-0 z-30 flex items-center gap-3 px-4 sm:px-6 bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] border-b border-white/15">
           <button
             onClick={() => setOpen(true)}
             aria-label="Open menu"
