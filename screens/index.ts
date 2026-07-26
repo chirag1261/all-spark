@@ -25,3 +25,5 @@ export * from "./AdminScanScreen";
 export * from "./AdminAttendanceScreen";
 export * from "./AdminPromoCodesScreen";
 export * from "./AdminPromoCodeCreateScreen";
+export * from "./AdminOrganizersScreen";
+export * from "./OrganizersScreen";

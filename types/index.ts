@@ -198,9 +198,14 @@ export type AdminRole = "super_admin" | "admin" | "gate_controller";
 /** Scoped capabilities assignable to non-super-admin users. Super admins
  *  implicitly have all of them and can't be restricted. Gate controllers
  *  carry none — they can only reach the entry scanner. */
-export type AdminPermission = "events" | "bookings" | "promocodes";
+export type AdminPermission = "events" | "bookings" | "promocodes" | "organizers";
 
-export const ADMIN_PERMISSIONS: AdminPermission[] = ["events", "bookings", "promocodes"];
+export const ADMIN_PERMISSIONS: AdminPermission[] = [
+  "events",
+  "bookings",
+  "promocodes",
+  "organizers",
+];
 
 export interface AdminUser {
   id: string;
@@ -222,10 +227,19 @@ export interface AdminUser {
 /** AdminUser minus the password hash — the only shape ever sent to the client. */
 export type AdminUserPublic = Omit<AdminUser, "passwordHash">;
 
+export type AttendeeGender = "male" | "female" | "boy" | "girl";
+
+export const ATTENDEE_GENDERS: AttendeeGender[] = ["male", "female", "boy", "girl"];
+
 /** One person occupying one seat within a booking. */
 export interface BookingAttendee {
   seatId: string;
   name: string;
+  /** Optional extra contact details, captured per attendee when provided. */
+  phone?: string;
+  email?: string;
+  /** Optional — powers the dashboard's audience demographics breakdown. */
+  gender?: AttendeeGender;
 }
 
 export interface Booking {
@@ -274,6 +288,24 @@ export interface PromoCode {
   validFrom?: number | null; // epoch ms; null = no start bound
   validTo?: number | null; // epoch ms; null = no end bound
   active: boolean;
+  createdAt: number;
+  updatedAt: number;
+}
+
+// ---------- Organizers ----------
+
+/** A member of the organizing team, shown on the public Organizers page. */
+export interface Organizer {
+  id: string;
+  name: string;
+  /** e.g. "Founder & Director" — optional. */
+  role: string;
+  bio: string;
+  photoUrl: string;
+  /** Lower sorts first on the public page; ties break by creation order. */
+  displayOrder: number;
+  /** Hidden from the public page when false, still visible/editable in admin. */
+  published: boolean;
   createdAt: number;
   updatedAt: number;
 }

@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import Razorpay from "razorpay";
 
 import { getCurrentAdmin } from "@/lib/auth/admin";
-import { audit, getBooking, saveBooking, unbookSeats } from "@/lib/db";
+import { audit, getBooking, getEvent, saveBooking, unbookSeats } from "@/lib/db";
+import { refundEligibility } from "@/lib/domain/events";
 import { logger } from "@/lib/logger";
 import { inr } from "@/utils";
 
@@ -10,8 +11,15 @@ import { inr } from "@/utils";
  * POST /api/admin/refund
  * Body: { orderId }
  *
- * Issues a full Razorpay refund for a confirmed booking, marks it REFUNDED
- * and returns its seats to the available pool.
+ * Issues a Razorpay refund for a confirmed booking, marks it REFUNDED and
+ * returns its seats to the available pool. The refund amount follows the
+ * Refund & Cancellation Policy's cancellation window, measured against the
+ * event's start time: full refund more than 7 days out, 50% inside 7 days,
+ * and blocked entirely inside the final 24 hours (no partial refund either).
+ *
+ * NOTE: this is the customer-cancellation path. An organiser-cancelled event
+ * (always a full refund regardless of timing, per policy) isn't automated
+ * here — that's a manual exception for a super admin to apply directly.
  */
 export async function POST(req: NextRequest) {
   const user = await getCurrentAdmin();
@@ -45,12 +53,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Only confirmed bookings can be refunded" }, { status: 409 });
   }
 
+  const event = await getEvent(booking.eventId);
+  if (!event) return NextResponse.json({ error: "Event not found" }, { status: 404 });
+
+  const eligibility = refundEligibility(event.startsAt);
+  if (!eligibility.allowed) {
+    return NextResponse.json(
+      { error: "Refunds can no longer be requested — the event starts in less than 24 hours." },
+      { status: 409 }
+    );
+  }
+  const refundAmount = Math.round(booking.amount * eligibility.fraction);
+
   try {
     const razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
     const refund = await razorpay.payments.refund(booking.razorpayPaymentId, {
-      amount: booking.amount,
+      amount: refundAmount,
       speed: "normal",
-      notes: { bookingId: booking.bookingId, reason: "Admin-initiated refund" },
+      notes: {
+        bookingId: booking.bookingId,
+        reason: "Admin-initiated refund",
+        fraction: String(eligibility.fraction),
+      },
     });
 
     await saveBooking({ ...booking, status: "REFUNDED", razorpayRefundId: refund.id });
@@ -59,11 +83,16 @@ export async function POST(req: NextRequest) {
       "booking.refund",
       "booking",
       booking.bookingId,
-      `Refunded ${inr(booking.amount)} to ${booking.customerEmail} (seats ${booking.seatIds.join(", ")})`
+      `Refunded ${inr(refundAmount)} (${eligibility.fraction * 100}% of ${inr(booking.amount)}) to ${booking.customerEmail} (seats ${booking.seatIds.join(", ")})`
     );
-    logger.be.info("Refund issued", { bookingId: booking.bookingId, amount: booking.amount, refundId: refund.id });
+    logger.be.info("Refund issued", {
+      bookingId: booking.bookingId,
+      amount: refundAmount,
+      fraction: eligibility.fraction,
+      refundId: refund.id,
+    });
 
-    return NextResponse.json({ refunded: true, refundId: refund.id });
+    return NextResponse.json({ refunded: true, refundId: refund.id, amount: refundAmount });
   } catch (err) {
     console.error("Refund failed:", err);
     logger.be.error("Refund failed", { bookingId: body.orderId, err: String(err) });

@@ -7,6 +7,7 @@ import { useIdleLogout } from "@/lib/hooks/useIdleLogout";
 import {
   CalendarDays,
   ChevronDown,
+  Contact,
   ExternalLink,
   LayoutDashboard,
   LogOut,
@@ -71,6 +72,7 @@ const NAV: NavSection[] = [
         ],
       },
       { title: "Admin users", href: "/admin/users", icon: Users, roles: ["super_admin"] },
+      { title: "Organizers", href: "/admin/organizers", icon: Contact },
     ],
   },
   {

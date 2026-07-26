@@ -8,21 +8,21 @@ import { BOOKMYSHOW_LOGO_URL } from "@/constants";
  */
 export default function BookMyShowLink({ url }: { url: string }) {
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-[#e5eaf1] bg-white px-5 py-4">
+    <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-[#c4242c] px-5 py-4">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={BOOKMYSHOW_LOGO_URL}
         alt="BookMyShow"
         className="h-10 w-auto bg-white rounded px-1.5 py-1"
       />
-      <span className="text-sm text-slate-700 min-w-0">
+      <span className="text-sm text-white min-w-0">
         Some seats for this event are also available on BookMyShow.
       </span>
       <a
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="ml-auto inline-flex items-center gap-1.5 bg-[#c4242c] hover:bg-[#a91f26] text-white rounded-lg px-4 py-2 font-semibold text-sm transition-colors"
+        className="ml-auto inline-flex items-center gap-1.5 bg-white hover:bg-slate-100 text-[#c4242c] rounded-lg px-4 py-2 font-semibold text-sm transition-colors"
       >
         Book on BookMyShow
         <ExternalLink className="w-4 h-4" aria-hidden="true" />

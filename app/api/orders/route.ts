@@ -9,15 +9,17 @@ import { isValidSeatId, registrationState, seatPrice } from "@/lib/domain/events
 import { evaluatePromo } from "@/lib/domain/promocodes";
 import { releaseToken } from "@/lib/domain/tickets";
 import { clientKey, rateLimit } from "@/lib/http/ratelimit";
-import { BookingAttendee } from "@/types";
+import { ATTENDEE_GENDERS, AttendeeGender, BookingAttendee } from "@/types";
 
 /**
  * POST /api/orders
- * Body: { eventId: string, attendees: [{ seatId, name }, ...] }
+ * Body: { eventId: string, attendees: [{ seatId, name, phone?, email?, gender? }, ...] }
  *
- * Requires a signed-in customer — the booking's contact details come from
- * their VERIFIED profile, never from free-form input. Each seat carries its
- * attendee's name (individual QR tickets are minted on confirmation).
+ * Requires a signed-in customer — the booking's own contact (for receipts/
+ * login) comes from their VERIFIED profile, never from free-form input. Each
+ * seat carries its attendee's name (individual QR tickets are minted on
+ * confirmation) plus optional phone/email/gender captured for that attendee
+ * (gender only powers the admin dashboard's audience demographics).
  * Locks the seats, computes the amount SERVER-SIDE from the ticket categories
  * (client-sent amounts are never trusted), and creates a Razorpay order.
  */
@@ -86,7 +88,35 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    attendees.push({ seatId, name });
+    // Phone/email are optional extra contact details — validated loosely only
+    // when provided, never required.
+    const phoneRaw = typeof raw?.phone === "string" ? raw.phone.trim() : "";
+    if (phoneRaw && !/^[+0-9\s()-]{8,20}$/.test(phoneRaw)) {
+      return NextResponse.json(
+        { error: `Enter a valid phone number for seat ${seatId}, or leave it blank` },
+        { status: 400 }
+      );
+    }
+    const emailRaw = typeof raw?.email === "string" ? raw.email.trim() : "";
+    if (emailRaw && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailRaw)) {
+      return NextResponse.json(
+        { error: `Enter a valid email address for seat ${seatId}, or leave it blank` },
+        { status: 400 }
+      );
+    }
+    // Gender is optional — powers the dashboard's audience demographics only.
+    const genderRaw = typeof raw?.gender === "string" ? raw.gender.trim().toLowerCase() : "";
+    const gender = ATTENDEE_GENDERS.includes(genderRaw as AttendeeGender)
+      ? (genderRaw as AttendeeGender)
+      : undefined;
+
+    attendees.push({
+      seatId,
+      name,
+      ...(phoneRaw ? { phone: phoneRaw } : {}),
+      ...(emailRaw ? { email: emailRaw } : {}),
+      ...(gender ? { gender } : {}),
+    });
   }
   const seatIds = attendees.map((a) => a.seatId);
   if (new Set(seatIds).size !== seatIds.length) {

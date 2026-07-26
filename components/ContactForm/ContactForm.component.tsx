@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, MessageCircle } from "lucide-react";
 
 import { useToast } from "../Toast";
 
@@ -18,8 +18,13 @@ const inputCls =
   "w-full bg-white border border-[#e5eaf1] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#1d4ed8] transition-colors";
 const labelCls = "block text-xs uppercase tracking-widest text-slate-500 mb-1.5";
 
+interface Props {
+  /** E.164-ish phone (spaces ok), used to build the wa.me quick-support link. */
+  whatsappPhone: string;
+}
+
 /** Public "send us a message" form → POST /api/contact. */
-export default function ContactForm() {
+export default function ContactForm({ whatsappPhone }: Props) {
   const { showToast, toast } = useToast();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -28,6 +33,10 @@ export default function ContactForm() {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
+
+  const whatsappHref = `https://wa.me/${whatsappPhone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
+    "Hi! I need some help regarding Utsav Events."
+  )}`;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,9 +70,18 @@ export default function ContactForm() {
     return (
       <div className="bg-white border border-[#e5eaf1] rounded-3xl p-8 text-center">
         <h2 className="font-heading text-2xl font-semibold mb-2">Thank you!</h2>
-        <p className="text-slate-600">
+        <p className="text-slate-600 mb-6">
           Your message is on its way — we usually reply within 24 hours.
         </p>
+        <a
+          href={whatsappHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full flex items-center justify-center gap-2.5 bg-[#1fb457] hover:bg-[#189a4a] text-white font-semibold rounded-2xl px-5 py-3.5 text-center leading-snug transition-colors"
+        >
+          <MessageCircle className="w-5 h-5 shrink-0" aria-hidden="true" />
+          <span>Need immediate assistance? Chat with us on WhatsApp</span>
+        </a>
       </div>
     );
   }
@@ -154,6 +172,22 @@ export default function ContactForm() {
           {!busy && <ArrowRight className="w-4 h-4" aria-hidden="true" />}
         </button>
       </form>
+
+      <div className="flex items-center gap-3 my-5">
+        <span className="flex-1 h-px bg-[#e5eaf1]" />
+        <span className="text-xs uppercase tracking-widest text-slate-400">or</span>
+        <span className="flex-1 h-px bg-[#e5eaf1]" />
+      </div>
+
+      <a
+        href={whatsappHref}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="w-full flex items-center justify-center gap-2.5 bg-[#1fb457] hover:bg-[#189a4a] text-white font-semibold rounded-2xl px-5 py-3.5 text-center leading-snug transition-colors"
+      >
+        <MessageCircle className="w-5 h-5 shrink-0" aria-hidden="true" />
+        <span>Need immediate assistance? Chat with us on WhatsApp</span>
+      </a>
       {toast}
     </div>
   );

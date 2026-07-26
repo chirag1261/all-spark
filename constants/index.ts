@@ -16,6 +16,20 @@ export const ALLOWED_IMAGE_ACCEPT = ".webp,.avif,image/webp,image/avif";
 export const BOOKMYSHOW_LOGO_URL =
   "https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,h_40/utsav-events/bookmyshow-logo";
 
+/** Shown wherever a ticket is issued or shared — the ticket page, the
+ *  confirmation email, and the WhatsApp share message — so every attendee
+ *  sees the same entry rules regardless of which channel they read it on. */
+export const EVENT_GUIDELINES = [
+  "Arrive 30 minutes before the event start time.",
+  "Carry this e-ticket (print or digital) and a valid photo Govt ID for entry.",
+  "No outside food, beverages, alcohol, or smoking allowed.",
+  "Dress code: Traditional / ethnic wear preferred.",
+  "Photography with flash is not permitted during the event.",
+  "Right of admission reserved. Organizers not liable for loss or injury.",
+  "Any person attending the event cannot use the content, photos, or videos for personal, promotional, or marketing purposes.",
+  "This is a Plastic-Free Zone – please avoid bringing single-use plastic items and support a cleaner, greener environment.",
+] as const;
+
 /** Validates an upload's format + size. Returns an error message, or null if OK. */
 export function validateImageUpload(file: {
   name: string;

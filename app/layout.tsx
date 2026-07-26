@@ -14,6 +14,7 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://utsavevents.live"),
   title: "Utsav Events — Sacred Experiences in Music & Devotion",
   description:
     "Bangalore-based cultural organisation bringing communities together through the timeless power of music and devotion. Book seats for Rudrotsav and more.",

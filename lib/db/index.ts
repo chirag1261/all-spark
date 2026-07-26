@@ -12,6 +12,7 @@ import {
   Booking,
   Customer,
   EventItem,
+  Organizer,
   OtpChallenge,
   PromoCode,
   TicketRecord,
@@ -1097,6 +1098,98 @@ export async function incrementPromoRedemption(code: string): Promise<void> {
     "UPDATE promo_codes SET redemption_count = redemption_count + 1, updated_at = $2 WHERE code = $1",
     [code.trim().toUpperCase(), Date.now()]
   );
+}
+
+// ---------- Organizers ----------
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToOrganizer(r: any): Organizer {
+  return {
+    id: r.id,
+    name: r.name,
+    role: r.role,
+    bio: r.bio,
+    photoUrl: r.photo_url,
+    displayOrder: r.display_order,
+    published: r.published,
+    createdAt: Number(r.created_at),
+    updatedAt: Number(r.updated_at),
+  };
+}
+
+/** All organizers (any published state) — admin panel. Ordered for editing convenience. */
+export async function listOrganizers(): Promise<Organizer[]> {
+  await initOnce();
+  const { rows } = await db().query(
+    "SELECT * FROM organizers ORDER BY display_order ASC, created_at ASC"
+  );
+  return rows.map(rowToOrganizer);
+}
+
+/** Published organizers only, in display order — the public Organizers page. */
+export async function listPublishedOrganizers(): Promise<Organizer[]> {
+  await initOnce();
+  const { rows } = await db().query(
+    "SELECT * FROM organizers WHERE published = true ORDER BY display_order ASC, created_at ASC"
+  );
+  return rows.map(rowToOrganizer);
+}
+
+export async function getOrganizerById(id: string): Promise<Organizer | undefined> {
+  await initOnce();
+  const { rows } = await db().query("SELECT * FROM organizers WHERE id = $1", [id]);
+  return rows[0] ? rowToOrganizer(rows[0]) : undefined;
+}
+
+export async function createOrganizer(organizer: Organizer): Promise<void> {
+  await initOnce();
+  await db().query(
+    `INSERT INTO organizers (
+      id, name, role, bio, photo_url, display_order, published, created_at, updated_at
+    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+    [
+      organizer.id,
+      organizer.name,
+      organizer.role,
+      organizer.bio,
+      organizer.photoUrl,
+      organizer.displayOrder,
+      organizer.published,
+      organizer.createdAt,
+      organizer.updatedAt,
+    ]
+  );
+}
+
+export async function updateOrganizer(
+  id: string,
+  patch: Partial<Organizer>
+): Promise<Organizer | undefined> {
+  await initOnce();
+  const existing = await getOrganizerById(id);
+  if (!existing) return undefined;
+  const merged: Organizer = { ...existing, ...patch, id, updatedAt: Date.now() };
+  await db().query(
+    `UPDATE organizers SET
+      name=$2, role=$3, bio=$4, photo_url=$5, display_order=$6, published=$7, updated_at=$8
+     WHERE id=$1`,
+    [
+      id,
+      merged.name,
+      merged.role,
+      merged.bio,
+      merged.photoUrl,
+      merged.displayOrder,
+      merged.published,
+      merged.updatedAt,
+    ]
+  );
+  return merged;
+}
+
+export async function deleteOrganizer(id: string): Promise<void> {
+  await initOnce();
+  await db().query("DELETE FROM organizers WHERE id = $1", [id]);
 }
 
 // ---------- Customers (public site accounts) ----------

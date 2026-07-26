@@ -5,9 +5,10 @@ import { Share2 } from "lucide-react";
 interface Props {
   lines: string[];
   /** When set, shared via the Web Share API with the image file attached
-   *  (WhatsApp shows the banner itself, not just a link preview). Falls
-   *  back to the text+link wa.me share on desktop or if the fetch/share
-   *  fails. */
+   *  (WhatsApp shows the image itself — event banner, ticket QR, etc. — not
+   *  just a link preview). Falls back to the text+link wa.me share on
+   *  desktop or if the fetch/share fails. Accepts a hosted URL or a `data:`
+   *  URI (e.g. a QR code data URL) — both are fetchable as a Blob. */
   imageUrl?: string;
 }
 
@@ -20,7 +21,8 @@ export default function WhatsAppShare({ lines, imageUrl }: Props) {
       try {
         const res = await fetch(imageUrl);
         const blob = await res.blob();
-        const file = new File([blob], "banner.jpg", { type: blob.type || "image/jpeg" });
+        const ext = blob.type.split("/")[1] || "jpg";
+        const file = new File([blob], `share.${ext}`, { type: blob.type || "image/jpeg" });
         if (navigator.canShare({ files: [file] })) {
           await navigator.share({ files: [file], text });
           return;

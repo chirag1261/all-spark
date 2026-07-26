@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { ADMIN_PERMISSIONS, AdminPermission, AdminRole, AdminUserPublic } from "@/types";
 
 import { useConfirm } from "../ConfirmDialog";
+import PasswordInput from "../PasswordInput";
 import { useToast } from "../Toast";
 
 interface Props {
@@ -20,6 +21,7 @@ const PERMISSION_LABELS: Partial<Record<AdminPermission, { label: string; hint: 
   events: { label: "Events", hint: "Create, edit, publish and delete events" },
   bookings: { label: "Bookings", hint: "View bookings, export CSV, cancel pending ones" },
   promocodes: { label: "Promo codes", hint: "Create, edit and deactivate promo codes" },
+  organizers: { label: "Organizers", hint: "Add, edit and remove the public Organizers page team" },
 };
 
 const ROLE_LABELS: Record<AdminRole, string> = {
@@ -30,6 +32,8 @@ const ROLE_LABELS: Record<AdminRole, string> = {
 
 const inputCls =
   "w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#1d4ed8]";
+const passwordCls =
+  "w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus-within:border-[#1d4ed8]";
 
 export default function UserForm({ user, currentUserId, onDone }: Props) {
   const router = useRouter();
@@ -152,15 +156,14 @@ export default function UserForm({ user, currentUserId, onDone }: Props) {
         <div>
           <Label required={!user}>Password</Label>
           {resetting ? (
-            <input
-              type="password"
+            <PasswordInput
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               minLength={8}
               required={!user}
               autoComplete="new-password"
               placeholder={user ? "Set a new password (min 8 chars)" : ""}
-              className={inputCls}
+              className={passwordCls}
             />
           ) : (
             <button

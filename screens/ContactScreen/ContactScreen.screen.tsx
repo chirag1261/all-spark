@@ -81,7 +81,7 @@ export async function ContactScreen() {
           </div>
 
           {/* Right — message form */}
-          <ContactForm />
+          <ContactForm whatsappPhone={CONTACT.phone} />
         </div>
       </main>
       <SiteFooter />

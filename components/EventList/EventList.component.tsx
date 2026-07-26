@@ -124,21 +124,21 @@ export default function EventList({
                     </span>
                   </div>
                   {soldOut ? (
-                    <span className="absolute top-3 right-3 bg-red-600 text-white text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full">
+                    <span className="absolute top-3 right-3 whitespace-nowrap bg-red-600 text-white text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full">
                       Sold out
                     </span>
                   ) : fillingFast ? (
-                    <span className="absolute top-3 right-3 inline-flex items-center gap-1 bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] text-white text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full animate-[neon-pulse_2s_ease-in-out_infinite]">
+                    <span className="absolute top-3 right-3 inline-flex items-center gap-1 whitespace-nowrap bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] text-white text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full animate-[neon-pulse_2s_ease-in-out_infinite]">
                       <Zap className="w-3 h-3" aria-hidden="true" /> Filling fast
                     </span>
                   ) : null}
                   {reg === "upcoming" && (
-                    <span className="absolute top-3 left-3 bg-sky-500/90 backdrop-blur text-white text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full">
+                    <span className="absolute top-3 left-3 whitespace-nowrap bg-sky-500/90 backdrop-blur text-white text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full">
                       Opens soon
                     </span>
                   )}
                   {reg === "closed" && !soldOut && (
-                    <span className="absolute top-3 left-3 bg-slate-100 backdrop-blur text-slate-700 text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full">
+                    <span className="absolute top-3 left-3 whitespace-nowrap bg-slate-100 backdrop-blur text-slate-700 text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full">
                       Closed
                     </span>
                   )}

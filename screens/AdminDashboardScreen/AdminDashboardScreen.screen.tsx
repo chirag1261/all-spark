@@ -12,8 +12,37 @@ import {
   sweepStalePending,
 } from "@/lib/db";
 import { registrationState, totalSeats } from "@/lib/domain/events";
-import { Booking } from "@/types";
+import { ATTENDEE_GENDERS, AttendeeGender, Booking } from "@/types";
 import { inr } from "@/utils";
+
+const GENDER_LABELS: Record<AttendeeGender, string> = {
+  male: "Male",
+  female: "Female",
+  boy: "Boy",
+  girl: "Girl",
+};
+const GENDER_TONES: Record<AttendeeGender, string> = {
+  male: "bg-sky-500",
+  female: "bg-fuchsia-500",
+  boy: "bg-cyan-500",
+  girl: "bg-rose-500",
+};
+
+/** Attendee gender tally across every confirmed booking — powers the
+ *  dashboard's audience demographics breakdown. Gender is optional per
+ *  attendee, so "Not specified" is tracked separately, not silently dropped. */
+function genderBreakdown(bookings: Booking[]) {
+  const counts: Record<AttendeeGender, number> = { male: 0, female: 0, boy: 0, girl: 0 };
+  let unspecified = 0;
+  for (const b of bookings) {
+    if (b.status !== "CONFIRMED") continue;
+    for (const a of b.attendees) {
+      if (a.gender && a.gender in counts) counts[a.gender]++;
+      else unspecified++;
+    }
+  }
+  return { counts, unspecified, total: Object.values(counts).reduce((s, n) => s + n, 0) + unspecified };
+}
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const WEEK_MS = 7 * DAY_MS;
@@ -121,6 +150,7 @@ export async function AdminDashboardScreen() {
   const trends = weekTrends(bookings);
   const daily = dailyRevenue(bookings, 7);
   const weekly = weeklyRevenue(bookings, 8);
+  const demographics = genderBreakdown(bookings);
 
   return (
     <AdminShell user={{ name: currentUser.name, role: currentUser.role }}>
@@ -187,6 +217,11 @@ export async function AdminDashboardScreen() {
         />
       </div>
 
+      {/* Audience demographics — gender is optional per attendee at checkout */}
+      <div className="mb-10">
+        <DemographicsReport demographics={demographics} />
+      </div>
+
       {/* Audit trail: every admin action touching money, bookings or accounts */}
       {currentUser.role === "super_admin" && (
         <section className="mt-12">
@@ -250,6 +285,53 @@ function Stat({
         )}
       </div>
       {sub && <p className="text-xs text-slate-500 mt-0.5">{sub}</p>}
+    </div>
+  );
+}
+
+function DemographicsReport({
+  demographics,
+}: {
+  demographics: { counts: Record<AttendeeGender, number>; unspecified: number; total: number };
+}) {
+  const { counts, unspecified, total } = demographics;
+  const rows: { label: string; value: number; tone: string }[] = [
+    ...ATTENDEE_GENDERS.map((g) => ({ label: GENDER_LABELS[g], value: counts[g], tone: GENDER_TONES[g] })),
+    { label: "Not specified", value: unspecified, tone: "bg-slate-300" },
+  ];
+  const max = Math.max(1, ...rows.map((r) => r.value));
+
+  return (
+    <div className="bg-white border border-slate-200 rounded-xl p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-semibold flex items-center gap-1.5">
+          Audience demographics
+          <InfoTip text="Gender is an optional field attendees can fill in at checkout — counted across all confirmed bookings." />
+        </h3>
+        <span className="text-sm font-bold">{total} attendee{total === 1 ? "" : "s"}</span>
+      </div>
+      {total === 0 ? (
+        <p className="text-sm text-slate-700 text-center py-6">
+          No attendee data yet — this fills in as bookings come through.
+        </p>
+      ) : (
+        <div className="space-y-2.5">
+          {rows.map((r) => (
+            <div key={r.label} className="flex items-center gap-3">
+              <span className="w-28 shrink-0 text-xs text-slate-600">{r.label}</span>
+              <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${r.tone}`}
+                  style={{ width: `${(r.value / max) * 100}%` }}
+                />
+              </div>
+              <span className="w-24 shrink-0 text-xs font-semibold text-right">
+                {r.value} ({total > 0 ? Math.round((r.value / total) * 100) : 0}%)
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
