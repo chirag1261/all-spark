@@ -195,7 +195,7 @@ export default function LoginWizard({ next }: { next: string }) {
       return showToast("Enter a valid phone number", "error");
     if (signupPassword.length < 8) return showToast("Password must be at least 8 characters", "error");
 
-    const sent = await api("/api/auth/otp/send", { identifier: email.trim() });
+    const sent = await api("/api/auth/otp/send", { identifier: email.trim(), purpose: "signup" });
     if (!sent) return;
     setEmailCode("");
     setSignupStep("verify-email");
@@ -211,7 +211,7 @@ export default function LoginWizard({ next }: { next: string }) {
     if (!verified) return;
     setEmailProof(verified.proof as string);
     // Email proven — now prove the phone number before the account is created.
-    const sent = await api("/api/auth/otp/send", { identifier: phone.trim() });
+    const sent = await api("/api/auth/otp/send", { identifier: phone.trim(), purpose: "signup" });
     if (!sent) return;
     setPhoneCode("");
     setSignupStep("verify-phone");
@@ -236,8 +236,11 @@ export default function LoginWizard({ next }: { next: string }) {
     if (data) finish();
   };
 
-  const resend = (identifierValue: string) => async () => {
-    const sent = await api("/api/auth/otp/send", { identifier: identifierValue });
+  const resend = (identifierValue: string, purpose?: "signup") => async () => {
+    const sent = await api(
+      "/api/auth/otp/send",
+      purpose ? { identifier: identifierValue, purpose } : { identifier: identifierValue }
+    );
     if (sent) showToast("New code sent", "success");
   };
 
@@ -489,7 +492,7 @@ export default function LoginWizard({ next }: { next: string }) {
           </button>
           <button
             type="button"
-            onClick={resend(email.trim())}
+            onClick={resend(email.trim(), "signup")}
             disabled={busy}
             className="w-full mt-3 text-sm text-slate-600 hover:text-slate-800 disabled:opacity-40"
           >
@@ -526,7 +529,7 @@ export default function LoginWizard({ next }: { next: string }) {
           </button>
           <button
             type="button"
-            onClick={resend(phone.trim())}
+            onClick={resend(phone.trim(), "signup")}
             disabled={busy}
             className="w-full mt-3 text-sm text-slate-600 hover:text-slate-800 disabled:opacity-40"
           >

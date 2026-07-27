@@ -291,6 +291,18 @@ function RowEditor({
         />
         Block row
       </label>
+      <label
+        className="flex items-center gap-1 text-sm text-slate-600 px-1"
+        title="Reserved for the BookMyShow channel — off-sale here, shown as a black seat"
+      >
+        <input
+          type="checkbox"
+          checked={Boolean(row.bookMyShowOnly)}
+          onChange={(e) => patch((d) => (d.bookMyShowOnly = e.target.checked || undefined))}
+          className="accent-black"
+        />
+        BookMyShow only
+      </label>
 
       <span className="text-slate-700">·</span>
 
@@ -338,6 +350,26 @@ function RowEditor({
             className={`text-sm px-1 rounded ${seg.blocked ? "text-red-700" : "text-slate-700 hover:text-slate-900"}`}
           >
             {seg.blocked ? "blocked" : "open"}
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              patch(
+                (d) =>
+                  (d.segments[gi] = {
+                    ...d.segments[gi],
+                    bookMyShowOnly: !d.segments[gi].bookMyShowOnly,
+                  })
+              )
+            }
+            title={
+              seg.bookMyShowOnly
+                ? "Reserved for BookMyShow — click to release"
+                : "Click to reserve this block for the BookMyShow channel"
+            }
+            className={`text-sm px-1 rounded ${seg.bookMyShowOnly ? "font-semibold text-black" : "text-slate-700 hover:text-slate-900"}`}
+          >
+            {seg.bookMyShowOnly ? "BMS only" : "BMS"}
           </button>
           {row.segments.length > 1 && (
             <button
