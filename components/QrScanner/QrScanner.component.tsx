@@ -36,18 +36,38 @@ export default function QrScanner({ onDecode, paused }: Props) {
       if (result) onDecodeRef.current(result.getText());
     };
 
-    // Prefer the rear camera (best for scanning), but fall back to whatever
-    // camera exists — laptops/desktops usually only have a front-facing one,
-    // and requesting an exact "environment" facing mode can hard-fail there.
-    const attempts: MediaStreamConstraints[] = [
-      { video: { facingMode: { ideal: "environment" } } },
-      { video: true },
-    ];
-
     (async () => {
       if (!navigator.mediaDevices?.getUserMedia) {
         throw new DOMException("Camera requires a secure context", "SecurityError");
       }
+
+      // Phones with multiple rear lenses can hand the plain "environment"
+      // facingMode to the ultra-wide/telephoto camera instead of the main
+      // one, which is too zoomed-out to read a ticket QR. Probe for a
+      // labeled main rear camera and pin to it by deviceId when one exists.
+      let preferredDeviceId: string | undefined;
+      try {
+        const probe = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: "environment" } },
+        });
+        probe.getTracks().forEach((t) => t.stop());
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const rear = devices.filter((d) => d.kind === "videoinput" && /back|rear/i.test(d.label));
+        const primary = rear.find((d) => !/ultra ?wide|wide angle|tele(photo)?/i.test(d.label));
+        preferredDeviceId = (primary ?? rear[0])?.deviceId;
+      } catch {
+        /* probing failed — fall through to the plain facingMode attempts below */
+      }
+
+      // Fall back through progressively looser constraints — laptops/desktops
+      // usually only have a front-facing camera, and requesting an exact
+      // "environment" facing mode can hard-fail there.
+      const attempts: MediaStreamConstraints[] = [
+        ...(preferredDeviceId ? [{ video: { deviceId: { exact: preferredDeviceId } } }] : []),
+        { video: { facingMode: { ideal: "environment" } } },
+        { video: true },
+      ];
+
       let lastErr: unknown;
       for (const constraints of attempts) {
         try {

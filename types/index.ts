@@ -32,12 +32,16 @@ export interface SeatSegment {
   side?: "L" | "R";
   /** Whole segment off-sale (e.g. the balcony side wings held back). */
   blocked?: boolean;
+  /** Reserved for the BookMyShow channel — off-sale here, shown distinctly. */
+  bookMyShowOnly?: boolean;
 }
 
 export interface LayoutRow {
   label: string; // "A".."Z", unique within its section
   tierId: string; // price tier for this row's seats
   blocked?: boolean; // entire row off-sale (e.g. front rows A/B)
+  /** Entire row reserved for the BookMyShow channel — off-sale here. */
+  bookMyShowOnly?: boolean;
   segments: SeatSegment[]; // ordered left → right
 }
 
@@ -167,6 +171,8 @@ export interface Seat {
   tierName: string;
   price: number; // paise
   blocked: boolean;
+  /** Reserved for the BookMyShow channel — implies `blocked`, styled distinctly. */
+  bookMyShowOnly: boolean;
 }
 
 export type SeatState = "available" | "locked" | "booked";

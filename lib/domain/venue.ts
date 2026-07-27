@@ -112,6 +112,7 @@ function fromLayout(layout: EventLayout, extraBlocked: string[]): Venue {
         for (let i = 0; i < seg.count; i++) {
           const n = seg.side ? (sideCounters[seg.side] += 1) : (center += 1);
           const id = makeSeatId(section.id, row.label, seg.side, n);
+          const bookMyShowOnly = Boolean(row.bookMyShowOnly) || Boolean(seg.bookMyShowOnly);
           seats.push({
             id,
             sectionId: section.id,
@@ -121,7 +122,11 @@ function fromLayout(layout: EventLayout, extraBlocked: string[]): Venue {
             tierId: tier.id,
             tierName: tier.name,
             price: tier.price,
-            blocked: Boolean(row.blocked) || Boolean(seg.blocked) || blockedSet.has(id),
+            // BookMyShow-reserved seats are off-sale here too — they just
+            // carry the extra flag so the seat map can style/label them
+            // distinctly instead of looking like a generic sold-out seat.
+            blocked: Boolean(row.blocked) || Boolean(seg.blocked) || blockedSet.has(id) || bookMyShowOnly,
+            bookMyShowOnly,
           });
         }
         return { side: seg.side, seats };
@@ -159,6 +164,7 @@ function fromCategories(event: EventItem): Venue {
           tierName: cat.name,
           price: cat.price,
           blocked: blockedSet.has(id),
+          bookMyShowOnly: false,
         });
       }
       // Split into two groups at the midpoint so a center aisle renders.

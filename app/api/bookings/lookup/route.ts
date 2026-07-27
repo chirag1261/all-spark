@@ -6,6 +6,7 @@ import {
   listTicketsForBooking,
   sweepStalePending,
 } from "@/lib/db";
+import { buildVenue } from "@/lib/domain/venue";
 import { clientKey, rateLimit } from "@/lib/http/ratelimit";
 
 /**
@@ -44,6 +45,9 @@ export async function POST(req: NextRequest) {
   const event = await getEvent(booking.eventId);
   const tickets =
     booking.status === "CONFIRMED" ? await listTicketsForBooking(booking.bookingId) : [];
+  // Same layout the booking page's seat map is built from — lets the client
+  // render a diagram highlighting these seats instead of a bare ID list.
+  const sections = event ? buildVenue(event).sections : [];
   return NextResponse.json({
     bookingId: booking.bookingId,
     status: booking.status,
@@ -54,5 +58,6 @@ export async function POST(req: NextRequest) {
     amount: booking.amount,
     attendeeName: booking.attendeeName,
     tickets: tickets.map((t) => ({ ticketId: t.ticketId, seatId: t.seatId, name: t.attendeeName })),
+    sections,
   });
 }

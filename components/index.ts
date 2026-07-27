@@ -50,3 +50,4 @@ export * from "./CountUp";
 export * from "./EventFactStrip";
 export * from "./OrganizerForm";
 export * from "./AdminOrganizersPanel";
+export * from "./BookedSeatsDiagram";

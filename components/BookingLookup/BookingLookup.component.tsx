@@ -4,9 +4,11 @@ import { useState } from "react";
 
 import Link from "next/link";
 
+import { VenueSection } from "@/lib/domain/venue";
 import { BookingStatus } from "@/types";
 import { formatDateIST, inr } from "@/utils";
 
+import BookedSeatsDiagram from "../BookedSeatsDiagram";
 import { useToast } from "../Toast";
 
 interface LookupResult {
@@ -19,6 +21,7 @@ interface LookupResult {
   amount: number;
   attendeeName: string;
   tickets: { ticketId: string; seatId: string; name: string }[];
+  sections: VenueSection[];
 }
 
 const STATUS_COPY: Record<BookingStatus, { label: string; cls: string; hint: string }> = {
@@ -130,6 +133,9 @@ export default function BookingLookup() {
               {result.attendeeName} · Seats {result.seats.join(", ")} · {inr(result.amount)}
             </p>
           </div>
+          {result.sections.length > 0 && result.seats.length > 0 && (
+            <BookedSeatsDiagram sections={result.sections} bookedSeatIds={result.seats} />
+          )}
           {result.tickets.length > 0 && (
             <div className="space-y-2">
               {result.tickets.map((t) => (
