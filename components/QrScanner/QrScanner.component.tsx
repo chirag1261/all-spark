@@ -104,10 +104,17 @@ export default function QrScanner({ onDecode, paused }: Props) {
   return (
     <div className="relative aspect-square w-full max-w-sm mx-auto overflow-hidden rounded-2xl bg-black">
       <video ref={videoRef} className="h-full w-full object-cover" playsInline muted />
-      {/* Framing reticle */}
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-        <div className="h-2/3 w-2/3 rounded-2xl border-2 border-white/70 shadow-[0_0_0_9999px_rgba(0,0,0,0.35)]" />
-      </div>
+      {/* Framing reticle — hidden while paused, since there's no live feed to frame */}
+      {!paused && (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="h-2/3 w-2/3 rounded-2xl border-2 border-white/70 shadow-[0_0_0_9999px_rgba(0,0,0,0.35)]" />
+        </div>
+      )}
+      {paused && !error && (
+        <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-white/70">
+          Camera stopped
+        </div>
+      )}
       {error && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/80 p-6 text-center text-sm text-red-700">
           {error}

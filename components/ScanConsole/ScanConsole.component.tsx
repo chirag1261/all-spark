@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { CheckCircle2, Loader2, XCircle } from "lucide-react";
+import { Camera, CheckCircle2, Keyboard, Loader2, Power, XCircle } from "lucide-react";
 import dynamic from "next/dynamic";
 
 const QrScanner = dynamic(() => import("@/components/QrScanner"), { ssr: false });
@@ -89,6 +89,10 @@ export default function ScanConsole({ events }: { events: EventOption[] }) {
   const [log, setLog] = useState<Outcome[]>([]);
   const [counts, setCounts] = useState<{ sold: number; checkedIn: number } | null>(null);
   const [busy, setBusy] = useState(false);
+  // Lets the admin close the camera (e.g. to save battery / hand the device
+  // off) without losing the selected event or session log.
+  const [paused, setPaused] = useState(false);
+  const [manualCode, setManualCode] = useState("");
 
   // Debounce: ignore the same code re-read within the cooldown or while in flight.
   const lastRef = useRef<{ text: string; at: number }>({ text: "", at: 0 });
@@ -175,6 +179,40 @@ export default function ScanConsole({ events }: { events: EventOption[] }) {
     [eventId, refreshCounts]
   );
 
+  const submitManual = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const ticketId = manualCode.trim().toUpperCase();
+    if (!ticketId || inFlight.current) return;
+
+    inFlight.current = true;
+    setBusy(true);
+    const now = Date.now();
+    try {
+      const res = await fetch("/api/admin/scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        // No `sig` — manual entry only has the ticket ID, so this checks in
+        // via the DB lookup alone (still gated by CONFIRMED + not-already-used).
+        body: JSON.stringify({ ticketId, eventId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        const result =
+          res.status === 401 ? "SESSION_EXPIRED" : res.status === 403 ? "FORBIDDEN" : "SCAN_FAILED";
+        record({ result, at: now });
+      } else {
+        record({ ...data, at: now });
+        if (data.result === "VALID") refreshCounts();
+      }
+    } catch {
+      record({ result: "SCAN_FAILED", at: now });
+    } finally {
+      inFlight.current = false;
+      setBusy(false);
+      setManualCode("");
+    }
+  };
+
   const copy = outcome ? RESULT_COPY[outcome.result] : null;
   const selectedEvent = events.find((e) => e.id === eventId);
 
@@ -183,6 +221,7 @@ export default function ScanConsole({ events }: { events: EventOption[] }) {
     setOutcome(null);
     setLog([]);
     setCounts(null);
+    setPaused(false);
     setEventId(pendingEventId);
   };
 
@@ -219,25 +258,52 @@ export default function ScanConsole({ events }: { events: EventOption[] }) {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <p className="text-sm text-slate-600">
-            Scanning for <span className="font-medium text-slate-900">{selectedEvent?.title}</span>
-          </p>
+    <div className="max-w-md mx-auto space-y-4">
+      {/* Main scan card */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-5">
+        <div className="flex items-start gap-3">
+          <span className="w-11 h-11 shrink-0 rounded-full bg-[#1d4ed8]/10 text-[#1d4ed8] flex items-center justify-center">
+            <Camera className="w-5 h-5" aria-hidden="true" />
+          </span>
+          <div className="min-w-0">
+            <h2 className="font-heading text-lg font-semibold text-slate-900">
+              Real-time QR Verification
+            </h2>
+            <p className="text-sm text-slate-600 mt-0.5">
+              Scanning for <span className="font-medium text-slate-900">{selectedEvent?.title}</span>.
+              Point the camera at a ticket QR to check attendees in.
+            </p>
+          </div>
           <button
             type="button"
             onClick={() => setEventId("")}
-            className="ml-auto text-sm text-[#1d4ed8] hover:underline"
+            className="shrink-0 text-xs text-[#1d4ed8] hover:underline"
           >
             Change event
           </button>
         </div>
 
-        <QrScanner onDecode={handleDecode} />
+        <div className="mt-4 pt-4 border-t border-dashed border-slate-200">
+          <button
+            type="button"
+            onClick={() => setPaused((p) => !p)}
+            className={`w-full inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 font-semibold text-sm transition-colors ${
+              paused
+                ? "bg-[#1d4ed8] hover:bg-[#1e40af] text-white"
+                : "bg-red-500 hover:bg-red-600 text-white"
+            }`}
+          >
+            <Power className="w-4 h-4" aria-hidden="true" />
+            {paused ? "Start Camera" : "Stop Camera"}
+          </button>
+        </div>
+
+        <div className="mt-4 rounded-2xl border-2 border-dashed border-slate-300 p-1.5">
+          <QrScanner onDecode={handleDecode} paused={paused} />
+        </div>
 
         {counts && (
-          <div className="flex items-center gap-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+          <div className="mt-4 flex items-center gap-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
             <Stat label="Checked in" value={counts.checkedIn} accent="text-emerald-700" />
             <div className="h-8 w-px bg-slate-100" />
             <Stat label="Tickets sold" value={counts.sold} accent="text-slate-800" />
@@ -246,85 +312,115 @@ export default function ScanConsole({ events }: { events: EventOption[] }) {
             </div>
           </div>
         )}
+
+        {/* Manual fallback — same check-in path, just without the QR signature */}
+        <div className="mt-4 pt-4 border-t border-dashed border-slate-200">
+          <div className="flex items-start gap-3">
+            <span className="w-11 h-11 shrink-0 rounded-full bg-[#1d4ed8]/10 text-[#1d4ed8] flex items-center justify-center">
+              <Keyboard className="w-5 h-5" aria-hidden="true" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-heading text-base font-semibold text-slate-900">
+                Manual Code Check-In
+              </h3>
+              <p className="text-xs text-slate-600 mt-0.5 mb-2.5">
+                If camera permissions or physical ticket scanning fails, enter the ticket ID
+                manually.
+              </p>
+              <form onSubmit={submitManual} className="flex gap-2">
+                <input
+                  value={manualCode}
+                  onChange={(e) => setManualCode(e.target.value)}
+                  placeholder="TKT-…"
+                  autoCapitalize="characters"
+                  className="min-w-0 flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono outline-none focus:border-[#1d4ed8]"
+                />
+                <button
+                  type="submit"
+                  disabled={!manualCode.trim() || busy}
+                  className="shrink-0 bg-[#1d4ed8] hover:bg-[#1e40af] text-white disabled:opacity-40 disabled:cursor-not-allowed rounded-lg px-4 py-2 font-semibold text-sm transition-colors"
+                >
+                  Check in
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="space-y-4">
-        {/* Result card */}
-        <div
-          className={`flex items-center gap-4 rounded-2xl border p-5 min-h-26 transition-colors ${
-            !copy
-              ? "border-slate-200 bg-slate-50 text-slate-800"
-              : copy.ok
-                ? "border-emerald-500/40 bg-emerald-50"
-                : "border-red-500/40 bg-red-50"
-          }`}
-        >
-          {busy ? (
-            <Loader2 className="h-10 w-10 shrink-0 animate-spin text-slate-600" />
-          ) : !copy ? (
-            <p className="text-sm">Point the camera at a ticket QR to check it in.</p>
-          ) : (
-            <>
-              {copy.ok ? (
-                <CheckCircle2 className="h-10 w-10 shrink-0 text-emerald-700" />
-              ) : (
-                <XCircle className="h-10 w-10 shrink-0 text-red-700" />
-              )}
-              <div className="min-w-0">
-                <p className={`font-semibold ${copy.ok ? "text-emerald-700" : "text-red-700"}`}>
-                  {copy.title}
+      {/* Result card */}
+      <div
+        className={`flex items-center gap-4 rounded-2xl border p-5 min-h-26 transition-colors ${
+          !copy
+            ? "border-slate-200 bg-slate-50 text-slate-800"
+            : copy.ok
+              ? "border-emerald-500/40 bg-emerald-50"
+              : "border-red-500/40 bg-red-50"
+        }`}
+      >
+        {busy ? (
+          <Loader2 className="h-10 w-10 shrink-0 animate-spin text-slate-600" />
+        ) : !copy ? (
+          <p className="text-sm">Point the camera at a ticket QR — or use manual check-in above.</p>
+        ) : (
+          <>
+            {copy.ok ? (
+              <CheckCircle2 className="h-10 w-10 shrink-0 text-emerald-700" />
+            ) : (
+              <XCircle className="h-10 w-10 shrink-0 text-red-700" />
+            )}
+            <div className="min-w-0">
+              <p className={`font-semibold ${copy.ok ? "text-emerald-700" : "text-red-700"}`}>
+                {copy.title}
+              </p>
+              {outcome?.name && (
+                <p className="text-sm text-slate-800 truncate">
+                  {outcome.name} · Seat {outcome.seat}
                 </p>
-                {outcome?.name && (
-                  <p className="text-sm text-slate-800 truncate">
-                    {outcome.name} · Seat {outcome.seat}
-                  </p>
-                )}
-                {outcome?.result === "ALREADY_USED" && outcome.scannedByName && (
-                  <p className="text-sm text-slate-600">
-                    First scanned by {outcome.scannedByName}
-                    {outcome.scannedAt
-                      ? ` at ${new Date(outcome.scannedAt).toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata" })}`
-                      : ""}
-                  </p>
-                )}
-                {outcome?.result === "WRONG_EVENT" && outcome.ticketEvent && (
-                  <p className="text-sm text-slate-600">This ticket is for {outcome.ticketEvent}</p>
-                )}
-              </div>
-            </>
-          )}
-        </div>
+              )}
+              {outcome?.result === "ALREADY_USED" && outcome.scannedByName && (
+                <p className="text-sm text-slate-600">
+                  First scanned by {outcome.scannedByName}
+                  {outcome.scannedAt
+                    ? ` at ${new Date(outcome.scannedAt).toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata" })}`
+                    : ""}
+                </p>
+              )}
+              {outcome?.result === "WRONG_EVENT" && outcome.ticketEvent && (
+                <p className="text-sm text-slate-600">This ticket is for {outcome.ticketEvent}</p>
+              )}
+            </div>
+          </>
+        )}
+      </div>
 
-        {/* Session log */}
-        <div className="rounded-2xl border border-slate-200 overflow-hidden">
-          <p className="px-4 py-2.5 text-sm font-semibold uppercase tracking-widest text-slate-800 border-b border-slate-200 bg-slate-50">
-            This session
-          </p>
-          {log.length === 0 ? (
-            <p className="px-4 py-6 text-sm text-slate-700 text-center">No scans yet.</p>
-          ) : (
-            <ul className="divide-y divide-slate-200 max-h-72 overflow-y-auto">
-              {log.map((o, i) => {
-                const c = RESULT_COPY[o.result];
-                return (
-                  <li key={`${o.at}-${i}`} className="flex items-center gap-3 px-4 py-2.5 text-sm">
-                    {c.ok ? (
-                      <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-700" />
-                    ) : (
-                      <XCircle className="h-4 w-4 shrink-0 text-red-700" />
-                    )}
-                    <span className="truncate">
-                      {o.name ? `${o.name} · Seat ${o.seat}` : c.title}
-                    </span>
-                    <span className="ml-auto text-sm text-slate-700">
-                      {new Date(o.at).toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata" })}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
+      {/* Session log */}
+      <div className="rounded-2xl border border-slate-200 overflow-hidden">
+        <p className="px-4 py-2.5 text-sm font-semibold uppercase tracking-widest text-slate-800 border-b border-slate-200 bg-slate-50">
+          This session
+        </p>
+        {log.length === 0 ? (
+          <p className="px-4 py-6 text-sm text-slate-700 text-center">No scans yet.</p>
+        ) : (
+          <ul className="divide-y divide-slate-200 max-h-72 overflow-y-auto">
+            {log.map((o, i) => {
+              const c = RESULT_COPY[o.result];
+              return (
+                <li key={`${o.at}-${i}`} className="flex items-center gap-3 px-4 py-2.5 text-sm">
+                  {c.ok ? (
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-700" />
+                  ) : (
+                    <XCircle className="h-4 w-4 shrink-0 text-red-700" />
+                  )}
+                  <span className="truncate">{o.name ? `${o.name} · Seat ${o.seat}` : c.title}</span>
+                  <span className="ml-auto text-sm text-slate-700">
+                    {new Date(o.at).toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata" })}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </div>
     </div>
   );

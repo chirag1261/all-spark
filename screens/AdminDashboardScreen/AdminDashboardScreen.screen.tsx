@@ -20,19 +20,21 @@ const GENDER_LABELS: Record<AttendeeGender, string> = {
   female: "Female",
   boy: "Boy",
   girl: "Girl",
+  others: "Others",
 };
 const GENDER_TONES: Record<AttendeeGender, string> = {
   male: "bg-sky-500",
   female: "bg-fuchsia-500",
   boy: "bg-cyan-500",
   girl: "bg-rose-500",
+  others: "bg-violet-500",
 };
 
 /** Attendee gender tally across every confirmed booking — powers the
  *  dashboard's audience demographics breakdown. Gender is optional per
  *  attendee, so "Not specified" is tracked separately, not silently dropped. */
 function genderBreakdown(bookings: Booking[]) {
-  const counts: Record<AttendeeGender, number> = { male: 0, female: 0, boy: 0, girl: 0 };
+  const counts: Record<AttendeeGender, number> = { male: 0, female: 0, boy: 0, girl: 0, others: 0 };
   let unspecified = 0;
   for (const b of bookings) {
     if (b.status !== "CONFIRMED") continue;

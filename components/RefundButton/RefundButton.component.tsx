@@ -26,16 +26,18 @@ export default function RefundButton({
   const { confirm, dialog } = useConfirm();
   const { showToast, toast } = useToast();
 
-  const eligibility = eventStartsAt ? refundEligibility(eventStartsAt) : { allowed: true, fraction: 1 as const };
+  const eligibility = eventStartsAt
+    ? refundEligibility(eventStartsAt)
+    : { allowed: true, fraction: 0.7 as const };
   const refundAmount = Math.round(amount * eligibility.fraction);
 
   const refund = async () => {
     const ok = await confirm({
       title: "Refund booking",
       message:
-        eligibility.fraction === 1
-          ? `Refund ${inr(refundAmount)} (full refund — more than 7 days before the event) and release the seats?`
-          : `Refund ${inr(refundAmount)} (50% — less than 7 days before the event) and release the seats?`,
+        eligibility.fraction === 0.7
+          ? `Refund ${inr(refundAmount)} (70% — 30% cancellation charge, more than 7 days before the event) and release the seats?`
+          : `Refund ${inr(refundAmount)} (50% cancellation charge — 7 days to 48 hours before the event) and release the seats?`,
       confirmLabel: "Refund",
       tone: "danger",
     });
@@ -65,7 +67,7 @@ export default function RefundButton({
     return (
       <span
         className="text-slate-400 cursor-not-allowed"
-        title="The event starts in less than 24 hours — refunds can no longer be requested."
+        title="The event starts in less than 48 hours — refunds can no longer be requested."
       >
         Refund window closed
       </span>
@@ -79,7 +81,7 @@ export default function RefundButton({
         disabled={busy}
         className="text-red-700 hover:text-red-700 hover:underline disabled:opacity-40"
       >
-        {busy ? "Refunding…" : eligibility.fraction === 1 ? "Refund" : "Refund (50%)"}
+        {busy ? "Refunding…" : eligibility.fraction === 0.7 ? "Refund (70%)" : "Refund (50%)"}
       </button>
       {dialog}
       {toast}

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import SiteHeader from "@/components/SiteHeader";
 import WhatsAppShare from "@/components/WhatsAppShare";
-import { EVENT_GUIDELINES } from "@/constants";
+import { EVENT_GUIDELINES, TICKET_NOTICES } from "@/constants";
 import { getBookingByBookingId, getEvent, getTicket } from "@/lib/db";
 import { ticketQrDataUrl } from "@/lib/domain/tickets";
 import { formatDateIST } from "@/utils";
@@ -79,7 +79,7 @@ export async function TicketScreen({ ticketId }: { ticketId: string }) {
               get mangled to "�" by some WhatsApp share transports, while
               WhatsApp's own bold markdown renders reliably. */}
           <WhatsAppShare
-            imageUrl={event?.imageUrl || event?.gallery[0]}
+            imageUrl={qrDataUrl}
             lines={[
               `*${event?.title ?? "Event ticket"}*`,
               event ? formatDateIST(event.startsAt) : "",
@@ -90,12 +90,24 @@ export async function TicketScreen({ ticketId }: { ticketId: string }) {
               `Seat: ${ticket.seatId}`,
               `Ticket ID: ${ticket.ticketId}`,
               "",
+              ...TICKET_NOTICES.map((n) => `*${n}*`),
+              "",
               "*Event guidelines*",
               ...EVENT_GUIDELINES.map((g, i) => `${i + 1}. ${g}`),
               "",
               "View / share this ticket:",
             ].filter(Boolean)}
           />
+        </div>
+
+        <div className="mt-5 bg-red-50 border border-red-200 rounded-2xl p-4">
+          <ul className="space-y-1 text-xs font-semibold text-red-700 leading-relaxed">
+            {TICKET_NOTICES.map((notice, i) => (
+              <li key={i} className="wrap-break-word">
+                {notice}
+              </li>
+            ))}
+          </ul>
         </div>
 
         <div className="mt-5 bg-white border border-[#e5eaf1] rounded-2xl p-5">

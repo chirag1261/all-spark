@@ -5,6 +5,7 @@ import AccessDenied from "@/components/AccessDenied";
 import AdminShell from "@/components/AdminShell";
 import CancelBookingButton from "@/components/CancelBookingButton";
 import RefundButton from "@/components/RefundButton";
+import TicketTransferButton from "@/components/TicketTransferButton";
 import { hasPermission, requireDashboardPage } from "@/lib/auth/admin";
 import { listBookings, listEvents, sweepStalePending } from "@/lib/db";
 import { Booking, BookingStatus } from "@/types";
@@ -235,14 +236,19 @@ export async function AdminBookingsScreen({
                       })}
                     </td>
                     <td className="px-4 py-3 text-right text-sm">
-                      {b.status === "CONFIRMED" && canRefund && (
-                        <RefundButton
-                          orderId={b.razorpayOrderId}
-                          amount={b.amount}
-                          eventStartsAt={eventStartsAtById.get(b.eventId)}
-                        />
-                      )}
-                      {b.status === "PENDING" && <CancelBookingButton orderId={b.razorpayOrderId} />}
+                      <div className="flex items-center justify-end gap-3">
+                        {b.status === "CONFIRMED" && canRefund && (
+                          <TicketTransferButton bookingId={b.bookingId} />
+                        )}
+                        {b.status === "CONFIRMED" && canRefund && (
+                          <RefundButton
+                            orderId={b.razorpayOrderId}
+                            amount={b.amount}
+                            eventStartsAt={eventStartsAtById.get(b.eventId)}
+                          />
+                        )}
+                        {b.status === "PENDING" && <CancelBookingButton orderId={b.razorpayOrderId} />}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -289,9 +295,9 @@ export async function AdminBookingsScreen({
       )}
 
       <p className="text-sm text-slate-700 mt-4">
-        Refunds are issued via Razorpay and release the seats back to sale — full refund more than
-        7 days before the event, 50% inside 7 days, and blocked entirely inside the final 24
-        hours.
+        Refunds are issued via Razorpay and release the seats back to sale — 70% refund (30%
+        cancellation charge) more than 7 days before the event, 50% from 7 days down to 48 hours
+        before, and blocked entirely inside the final 48 hours.
       </p>
     </AdminShell>
   );

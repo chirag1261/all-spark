@@ -17,10 +17,18 @@ interface Props {
   /** Short lead paragraph under the title. */
   intro?: string;
   sections: PolicySection[];
+  /** Overridable per page — e.g. the refund policy points at bookings@. */
+  contactEmail?: string;
 }
 
 /** Shared chrome + typography for the legal / policy pages. */
-export default function PolicyPage({ title, updated, intro, sections }: Props) {
+export default function PolicyPage({
+  title,
+  updated,
+  intro,
+  sections,
+  contactEmail = "contact@utsavevents.live",
+}: Props) {
   return (
     <div className="min-h-screen text-slate-900">
       <SiteHeader />
@@ -65,8 +73,8 @@ export default function PolicyPage({ title, updated, intro, sections }: Props) {
             utsavevents.live
           </a>{" "}
           or email{" "}
-          <a href="mailto:utsavevents.tech@gmail.com" className="text-[#1d4ed8] hover:underline">
-            utsavevents.tech@gmail.com
+          <a href={`mailto:${contactEmail}`} className="text-[#1d4ed8] hover:underline">
+            {contactEmail}
           </a>
           . This document is provided for transparency and should be reviewed by the organiser
           before relying on it.

@@ -233,9 +233,9 @@ export interface AdminUser {
 /** AdminUser minus the password hash — the only shape ever sent to the client. */
 export type AdminUserPublic = Omit<AdminUser, "passwordHash">;
 
-export type AttendeeGender = "male" | "female" | "boy" | "girl";
+export type AttendeeGender = "male" | "female" | "boy" | "girl" | "others";
 
-export const ATTENDEE_GENDERS: AttendeeGender[] = ["male", "female", "boy", "girl"];
+export const ATTENDEE_GENDERS: AttendeeGender[] = ["male", "female", "boy", "girl", "others"];
 
 /** One person occupying one seat within a booking. */
 export interface BookingAttendee {

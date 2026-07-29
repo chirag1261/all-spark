@@ -14,8 +14,9 @@ import { inr } from "@/utils";
  * Issues a Razorpay refund for a confirmed booking, marks it REFUNDED and
  * returns its seats to the available pool. The refund amount follows the
  * Refund & Cancellation Policy's cancellation window, measured against the
- * event's start time: full refund more than 7 days out, 50% inside 7 days,
- * and blocked entirely inside the final 24 hours (no partial refund either).
+ * event's start time: 70% (30% cancellation charge) more than 7 days out,
+ * 50% from 7 days down to 48 hours out, and blocked entirely inside the
+ * final 48 hours (no refund at all).
  *
  * NOTE: this is the customer-cancellation path. An organiser-cancelled event
  * (always a full refund regardless of timing, per policy) isn't automated
@@ -59,7 +60,7 @@ export async function POST(req: NextRequest) {
   const eligibility = refundEligibility(event.startsAt);
   if (!eligibility.allowed) {
     return NextResponse.json(
-      { error: "Refunds can no longer be requested — the event starts in less than 24 hours." },
+      { error: "Refunds can no longer be requested — the event starts in less than 48 hours." },
       { status: 409 }
     );
   }
