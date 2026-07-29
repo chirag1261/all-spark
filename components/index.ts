@@ -52,3 +52,5 @@ export * from "./OrganizerForm";
 export * from "./AdminOrganizersPanel";
 export * from "./BookedSeatsDiagram";
 export * from "./TicketTransferButton";
+export * from "./Parallax";
+export * from "./BookingSeatsCell";

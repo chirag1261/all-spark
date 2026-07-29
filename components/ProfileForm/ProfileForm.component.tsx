@@ -154,7 +154,7 @@ export default function ProfileForm({ profile }: Props) {
         <button
           type="submit"
           disabled={busy || firstName.trim().length < 2}
-          className="bg-[#1d4ed8] hover:bg-[#1e40af] text-white disabled:opacity-40 rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
+          className="bg-linear-to-r from-[#D4AF37] to-[#E6C35C] hover:brightness-105 text-[#081A3A] disabled:opacity-40 rounded-full px-5 py-2.5 font-semibold text-sm transition-all"
         >
           Save profile
         </button>
@@ -199,7 +199,7 @@ export default function ProfileForm({ profile }: Props) {
         <button
           type="submit"
           disabled={busy || newPassword.length < 8}
-          className="bg-slate-100 hover:bg-slate-200 disabled:opacity-40 rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
+          className="bg-slate-100 hover:bg-slate-200 disabled:opacity-40 rounded-full px-5 py-2.5 font-semibold text-sm transition-colors"
         >
           {profile.hasPassword ? "Change password" : "Set password"}
         </button>

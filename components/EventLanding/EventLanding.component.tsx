@@ -9,6 +9,7 @@ import BookMyShowLink from "../BookMyShowLink";
 import CountdownTimer from "../CountdownTimer";
 import EventFactStrip from "../EventFactStrip";
 import HeroMedia from "../HeroMedia";
+import Parallax from "../Parallax";
 import Reveal from "../Reveal";
 
 interface Props {
@@ -32,12 +33,12 @@ export default function EventLanding({ event, remaining }: Props) {
   const cta = bookable ? (
     <Link
       href={`/events/${event.id}/book`}
-      className="inline-block w-full sm:w-auto text-center bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] hover:brightness-110 text-white hover:scale-[1.02] rounded-2xl px-9 py-4 font-bold text-base transition-all"
+      className="inline-block w-full sm:w-auto text-center bg-linear-to-r from-[#D4AF37] to-[#E6C35C] hover:brightness-105 text-[#081A3A] hover:scale-[1.02] rounded-full px-9 py-4 font-bold text-base transition-all"
     >
       Book tickets · from {inr(fromPrice)}
     </Link>
   ) : (
-    <span className="inline-block w-full sm:w-auto text-center bg-slate-100 text-slate-600 rounded-xl px-8 py-4 font-bold text-base cursor-not-allowed">
+    <span className="inline-block w-full sm:w-auto text-center bg-slate-100 text-slate-600 rounded-full px-8 py-4 font-bold text-base cursor-not-allowed">
       {soldOut
         ? "Sold out"
         : reg === "upcoming"
@@ -52,10 +53,15 @@ export default function EventLanding({ event, remaining }: Props) {
       <section
         className={`relative min-h-[78vh] flex items-end overflow-hidden bg-linear-to-br ${event.poster}`}
       >
-        <HeroMedia
-          images={[...new Set([event.imageUrl, ...event.gallery].filter(Boolean))]}
-          alt={event.title}
-        />
+        {/* Oversized by the same margin as Parallax's `max` clamp, so the
+            translate never exposes an edge — the section's own overflow-hidden
+            clips the excess. */}
+        <Parallax speed={0.15} max={48} className="absolute -inset-y-12 inset-x-0">
+          <HeroMedia
+            images={[...new Set([event.imageUrl, ...event.gallery].filter(Boolean))]}
+            alt={event.title}
+          />
+        </Parallax>
         <div className="absolute inset-0 bg-linear-to-t from-[#0d0a1f] via-[#0d0a1f]/55 to-[#0d0a1f]/10" />
         <div className="relative max-w-6xl mx-auto px-4 pb-10 sm:pb-16 pt-28 sm:pt-40 w-full text-white">
           {!soldOut && <CountdownTimer targetIso={event.startsAt} />}
@@ -65,7 +71,7 @@ export default function EventLanding({ event, remaining }: Props) {
             </span>
           )}
           {event.landing?.presenter && (
-            <p className="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] text-[#fbbf24] mb-3 drop-shadow">
+            <p className="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] text-[#E6C35C] mb-3 drop-shadow">
               {event.landing.presenter}
             </p>
           )}
@@ -73,7 +79,7 @@ export default function EventLanding({ event, remaining }: Props) {
             {event.title}
           </h1>
           {event.landing?.heroKicker && (
-            <p className="font-heading text-xl sm:text-3xl text-[#fcd34d] mt-3 drop-shadow">
+            <p className="font-heading text-xl sm:text-3xl text-[#E6C35C] mt-3 drop-shadow">
               {event.landing.heroKicker}
             </p>
           )}
@@ -171,14 +177,14 @@ export default function EventLanding({ event, remaining }: Props) {
             />
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute -bottom-20 -left-10 w-56 h-56 rounded-full bg-[#fbbf24]/15 blur-3xl"
+              className="pointer-events-none absolute -bottom-20 -left-10 w-56 h-56 rounded-full bg-[#E6C35C]/15 blur-3xl"
             />
             <div className="relative grid lg:grid-cols-2 gap-8 lg:gap-14 items-center">
               {event.landing.artist.imageUrl && (
                 <div className="relative">
                   <span
                     aria-hidden="true"
-                    className="absolute -inset-3 rounded-3xl bg-linear-to-tr from-[#fbbf24]/40 to-[#3b82f6]/40 blur-xl opacity-60"
+                    className="absolute -inset-3 rounded-3xl bg-linear-to-tr from-[#E6C35C]/40 to-[#3b82f6]/40 blur-xl opacity-60"
                   />
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -189,8 +195,8 @@ export default function EventLanding({ event, remaining }: Props) {
                 </div>
               )}
               <div>
-                <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-[#fbbf24] mb-3">
-                  <span className="w-6 h-px bg-[#fbbf24]" /> Featured artist
+                <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-[#E6C35C] mb-3">
+                  <span className="w-6 h-px bg-[#E6C35C]" /> Featured artist
                 </p>
                 <h2 className="font-heading text-3xl sm:text-5xl font-semibold wrap-break-word leading-tight">
                   {event.landing.artist.name}
@@ -212,7 +218,7 @@ export default function EventLanding({ event, remaining }: Props) {
                         key={i}
                         className="rounded-2xl border border-white/15 bg-white/5 backdrop-blur px-4 py-3.5 text-center"
                       >
-                        <p className="font-heading text-2xl font-semibold text-[#fbbf24] wrap-break-word">
+                        <p className="font-heading text-2xl font-semibold text-[#E6C35C] wrap-break-word">
                           {s.value}
                         </p>
                         <p className="text-xs text-white/60 mt-1 wrap-break-word">{s.label}</p>

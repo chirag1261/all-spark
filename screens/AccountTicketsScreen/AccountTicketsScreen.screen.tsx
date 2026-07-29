@@ -18,7 +18,7 @@ export async function AccountTicketsScreen() {
           <p className="text-slate-500 mb-4">No tickets yet — they appear here after a booking.</p>
           <Link
             href="/"
-            className="inline-block bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
+            className="inline-block bg-linear-to-r from-[#D4AF37] to-[#E6C35C] hover:brightness-105 text-[#081A3A] rounded-full px-5 py-2.5 font-semibold text-sm transition-all"
           >
             Browse events
           </Link>

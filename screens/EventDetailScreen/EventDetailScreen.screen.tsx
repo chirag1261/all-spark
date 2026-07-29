@@ -100,12 +100,12 @@ export async function EventDetailScreen({ id }: { id: string }) {
             {bookable ? (
               <Link
                 href={`/events/${event.id}/book`}
-                className="block text-center bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-lg px-6 py-3 font-semibold text-sm transition-colors"
+                className="block text-center bg-linear-to-r from-[#D4AF37] to-[#E6C35C] hover:brightness-105 text-[#081A3A] rounded-full px-6 py-3 font-semibold text-sm transition-all"
               >
                 Select seats
               </Link>
             ) : (
-              <span className="block text-center bg-slate-100 text-slate-500 rounded-lg px-6 py-3 font-semibold text-sm cursor-not-allowed">
+              <span className="block text-center bg-slate-100 text-slate-500 rounded-full px-6 py-3 font-semibold text-sm cursor-not-allowed">
                 {soldOut ? "Sold out" : reg === "upcoming" ? "Opening soon" : "Closed"}
               </span>
             )}
@@ -115,7 +115,7 @@ export async function EventDetailScreen({ id }: { id: string }) {
                 href={event.bookMyShowUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-3 flex items-center justify-center gap-2 bg-[#c4242c] hover:bg-[#a91f26] text-white rounded-lg px-4 py-2.5 font-semibold text-sm transition-colors"
+                className="mt-3 flex items-center justify-center gap-2 bg-[#c4242c] hover:bg-[#a91f26] text-white rounded-full px-4 py-2.5 font-semibold text-sm transition-colors"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img

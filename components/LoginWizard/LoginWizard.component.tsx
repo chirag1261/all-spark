@@ -30,7 +30,7 @@ const inputCls =
 const passwordCls =
   "w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus-within:border-[#1d4ed8]";
 const primaryBtn =
-  "w-full bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] hover:brightness-110 text-white disabled:opacity-40 rounded-xl px-6 py-2.5 font-semibold text-sm transition-all";
+  "w-full bg-linear-to-r from-[#D4AF37] to-[#E6C35C] hover:brightness-105 text-[#081A3A] disabled:opacity-40 rounded-full px-6 py-2.5 font-semibold text-sm transition-all";
 const otpInputCls = `${inputCls} text-center font-mono text-xl tracking-[0.5em]`;
 
 export default function LoginWizard({ next }: { next: string }) {

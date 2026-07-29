@@ -31,7 +31,7 @@ export async function OrganizersScreen() {
             {organizers.map((o) => (
               <div
                 key={o.id}
-                className="bg-white border border-[#e5eaf1] rounded-3xl p-6 text-center hover:border-[#1d4ed8]/40 hover:-translate-y-1 transition-all duration-300"
+                className="bg-linear-to-br from-[#eff4ff] via-white to-[#fdf6e8] border border-[#e5eaf1] rounded-3xl p-6 text-center hover:border-[#1d4ed8]/40 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(29,78,216,0.10)] transition-all duration-300"
               >
                 {o.photoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element

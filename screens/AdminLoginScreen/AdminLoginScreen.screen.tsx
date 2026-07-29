@@ -53,7 +53,7 @@ export function AdminLoginScreen() {
         <div className="text-center">
           <p className="font-heading text-3xl font-semibold">
             Utsav{" "}
-            <span className="text-transparent bg-clip-text bg-linear-to-r from-[#1d4ed8] to-[#3b82f6]">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-[#B68A2E] to-[#E6C35C]">
               Events
             </span>
           </p>
@@ -76,7 +76,7 @@ export function AdminLoginScreen() {
           />
           <p className="font-heading text-2xl font-semibold leading-none">
             Utsav{" "}
-            <span className="text-transparent bg-clip-text bg-linear-to-r from-[#1d4ed8] to-[#3b82f6]">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-[#B68A2E] to-[#E6C35C]">
               Events
             </span>
           </p>

@@ -25,7 +25,7 @@ export default async function SiteHeader() {
   ];
 
   return (
-    <header className="sticky top-0 z-20 bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] border-b border-white/10 shadow-[0_6px_20px_rgba(15,23,42,0.18)]">
+    <header className="sticky top-0 z-20 bg-[#081A3A] border-b border-white/10 shadow-[0_6px_20px_rgba(15,23,42,0.18)]">
       <div className="relative max-w-6xl mx-auto px-4 h-16 flex items-center gap-3">
         {/* Mobile hamburger — opens the left nav drawer */}
         <MobileMenu links={links} bookHref={bookHref} onDark />
@@ -34,9 +34,13 @@ export default async function SiteHeader() {
         <Logo onDark />
 
         {/* Center — primary nav (desktop) */}
-        <nav className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-7 text-sm text-white/80">
+        <nav className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-7 text-sm text-[#F8F4E8]/80">
           {links.map((l) => (
-            <Link key={l.href} href={l.href} className="hover:text-white transition-colors">
+            <Link
+              key={l.href}
+              href={l.href}
+              className="hover:text-[#F8F4E8] transition-colors"
+            >
               {l.label}
             </Link>
           ))}
@@ -46,7 +50,7 @@ export default async function SiteHeader() {
         <div className="ml-auto flex items-center gap-3">
           <Link
             href={bookHref}
-            className="hidden md:inline-block bg-white text-[#1e3a8a] hover:bg-[#eff4ff] font-semibold rounded-full px-5 py-2 transition-colors"
+            className="hidden md:inline-block bg-linear-to-r from-[#D4AF37] to-[#E6C35C] hover:brightness-105 text-[#081A3A] font-semibold rounded-full px-5 py-2 transition-all"
           >
             Book Seats
           </Link>
@@ -57,7 +61,7 @@ export default async function SiteHeader() {
             ) : (
               <Link
                 href="/login"
-                className="text-sm text-white/80 hover:text-white transition-colors"
+                className="text-sm text-[#F8F4E8]/80 hover:text-[#F8F4E8] transition-colors"
               >
                 Sign in
               </Link>

@@ -490,13 +490,13 @@ export default function BookingFlow({
         <div className="flex flex-col sm:flex-row gap-3 mt-6">
           <Link
             href="/account/tickets"
-            className="flex-1 text-center bg-slate-100 hover:bg-slate-200 rounded-lg px-5 py-3 font-semibold text-sm transition-colors"
+            className="flex-1 text-center bg-slate-100 hover:bg-slate-200 rounded-full px-5 py-3 font-semibold text-sm transition-colors"
           >
             My tickets
           </Link>
           <Link
             href="/"
-            className="flex-1 text-center bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-lg px-5 py-3 font-semibold text-sm transition-colors"
+            className="flex-1 text-center bg-linear-to-r from-[#D4AF37] to-[#E6C35C] hover:brightness-105 text-[#081A3A] rounded-full px-5 py-3 font-semibold text-sm transition-all"
           >
             Browse more events
           </Link>
@@ -546,14 +546,14 @@ export default function BookingFlow({
         <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={abandonAndReselect}
-            className="flex-1 rounded-lg border border-slate-300 px-5 py-3 font-semibold text-sm text-slate-700 hover:text-slate-900 hover:border-slate-400 transition-colors"
+            className="flex-1 rounded-full border border-slate-300 px-5 py-3 font-semibold text-sm text-slate-700 hover:text-slate-900 hover:border-slate-400 transition-colors"
           >
             Choose different seats
           </button>
           <button
             onClick={retryPayment}
             disabled={paying}
-            className="flex-1 bg-[#1d4ed8] hover:bg-[#1e40af] text-white disabled:opacity-40 disabled:cursor-not-allowed rounded-lg px-5 py-3 font-semibold text-sm transition-colors"
+            className="flex-1 bg-linear-to-r from-[#D4AF37] to-[#E6C35C] hover:brightness-105 text-[#081A3A] disabled:opacity-40 disabled:cursor-not-allowed rounded-full px-5 py-3 font-semibold text-sm transition-all"
           >
             {paying ? "Processing…" : `Retry payment · ${inr(payable)}`}
           </button>
@@ -645,7 +645,7 @@ export default function BookingFlow({
             <button
               onClick={goToAttendees}
               disabled={selected.size === 0}
-              className="bg-[#1d4ed8] hover:bg-[#1e40af] text-white disabled:opacity-40 disabled:cursor-not-allowed rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+              className="bg-linear-to-r from-[#D4AF37] to-[#E6C35C] hover:brightness-105 text-[#081A3A] disabled:opacity-40 disabled:cursor-not-allowed rounded-full px-6 py-2.5 font-semibold text-sm transition-all"
             >
               Continue
             </button>
@@ -766,13 +766,13 @@ export default function BookingFlow({
                 clearPromo(); // seats may change → any previewed discount is stale
                 setStep("seats");
               }}
-              className="rounded-lg border border-slate-300 px-5 py-2.5 font-semibold text-sm text-slate-700 hover:text-slate-900 hover:border-slate-400 transition-colors"
+              className="rounded-full border border-slate-300 px-5 py-2.5 font-semibold text-sm text-slate-700 hover:text-slate-900 hover:border-slate-400 transition-colors"
             >
               Back
             </button>
             <button
               onClick={goToSummary}
-              className="flex-1 sm:flex-none bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+              className="flex-1 sm:flex-none bg-linear-to-r from-[#D4AF37] to-[#E6C35C] hover:brightness-105 text-[#081A3A] rounded-full px-6 py-2.5 font-semibold text-sm transition-all"
             >
               Continue
             </button>
@@ -865,7 +865,7 @@ export default function BookingFlow({
                 <button
                   onClick={applyPromo}
                   disabled={applyingPromo || !promoInput.trim()}
-                  className="shrink-0 rounded-lg border border-slate-300 px-5 py-2.5 font-semibold text-sm text-slate-800 hover:border-slate-400 disabled:opacity-40 transition-colors"
+                  className="shrink-0 rounded-full border border-slate-300 px-5 py-2.5 font-semibold text-sm text-slate-800 hover:border-slate-400 disabled:opacity-40 transition-colors"
                 >
                   {applyingPromo ? "Applying…" : "Apply"}
                 </button>
@@ -881,14 +881,14 @@ export default function BookingFlow({
             <button
               onClick={() => setStep("attendees")}
               disabled={paying}
-              className="rounded-lg border border-slate-300 px-5 py-2.5 font-semibold text-sm text-slate-700 hover:text-slate-900 hover:border-slate-400 disabled:opacity-40 transition-colors"
+              className="rounded-full border border-slate-300 px-5 py-2.5 font-semibold text-sm text-slate-700 hover:text-slate-900 hover:border-slate-400 disabled:opacity-40 transition-colors"
             >
               Back
             </button>
             <button
               onClick={pay}
               disabled={paying || selected.size === 0}
-              className="flex-1 bg-[#1d4ed8] hover:bg-[#1e40af] text-white disabled:opacity-40 disabled:cursor-not-allowed rounded-lg px-6 py-2.5 font-semibold text-sm transition-colors"
+              className="flex-1 bg-linear-to-r from-[#D4AF37] to-[#E6C35C] hover:brightness-105 text-[#081A3A] disabled:opacity-40 disabled:cursor-not-allowed rounded-full px-6 py-2.5 font-semibold text-sm transition-all"
             >
               {paying ? "Processing…" : `Proceed to payment · ${inr(payable)}`}
             </button>
