@@ -35,18 +35,18 @@ export async function LoginScreen({ next, idleExpired }: { next: string; idleExp
         <div className="max-w-5xl mx-auto px-4">
           <div className="grid lg:grid-cols-2 rounded-3xl overflow-hidden border border-[#e5eaf1] bg-white shadow-[0_24px_60px_rgba(15,23,42,0.14)]">
             {/* LEFT — brand panel + active-events carousel (desktop only) */}
-            <div className="hidden lg:flex relative overflow-hidden flex-col items-center justify-center gap-6 p-10 bg-linear-to-br from-[#0f1e4d] via-[#1e3a8a] to-[#1d4ed8] gradient-pan text-white">
+            <div className="hidden lg:flex relative overflow-hidden flex-col items-center justify-center gap-6 p-10 bg-[#081A3A] text-white">
               <span
                 aria-hidden="true"
                 className="pointer-events-none absolute -top-16 -right-10 w-56 h-56 rounded-full bg-[#3b82f6]/30 blur-3xl float-slow"
               />
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute -bottom-20 -left-10 w-56 h-56 rounded-full bg-[#fbbf24]/15 blur-3xl"
+                className="pointer-events-none absolute -bottom-20 -left-10 w-56 h-56 rounded-full bg-[#E6C35C]/15 blur-3xl"
               />
               <div className="relative z-10 flex flex-col items-center gap-6 w-full">
                 <Logo onDark />
-                <p className="font-heading text-lg text-[#fbbf24] -mt-4">॥ संगीत ही ईश्वर है ॥</p>
+                <p className="font-heading text-lg text-[#E6C35C] -mt-4">॥ संगीत ही ईश्वर है ॥</p>
                 <div className="w-full max-w-sm">
                   <EventsCarousel events={events} />
                 </div>

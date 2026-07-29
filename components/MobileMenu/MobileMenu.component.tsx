@@ -90,7 +90,7 @@ export default function MobileMenu({ links, bookHref, onDark = false }: Props) {
                 <Link
                   href={bookHref}
                   onClick={() => setOpen(false)}
-                  className="block text-center bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] hover:brightness-110 text-white font-semibold rounded-full px-5 py-2.5 transition-all"
+                  className="block text-center bg-linear-to-r from-[#D4AF37] to-[#E6C35C] hover:brightness-105 text-[#081A3A] font-semibold rounded-full px-5 py-2.5 transition-all"
                 >
                   Book Seats
                 </Link>

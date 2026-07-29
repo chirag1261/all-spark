@@ -70,6 +70,14 @@ export async function AboutScreen() {
               <br className="hidden sm:block" /> Dedicated to the divine.
             </h1>
           </Reveal>
+          <Reveal variant="scale" delay={120} className="max-w-4xl mx-auto px-4 mt-10">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,w_1600/utsav-events/hero"
+              alt="Utsav Events devotional gathering"
+              className="w-full aspect-video object-cover rounded-3xl border border-[#e5eaf1] shadow-[0_16px_40px_rgba(15,23,42,0.10)]"
+            />
+          </Reveal>
         </section>
 
         {/* Story */}
@@ -211,7 +219,7 @@ export async function AboutScreen() {
             </p>
             <Link
               href={ctaHref}
-              className="inline-block bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] hover:brightness-110 text-white font-semibold rounded-full px-8 py-3 transition-all"
+              className="inline-block bg-linear-to-r from-[#D4AF37] to-[#E6C35C] hover:brightness-105 text-[#081A3A] font-semibold rounded-full px-8 py-3 transition-all"
             >
               {featured ? "View the event" : "Browse events"}
             </Link>

@@ -28,15 +28,15 @@ export async function TicketScreen({ ticketId }: { ticketId: string }) {
       <SiteHeader />
       <main className="max-w-md mx-auto px-4 py-10">
         <div className="relative bg-white border border-[#e5eaf1] rounded-3xl overflow-hidden shadow-[0_16px_40px_rgba(15,23,42,0.10)]">
-          <div className="bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] px-6 py-5">
-            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/70 mb-1">
+          <div className="bg-[#081A3A] px-6 py-5">
+            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#F8F4E8]/70 mb-1">
               Event ticket
             </p>
-            <h1 className="font-extrabold text-xl text-white tracking-tight wrap-break-word">
+            <h1 className="font-extrabold text-xl text-[#F8F4E8] tracking-tight wrap-break-word">
               {event?.title ?? "Event ticket"}
             </h1>
             {event && (
-              <p className="text-sm text-white/80 mt-0.5">
+              <p className="text-sm text-[#F8F4E8]/80 mt-0.5">
                 {formatDateIST(event.startsAt)} · {event.venue}, {event.city}
               </p>
             )}

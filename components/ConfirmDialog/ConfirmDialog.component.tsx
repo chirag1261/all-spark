@@ -124,16 +124,16 @@ function ConfirmDialogView({
           <button
             onClick={onCancel}
             autoFocus
-            className="flex-1 text-sm font-medium text-slate-700 border border-slate-300 hover:bg-slate-100 hover:border-slate-400 px-4 py-2.5 rounded-lg transition-colors"
+            className="flex-1 text-sm font-medium text-slate-700 border border-slate-300 hover:bg-slate-100 hover:border-slate-400 px-4 py-2.5 rounded-full transition-colors"
           >
             {cancelLabel}
           </button>
           <button
             onClick={onConfirm}
-            className={`flex-1 text-sm font-semibold px-4 py-2.5 rounded-lg shadow-lg transition-colors ${
+            className={`flex-1 text-sm font-semibold px-4 py-2.5 rounded-full shadow-lg transition-all ${
               danger
                 ? "bg-red-600 hover:bg-red-500 text-white"
-                : "bg-[#1d4ed8] hover:bg-[#1e40af] text-white"
+                : "bg-linear-to-r from-[#D4AF37] to-[#E6C35C] hover:brightness-105 text-[#081A3A]"
             }`}
           >
             {confirmLabel}

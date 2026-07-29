@@ -166,7 +166,7 @@ export default function ContactForm({ whatsappPhone }: Props) {
         <button
           type="submit"
           disabled={busy}
-          className="w-full inline-flex items-center justify-center gap-2 bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] hover:brightness-110 disabled:opacity-40 text-white font-semibold rounded-full px-6 py-3 transition-all"
+          className="w-full inline-flex items-center justify-center gap-2 bg-linear-to-r from-[#D4AF37] to-[#E6C35C] hover:brightness-105 disabled:opacity-40 text-[#081A3A] font-semibold rounded-full px-6 py-3 transition-all"
         >
           {busy ? "Sending…" : "Send Message"}
           {!busy && <ArrowRight className="w-4 h-4" aria-hidden="true" />}

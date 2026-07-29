@@ -156,12 +156,15 @@ export default function AdminShell({ user, children }: Props) {
   useIdleLogout(idleLogout);
 
   const sidebar = (
-    <div className="flex h-full flex-col bg-linear-to-b from-[#1d4ed8] to-[#3b82f6]">
+    <div className="flex h-full flex-col bg-[#081A3A]">
       {/* Brand — wordmark only; the logo mark lives in the top-right profile dropdown */}
       <div className="h-16 flex items-center px-5 border-b border-white/15 shrink-0">
-        <span className="font-heading text-xl font-semibold leading-none text-white">
-          Utsav Events
-          <span className="ml-1.5 text-[12px] font-sans font-semibold uppercase text-white/70 align-super">
+        <span className="font-heading text-xl font-semibold leading-none text-[#F8F4E8]">
+          Utsav{" "}
+          <span className="text-transparent bg-clip-text bg-linear-to-r from-[#B68A2E] to-[#E6C35C]">
+            Events
+          </span>
+          <span className="ml-1.5 text-[12px] font-sans font-semibold uppercase text-[#F8F4E8]/70 align-super">
             admin
           </span>
         </span>
@@ -174,7 +177,7 @@ export default function AdminShell({ user, children }: Props) {
           if (!items.length) return null;
           return (
             <div key={section.label}>
-              <p className="px-3 mb-2 text-[12px] font-semibold uppercase tracking-widest text-white/60">
+              <p className="px-3 mb-2 text-[12px] font-semibold uppercase tracking-widest text-[#F8F4E8]/60">
                 {section.label}
               </p>
               <ul className="space-y-1">
@@ -198,8 +201,8 @@ export default function AdminShell({ user, children }: Props) {
                           }
                           className={`w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                             childActive
-                              ? "text-white"
-                              : "text-white/80 hover:text-white hover:bg-white/10"
+                              ? "text-[#F8F4E8]"
+                              : "text-[#F8F4E8]/80 hover:text-[#F8F4E8] hover:bg-white/10"
                           }`}
                         >
                           <Icon className="w-5 h-5 shrink-0" aria-hidden="true" />
@@ -222,7 +225,7 @@ export default function AdminShell({ user, children }: Props) {
                                     className={`block rounded-lg pl-4 pr-3 py-2 text-sm transition-colors ${
                                       active
                                         ? "bg-white text-[#1d4ed8] font-medium"
-                                        : "text-white/80 hover:text-white hover:bg-white/10"
+                                        : "text-[#F8F4E8]/80 hover:text-[#F8F4E8] hover:bg-white/10"
                                     }`}
                                   >
                                     {sub.title}
@@ -247,7 +250,7 @@ export default function AdminShell({ user, children }: Props) {
                         className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                           active
                             ? "bg-white text-[#1d4ed8]"
-                            : "text-white/80 hover:text-white hover:bg-white/10"
+                            : "text-[#F8F4E8]/80 hover:text-[#F8F4E8] hover:bg-white/10"
                         }`}
                       >
                         <Icon className="w-5 h-5 shrink-0" aria-hidden="true" />
@@ -284,11 +287,11 @@ export default function AdminShell({ user, children }: Props) {
       {/* Content column */}
       <div className="flex-1 min-w-0 flex flex-col">
         {/* Topbar */}
-        <header className="h-16 shrink-0 sticky top-0 z-30 flex items-center gap-3 px-4 sm:px-6 bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] border-b border-white/15">
+        <header className="h-16 shrink-0 sticky top-0 z-30 flex items-center gap-3 px-4 sm:px-6 bg-[#081A3A] border-b border-white/15">
           <button
             onClick={() => setOpen(true)}
             aria-label="Open menu"
-            className="lg:hidden w-9 h-9 inline-flex items-center justify-center rounded-lg text-white hover:bg-white/10"
+            className="lg:hidden w-9 h-9 inline-flex items-center justify-center rounded-lg text-[#F8F4E8] hover:bg-white/10"
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -306,15 +309,15 @@ export default function AdminShell({ user, children }: Props) {
                 alt=""
                 className="hidden sm:block h-7 w-7 object-contain shrink-0"
               />
-              <span className="text-sm text-white/90 hidden md:block">{user.name}</span>
-              <span className="text-[12px] font-bold uppercase tracking-wide bg-white/20 text-white px-2 py-0.5 rounded hidden sm:inline-block">
+              <span className="text-sm text-[#F8F4E8]/90 hidden md:block">{user.name}</span>
+              <span className="text-[12px] font-bold uppercase tracking-wide bg-white/20 text-[#F8F4E8] px-2 py-0.5 rounded hidden sm:inline-block">
                 {roleLabel}
               </span>
               <span className="w-8 h-8 rounded-full bg-white text-[#1d4ed8] font-bold text-sm flex items-center justify-center uppercase shrink-0">
                 {user.name.trim().charAt(0) || "?"}
               </span>
               <ChevronDown
-                className={`hidden sm:block w-4 h-4 text-white/70 transition-transform ${profileOpen ? "rotate-180" : ""}`}
+                className={`hidden sm:block w-4 h-4 text-[#F8F4E8]/70 transition-transform ${profileOpen ? "rotate-180" : ""}`}
                 aria-hidden="true"
               />
             </button>

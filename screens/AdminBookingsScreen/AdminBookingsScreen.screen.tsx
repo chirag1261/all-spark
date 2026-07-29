@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import AccessDenied from "@/components/AccessDenied";
 import AdminShell from "@/components/AdminShell";
+import BookingSeatsCell from "@/components/BookingSeatsCell";
 import CancelBookingButton from "@/components/CancelBookingButton";
 import RefundButton from "@/components/RefundButton";
 import TicketTransferButton from "@/components/TicketTransferButton";
@@ -198,17 +199,23 @@ export async function AdminBookingsScreen({
               <tbody>
                 {pageBookings.map((b) => (
                   <tr key={b.razorpayOrderId} className="border-b border-slate-200 last:border-0">
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <p className="font-medium">{b.attendeeName}</p>
                       <p className="text-sm text-slate-800">
                         {b.customerEmail} · {b.customerPhone}
                       </p>
                     </td>
-                    <td className="px-4 py-3 text-slate-600">
+                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
                       {eventTitleById.get(b.eventId) ?? b.eventId}
                     </td>
-                    <td className="px-4 py-3">{b.seatIds.join(", ")}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <BookingSeatsCell
+                        bookingId={b.bookingId}
+                        seatIds={b.seatIds}
+                        hasTickets={b.status === "CONFIRMED"}
+                      />
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
                       {b.ticketId ? (
                         <Link
                           href={`/ticket/${b.ticketId}`}
@@ -220,8 +227,8 @@ export async function AdminBookingsScreen({
                         <span className="text-slate-700">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-right">{inr(b.amount)}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 text-right whitespace-nowrap">{inr(b.amount)}</td>
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <span
                         className={`inline-block text-sm font-semibold px-2 py-0.5 rounded ${STATUS_TONES[b.status]}`}
                       >
@@ -235,7 +242,7 @@ export async function AdminBookingsScreen({
                         timeStyle: "short",
                       })}
                     </td>
-                    <td className="px-4 py-3 text-right text-sm">
+                    <td className="px-4 py-3 text-right text-sm whitespace-nowrap">
                       <div className="flex items-center justify-end gap-3">
                         {b.status === "CONFIRMED" && canRefund && (
                           <TicketTransferButton bookingId={b.bookingId} />
