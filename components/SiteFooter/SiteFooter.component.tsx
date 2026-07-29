@@ -88,10 +88,26 @@ export default function SiteFooter() {
           <ul className="space-y-2 text-sm text-white/85">
             <li>
               <a
-                href="mailto:utsavevents.tech@gmail.com"
+                href="mailto:contact@utsavevents.live"
                 className="hover:text-white transition-colors wrap-break-word"
               >
-                utsavevents.tech@gmail.com
+                contact@utsavevents.live
+              </a>
+            </li>
+            <li>
+              <a
+                href="mailto:bookings@utsavevents.live"
+                className="hover:text-white transition-colors wrap-break-word"
+              >
+                bookings@utsavevents.live
+              </a>
+            </li>
+            <li>
+              <a
+                href="mailto:feedback@utsavevents.live"
+                className="hover:text-white transition-colors wrap-break-word"
+              >
+                feedback@utsavevents.live
               </a>
             </li>
             <li className="text-white/70">Mon–Sat, 10am–7pm IST</li>

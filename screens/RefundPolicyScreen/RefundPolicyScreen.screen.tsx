@@ -19,9 +19,9 @@ const SECTIONS: PolicySection[] = [
       "If you cancel your own booking, the refund amount depends on how far in advance of the event you request it:",
     ],
     bullets: [
-      "More than 7 days before the event starts — full refund of the ticket amount.",
-      "Less than 7 days (but 24 hours or more) before the event starts — 50% refund of the ticket amount.",
-      "Less than 24 hours before the event starts — refunds can no longer be requested; the booking is final and non-refundable at that point.",
+      "More than 7 days before the event starts — 30% cancellation charge; 70% of the ticket amount is refunded.",
+      "Between 7 days and 48 hours before the event starts — 50% cancellation charge; 50% of the ticket amount is refunded.",
+      "Less than 48 hours before the event starts — refunds can no longer be requested; the booking is final and non-refundable at that point.",
     ],
   },
   {
@@ -57,7 +57,7 @@ const SECTIONS: PolicySection[] = [
   {
     heading: "How to request a refund",
     paragraphs: [
-      "Email us with your booking ID (it begins with “BKG…” and is in your confirmation email and under My Bookings) and the email address you booked with. We will confirm eligibility and process any refund due as described above. Requests made less than 24 hours before the event starts cannot be accepted or processed, even if sent in time — our system blocks refunds inside that window.",
+      "Email bookings@utsavevents.live with your booking ID (it begins with “BKG…” and is in your confirmation email and under My Bookings) and the email address you booked with. We will confirm eligibility and process any refund due as described above. Requests made less than 48 hours before the event starts cannot be accepted or processed, even if sent in time — our system blocks refunds inside that window.",
     ],
   },
 ];
@@ -66,9 +66,10 @@ export function RefundPolicyScreen() {
   return (
     <PolicyPage
       title="Refund & Cancellation Policy"
-      updated="Last updated: 26 July 2026"
+      updated="Last updated: 28 July 2026"
       intro="This policy explains when and how refunds are available for events booked through Utsav Events. It forms part of our Terms & Conditions."
       sections={SECTIONS}
+      contactEmail="bookings@utsavevents.live"
     />
   );
 }

@@ -51,3 +51,4 @@ export * from "./EventFactStrip";
 export * from "./OrganizerForm";
 export * from "./AdminOrganizersPanel";
 export * from "./BookedSeatsDiagram";
+export * from "./TicketTransferButton";

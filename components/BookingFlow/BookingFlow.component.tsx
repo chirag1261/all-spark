@@ -2,13 +2,19 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+
+
 import { AlertTriangle, Check, Tag, Users } from "lucide-react";
 import Link from "next/link";
+
+
 
 import { MAX_SEATS_PER_BOOKING } from "@/constants";
 import { getSeatLayout, seatPrice, totalSeats } from "@/lib/domain/events";
 import { AttendeeGender, EventItem } from "@/types";
 import { formatDateIST, inr } from "@/utils";
+
+
 
 import BackLink from "../BackLink";
 import Confetti from "../Confetti";
@@ -17,6 +23,10 @@ import Loader from "../Loader";
 import { useRouteLoader } from "../RouteLoader";
 import SeatMap from "../SeatMap";
 import { useToast } from "../Toast";
+
+
+
+
 
 interface TicketView {
   ticketId: string;
@@ -90,8 +100,11 @@ export default function BookingFlow({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bookedSeats, setBookedSeats] = useState<Set<string>>(new Set(initialBookedSeats));
   const [lockedSeats, setLockedSeats] = useState<Set<string>>(new Set(initialLockedSeats));
-  // seatId -> attendee name; the first seat defaults to the purchaser's name
-  const [attendeeNames, setAttendeeNames] = useState<Record<string, string>>({});
+  // seatId -> attendee first/last name; the first seat defaults to the
+  // purchaser's own name (split best-effort on the first space). First name
+  // is mandatory per seat, last name is optional.
+  const [attendeeFirstNames, setAttendeeFirstNames] = useState<Record<string, string>>({});
+  const [attendeeLastNames, setAttendeeLastNames] = useState<Record<string, string>>({});
   // seatId -> optional extra contact details for that attendee
   const [attendeePhones, setAttendeePhones] = useState<Record<string, string>>({});
   const [attendeeEmails, setAttendeeEmails] = useState<Record<string, string>>({});
@@ -179,8 +192,20 @@ export default function BookingFlow({
     });
   };
 
-  const nameForSeat = (seatId: string, index: number) =>
-    attendeeNames[seatId] ?? (index === 0 ? customer.name : "");
+  const splitName = (full: string) => {
+    const parts = full.trim().split(/\s+/).filter(Boolean);
+    return { first: parts[0] ?? "", last: parts.slice(1).join(" ") };
+  };
+
+  const firstNameForSeat = (seatId: string, index: number) =>
+    attendeeFirstNames[seatId] ?? (index === 0 ? splitName(customer.name).first : "");
+  const lastNameForSeat = (seatId: string, index: number) =>
+    attendeeLastNames[seatId] ?? (index === 0 ? splitName(customer.name).last : "");
+  const fullNameForSeat = (seatId: string, index: number) => {
+    const first = firstNameForSeat(seatId, index).trim();
+    const last = lastNameForSeat(seatId, index).trim();
+    return last ? `${first} ${last}` : first;
+  };
 
   const goToAttendees = () => {
     if (selected.size === 0) return showToast("Select at least one seat to continue", "error");
@@ -189,8 +214,10 @@ export default function BookingFlow({
 
   const goToSummary = () => {
     // Same rule the pay() call enforces — validate here so the summary is complete.
-    const missing = selectedSeats.some((seatId, i) => nameForSeat(seatId, i).trim().length < 2);
-    if (missing) return showToast("Enter a name (2+ characters) for every seat", "error");
+    const missing = selectedSeats.some(
+      (seatId, i) => firstNameForSeat(seatId, i).trim().length < 2
+    );
+    if (missing) return showToast("Enter a first name (2+ characters) for every seat", "error");
     setStep("summary");
   };
 
@@ -231,14 +258,14 @@ export default function BookingFlow({
     if (selected.size === 0) return showToast("Select at least one seat", "error");
     const attendees = selectedSeats.map((seatId, i) => ({
       seatId,
-      name: nameForSeat(seatId, i).trim(),
+      name: fullNameForSeat(seatId, i).trim(),
       phone: (attendeePhones[seatId] ?? "").trim(),
       email: (attendeeEmails[seatId] ?? "").trim(),
       gender: attendeeGenders[seatId] || undefined,
     }));
     const missing = attendees.find((a) => a.name.length < 2);
     if (missing) {
-      return showToast(`Enter the attendee's name for seat ${missing.seatId}`, "error");
+      return showToast(`Enter the attendee's first name for seat ${missing.seatId}`, "error");
     }
 
     setPaying(true);
@@ -600,7 +627,7 @@ export default function BookingFlow({
               onToggle={toggleSeat}
             />
           </div>
-          <div className="sticky bottom-0 mt-6 bg-white border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+          <div className="sticky z-10 bottom-0 mt-6 bg-white border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium">
                 {selected.size > 0 ? (
@@ -657,17 +684,28 @@ export default function BookingFlow({
                       {inr(seatPrice(event, seatId) ?? 0)}
                     </span>
                   </div>
-                  <input
-                    value={nameForSeat(seatId, i)}
-                    onChange={(e) =>
-                      setAttendeeNames((prev) => ({ ...prev, [seatId]: e.target.value }))
-                    }
-                    placeholder="Attendee's full name"
-                    required
-                    minLength={2}
-                    maxLength={80}
-                    className="h-9 w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 text-sm outline-none focus:border-[#1d4ed8] focus:bg-white transition-colors"
-                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      value={firstNameForSeat(seatId, i)}
+                      onChange={(e) =>
+                        setAttendeeFirstNames((prev) => ({ ...prev, [seatId]: e.target.value }))
+                      }
+                      placeholder="First name"
+                      required
+                      minLength={2}
+                      maxLength={80}
+                      className="h-9 w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 text-sm outline-none focus:border-[#1d4ed8] focus:bg-white transition-colors"
+                    />
+                    <input
+                      value={lastNameForSeat(seatId, i)}
+                      onChange={(e) =>
+                        setAttendeeLastNames((prev) => ({ ...prev, [seatId]: e.target.value }))
+                      }
+                      placeholder="Last name (optional)"
+                      maxLength={80}
+                      className="h-9 w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 text-sm outline-none focus:border-[#1d4ed8] focus:bg-white transition-colors"
+                    />
+                  </div>
                   <input
                     type="tel"
                     value={attendeePhones[seatId] ?? ""}
@@ -701,6 +739,7 @@ export default function BookingFlow({
                     <option value="female">Female</option>
                     <option value="boy">Boy</option>
                     <option value="girl">Girl</option>
+                    <option value="others">Others</option>
                   </select>
                 </div>
               </div>
@@ -765,7 +804,7 @@ export default function BookingFlow({
                   <span className="shrink-0 whitespace-nowrap text-[11px] font-mono font-semibold tracking-wide text-[#1d4ed8] bg-[#1d4ed8]/10 border border-[#1d4ed8]/25 rounded-lg px-2.5 py-1">
                     {seatId}
                   </span>
-                  <span className="min-w-0 flex-1 truncate text-sm">{nameForSeat(seatId, i)}</span>
+                  <span className="min-w-0 flex-1 truncate text-sm">{fullNameForSeat(seatId, i)}</span>
                   <span className="shrink-0 text-sm text-slate-600">
                     {inr(seatPrice(event, seatId) ?? 0)}
                   </span>

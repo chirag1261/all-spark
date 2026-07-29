@@ -30,6 +30,14 @@ export const EVENT_GUIDELINES = [
   "This is a Plastic-Free Zone – please avoid bringing single-use plastic items and support a cleaner, greener environment.",
 ] as const;
 
+/** Prominent above-the-guidelines warnings — shown in red (where the medium
+ *  supports color) wherever a ticket QR is confirmed: the ticket page, the
+ *  confirmation email, and the WhatsApp share message. */
+export const TICKET_NOTICES = [
+  "Reselling of tickets is strictly prohibited.",
+  "Only valid Government-issued ID cards will be accepted for entry.",
+] as const;
+
 /** Validates an upload's format + size. Returns an error message, or null if OK. */
 export function validateImageUpload(file: {
   name: string;

@@ -71,22 +71,25 @@ export function registrationState(event: EventItem, now = Date.now()): Registrat
 }
 
 export interface RefundEligibility {
-  /** false once the event is under 24 hours away — no refund can be requested. */
+  /** false once the event is under 48 hours away — no refund can be requested. */
   allowed: boolean;
-  /** Fraction of the ticket amount refundable: 1 (>7 days out), 0.5 (<7 days), 0 (blocked). */
-  fraction: 1 | 0.5 | 0;
+  /** Fraction of the ticket amount refundable: 0.7 (>7 days out, 30% cancellation charge),
+   *  0.5 (7 days–48h out, 50% charge), 0 (inside 48h, blocked). */
+  fraction: 0.7 | 0.5 | 0;
 }
 
 /**
  * Customer-initiated cancellation refund policy (see Refund & Cancellation
- * Policy): full refund more than 7 days before the event, 50% inside 7 days,
- * and refunds are blocked entirely inside the final 24 hours.
+ * Policy): more than 7 days before the event, a 30% cancellation charge
+ * applies (70% refunded); from 7 days down to 48 hours before, a 50%
+ * cancellation charge applies; inside the final 48 hours, refunds are
+ * blocked entirely.
  */
 export function refundEligibility(startsAtIso: string, now = Date.now()): RefundEligibility {
   const hoursUntil = (new Date(startsAtIso).getTime() - now) / (60 * 60 * 1000);
-  if (hoursUntil < 24) return { allowed: false, fraction: 0 };
+  if (hoursUntil < 48) return { allowed: false, fraction: 0 };
   if (hoursUntil < 24 * 7) return { allowed: true, fraction: 0.5 };
-  return { allowed: true, fraction: 1 };
+  return { allowed: true, fraction: 0.7 };
 }
 
 /**

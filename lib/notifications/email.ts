@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 
-import { EVENT_GUIDELINES } from "@/constants";
+import { EVENT_GUIDELINES, TICKET_NOTICES } from "@/constants";
 import { getEvent } from "@/lib/db";
 import { ticketQrDataUrl } from "@/lib/domain/tickets";
 import { Booking, TicketRecord } from "@/types";
@@ -212,8 +212,12 @@ export async function sendTicketEmail(
         `Tickets (each person shows their own QR at the gate):`,
         ...ticketBlocksText,
         ``,
+        ...TICKET_NOTICES,
+        ``,
         `Event guidelines:`,
         ...EVENT_GUIDELINES.map((g, i) => `${i + 1}. ${g}`),
+        ``,
+        `Need to modify or cancel this booking? Email bookings@utsavevents.live with your booking ID.`,
       ].join("\n"),
       html: `
         <div style="background:#f5f8ff;padding:24px 0">
@@ -235,12 +239,18 @@ export async function sendTicketEmail(
                 <tr><td style="padding:10px 0;color:#64748b;border-top:1px solid #e5eaf1">Amount paid</td><td style="text-align:right;border-top:1px solid #e5eaf1;font-size:16px;color:#0f172a"><strong>${amountInr}</strong></td></tr>
               </table>
               <p style="font-size:12px;color:#64748b;margin:20px 0 0">Each attendee shows their own QR at the venue gate. Keep ticket IDs private — anyone with an ID can view that ticket.</p>
+              <div style="margin-top:16px;padding:12px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px">
+                <ul style="margin:0;padding-left:16px;font-size:12px;font-weight:bold;color:#b91c1c;line-height:1.7">
+                  ${TICKET_NOTICES.map((n) => `<li>${n}</li>`).join("")}
+                </ul>
+              </div>
               <div style="margin-top:20px;padding-top:16px;border-top:1px solid #e5eaf1">
                 <p style="font-size:13px;font-weight:bold;color:#0f172a;margin:0 0 8px">Event guidelines</p>
                 <ol style="margin:0;padding-left:18px;font-size:12px;color:#64748b;line-height:1.7">
                   ${EVENT_GUIDELINES.map((g) => `<li>${g}</li>`).join("")}
                 </ol>
               </div>
+              <p style="font-size:12px;color:#64748b;margin:16px 0 0">Need to modify or cancel this booking? Email <a href="mailto:bookings@utsavevents.live" style="color:#1d4ed8">bookings@utsavevents.live</a> with your booking ID.</p>
             </div>
           </div>
         </div>`,

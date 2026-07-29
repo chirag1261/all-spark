@@ -1399,6 +1399,38 @@ export async function checkInTicket(
   return rows[0] ? rowToTicket(rows[0]) : undefined;
 }
 
+/**
+ * Admin-initiated ownership transfer: rename the attendee on an already-issued
+ * ticket WITHOUT touching the ticket id or QR signature, so the same physical
+ * QR (already emailed/shared) keeps working — only the name it's checked in
+ * under changes. Keeps the booking's own per-seat `attendees` entry in sync
+ * so the ticket page, "my booking" lookup and admin views all agree.
+ */
+export async function renameTicketAttendee(
+  ticketId: string,
+  newName: string
+): Promise<TicketRecord | undefined> {
+  await initOnce();
+  const { rows } = await db().query(
+    "UPDATE tickets SET attendee_name = $2 WHERE ticket_id = $1 RETURNING *",
+    [ticketId, newName]
+  );
+  const ticket = rows[0] ? rowToTicket(rows[0]) : undefined;
+  if (!ticket) return undefined;
+
+  const booking = await getBookingByBookingId(ticket.bookingId);
+  if (booking) {
+    const attendees = booking.attendees.map((a) =>
+      a.seatId === ticket.seatId ? { ...a, name: newName } : a
+    );
+    await db().query("UPDATE bookings SET attendees = $2 WHERE booking_id = $1", [
+      booking.bookingId,
+      JSON.stringify(attendees),
+    ]);
+  }
+  return ticket;
+}
+
 /** All tickets for an event (attendance list), newest-scanned surfaced first. */
 export async function listTicketsForEvent(eventId: string): Promise<TicketRecord[]> {
   await initOnce();

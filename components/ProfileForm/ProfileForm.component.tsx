@@ -23,16 +23,27 @@ const inputCls =
 const passwordCls =
   "w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus-within:border-[#1d4ed8]";
 
+/** Best-effort split of a stored full name into first/last for pre-filling
+ *  the two inputs — the account still stores (and the API still expects) a
+ *  single combined name string. */
+function splitName(full: string) {
+  const parts = full.trim().split(/\s+/).filter(Boolean);
+  return { first: parts[0] ?? "", last: parts.slice(1).join(" ") };
+}
+
 export default function ProfileForm({ profile }: Props) {
   const router = useRouter();
   const { showToast, toast } = useToast();
-  const [name, setName] = useState(profile.name);
+  const initialName = splitName(profile.name);
+  const [firstName, setFirstName] = useState(initialName.first);
+  const [lastName, setLastName] = useState(initialName.last);
   const [email, setEmail] = useState(profile.email ?? "");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
   const emailChanged = email.trim().toLowerCase() !== (profile.email ?? "");
+  const name = lastName.trim() ? `${firstName.trim()} ${lastName.trim()}` : firstName.trim();
 
   const saveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,16 +103,27 @@ export default function ProfileForm({ profile }: Props) {
         className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4"
       >
         <h2 className="font-semibold">Profile</h2>
-        <div>
-          <Label>Name</Label>
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            minLength={2}
-            maxLength={80}
-            className={inputCls}
-          />
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label>First name</Label>
+            <input
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+              minLength={2}
+              maxLength={80}
+              className={inputCls}
+            />
+          </div>
+          <div>
+            <Label>Last name (optional)</Label>
+            <input
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              maxLength={80}
+              className={inputCls}
+            />
+          </div>
         </div>
         <div>
           <Label>Email</Label>
@@ -131,7 +153,7 @@ export default function ProfileForm({ profile }: Props) {
         </div>
         <button
           type="submit"
-          disabled={busy || name.trim().length < 2}
+          disabled={busy || firstName.trim().length < 2}
           className="bg-[#1d4ed8] hover:bg-[#1e40af] text-white disabled:opacity-40 rounded-lg px-5 py-2.5 font-semibold text-sm transition-colors"
         >
           Save profile

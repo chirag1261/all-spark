@@ -1,4 +1,4 @@
-import { CalendarDays, ExternalLink, Mail, MapPin, Phone } from "lucide-react";
+import { CalendarDays, ExternalLink, Mail, MapPin, MessageSquare, Phone, Ticket } from "lucide-react";
 import Link from "next/link";
 
 import ContactForm from "@/components/ContactForm";
@@ -8,7 +8,9 @@ import { getFeaturedEvent } from "@/lib/db";
 import { formatDateIST } from "@/utils";
 
 const CONTACT = {
-  email: "Admin@utsavevents.in",
+  email: "contact@utsavevents.live",
+  feedbackEmail: "feedback@utsavevents.live",
+  bookingsEmail: "bookings@utsavevents.live",
   phone: "+91 9620710968",
   location: "Bangalore, Karnataka, India",
 };
@@ -27,9 +29,21 @@ export async function ContactScreen() {
             <ul className="space-y-4">
               <ContactRow
                 icon={Mail}
-                label="Email"
+                label="General enquiries"
                 value={CONTACT.email}
                 href={`mailto:${CONTACT.email}`}
+              />
+              <ContactRow
+                icon={Ticket}
+                label="Booking changes & refunds"
+                value={CONTACT.bookingsEmail}
+                href={`mailto:${CONTACT.bookingsEmail}`}
+              />
+              <ContactRow
+                icon={MessageSquare}
+                label="Feedback"
+                value={CONTACT.feedbackEmail}
+                href={`mailto:${CONTACT.feedbackEmail}`}
               />
               <ContactRow
                 icon={Phone}
