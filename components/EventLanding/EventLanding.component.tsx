@@ -11,6 +11,7 @@ import EventFactStrip from "../EventFactStrip";
 import HeroMedia from "../HeroMedia";
 import Parallax from "../Parallax";
 import Reveal from "../Reveal";
+import RevealText from "../RevealText";
 
 interface Props {
   event: EventItem;
@@ -63,7 +64,7 @@ export default function EventLanding({ event, remaining }: Props) {
           />
         </Parallax>
         <div className="absolute inset-0 bg-linear-to-t from-[#0d0a1f] via-[#0d0a1f]/55 to-[#0d0a1f]/10" />
-        <div className="relative max-w-6xl mx-auto px-4 pb-10 sm:pb-16 pt-28 sm:pt-40 w-full text-white">
+        <Reveal className="relative max-w-6xl mx-auto px-4 pb-10 sm:pb-16 pt-28 sm:pt-40 w-full text-white">
           {!soldOut && <CountdownTimer targetIso={event.startsAt} />}
           {soldOut && (
             <span className="inline-block bg-red-600 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-widest mb-5">
@@ -76,7 +77,7 @@ export default function EventLanding({ event, remaining }: Props) {
             </p>
           )}
           <h1 className="text-4xl sm:text-7xl font-extrabold tracking-tighter leading-[1.05] drop-shadow-lg max-w-3xl wrap-break-word">
-            {event.title}
+            <RevealText as="span">{event.title}</RevealText>
           </h1>
           {event.landing?.heroKicker && (
             <p className="font-heading text-xl sm:text-3xl text-[#E6C35C] mt-3 drop-shadow">
@@ -92,37 +93,43 @@ export default function EventLanding({ event, remaining }: Props) {
             {formatDateIST(event.startsAt)} · {event.venue}, {event.city}
           </p>
           <div className="mt-8">{cta}</div>
-        </div>
+        </Reveal>
       </section>
 
       {/* ---- Quick facts strip ---- */}
-      <section className="max-w-6xl mx-auto px-4 mt-10 relative">
+      <Reveal as="section" className="max-w-6xl mx-auto px-4 mt-10 relative">
         <EventFactStrip event={event} remaining={remaining} />
-      </section>
+      </Reveal>
 
       <div className="section-y max-w-6xl mx-auto px-4 space-y-14 sm:space-y-20">
         {/* ---- About ---- */}
         <section className="grid lg:grid-cols-2 gap-10 items-start">
-          <div>
-            <SectionTitle>About the event</SectionTitle>
+          <Reveal variant="left">
+            <SectionTitle>
+              <RevealText as="span">About the event</RevealText>
+            </SectionTitle>
             <p className="text-slate-700 whitespace-pre-line leading-relaxed wrap-break-word">
               {event.description}
             </p>
-          </div>
+          </Reveal>
           {event.gallery[0] && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={event.gallery[0]}
-              alt={`${event.title} highlight`}
-              className="rounded-2xl w-full aspect-video object-cover border border-slate-200"
-            />
+            <Reveal variant="right">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={event.gallery[0]}
+                alt={`${event.title} highlight`}
+                className="rounded-2xl w-full aspect-video object-cover border border-slate-200"
+              />
+            </Reveal>
           )}
         </section>
 
         {/* ---- Why attend ---- */}
         {event.landing?.whyAttend && event.landing.whyAttend.length > 0 && (
           <section>
-            <SectionTitle>Why attend {event.title}</SectionTitle>
+            <SectionTitle>
+              <RevealText as="span">{`Why attend ${event.title}`}</RevealText>
+            </SectionTitle>
             <div className="grid sm:grid-cols-3 gap-5">
               {event.landing.whyAttend.map((c, i) => (
                 <Reveal
@@ -147,17 +154,23 @@ export default function EventLanding({ event, remaining }: Props) {
         {/* ---- Gallery ---- */}
         {event.gallery.length > 1 && (
           <section>
-            <SectionTitle>Gallery</SectionTitle>
+            <SectionTitle>
+              <RevealText as="span">Gallery</RevealText>
+            </SectionTitle>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {event.gallery.slice(1).map((url, i) => (
-                <div key={url} className="overflow-hidden rounded-2xl border border-[#e5eaf1]">
+                <Reveal
+                  key={url}
+                  delay={i * 90}
+                  className="overflow-hidden rounded-2xl border border-[#e5eaf1]"
+                >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={url}
                     alt={`${event.title} photo ${i + 2}`}
                     className="w-full aspect-4/3 object-cover hover:scale-105 transition-transform duration-500"
                   />
-                </div>
+                </Reveal>
               ))}
             </div>
           </section>
@@ -233,7 +246,9 @@ export default function EventLanding({ event, remaining }: Props) {
 
         {/* ---- Tickets ---- */}
         <section>
-          <SectionTitle>Tickets</SectionTitle>
+          <SectionTitle>
+            <RevealText as="span">Tickets</RevealText>
+          </SectionTitle>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {tiers.map((tier, i) => {
               const cardCls = `block rounded-2xl border p-6 text-left transition-all duration-300 ${
@@ -259,14 +274,16 @@ export default function EventLanding({ event, remaining }: Props) {
                 </>
               );
 
-              return bookable ? (
-                <Link key={tier.id} href={`/events/${event.id}/book`} className={cardCls}>
-                  {cardContent}
-                </Link>
-              ) : (
-                <div key={tier.id} className={cardCls}>
-                  {cardContent}
-                </div>
+              return (
+                <Reveal key={tier.id} delay={i * 90}>
+                  {bookable ? (
+                    <Link href={`/events/${event.id}/book`} className={cardCls}>
+                      {cardContent}
+                    </Link>
+                  ) : (
+                    <div className={cardCls}>{cardContent}</div>
+                  )}
+                </Reveal>
               );
             })}
           </div>
@@ -281,10 +298,15 @@ export default function EventLanding({ event, remaining }: Props) {
         {/* ---- Event details + evening schedule ---- */}
         {event.landing && (event.landing.details?.length || event.landing.schedule?.length) ? (
           <section>
-            <SectionTitle>Event details</SectionTitle>
+            <SectionTitle>
+              <RevealText as="span">Event details</RevealText>
+            </SectionTitle>
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
               {event.landing.details && event.landing.details.length > 0 && (
-                <div className="rounded-2xl border border-[#e5eaf1] bg-white divide-y divide-[#e5eaf1]">
+                <Reveal
+                  variant="left"
+                  className="rounded-2xl border border-[#e5eaf1] bg-white divide-y divide-[#e5eaf1]"
+                >
                   {event.landing.details.map((d, i) => (
                     <div key={i} className="px-5 py-4">
                       <p className="text-[11px] uppercase tracking-widest text-[#1d4ed8] mb-1">
@@ -293,10 +315,10 @@ export default function EventLanding({ event, remaining }: Props) {
                       <p className="text-sm font-medium wrap-break-word">{d.value}</p>
                     </div>
                   ))}
-                </div>
+                </Reveal>
               )}
               {event.landing.schedule && event.landing.schedule.length > 0 && (
-                <div>
+                <Reveal variant="right">
                   <h3 className="font-heading text-2xl font-semibold mb-4">Evening schedule</h3>
                   <ol className="relative border-l border-[#e5eaf1] ml-2 space-y-6">
                     {event.landing.schedule.map((s, i) => (
@@ -310,7 +332,7 @@ export default function EventLanding({ event, remaining }: Props) {
                       </li>
                     ))}
                   </ol>
-                </div>
+                </Reveal>
               )}
             </div>
           </section>
@@ -319,8 +341,10 @@ export default function EventLanding({ event, remaining }: Props) {
         {/* ---- The venue ---- */}
         {event.landing?.venue && (
           <section className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            <div>
-              <SectionTitle>The venue</SectionTitle>
+            <Reveal variant="left">
+              <SectionTitle>
+                <RevealText as="span">The venue</RevealText>
+              </SectionTitle>
               <h3 className="text-xl font-bold wrap-break-word">{event.landing.venue.name}</h3>
               {event.landing.venue.address && (
                 <p className="flex items-center gap-1.5 text-sm text-[#1d4ed8] mt-1.5">
@@ -338,14 +362,16 @@ export default function EventLanding({ event, remaining }: Props) {
                   {event.landing.venue.accessibility}
                 </p>
               )}
-            </div>
+            </Reveal>
             {event.landing.venue.imageUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={event.landing.venue.imageUrl}
-                alt={event.landing.venue.name}
-                className="rounded-2xl w-full aspect-video object-cover border border-[#e5eaf1] shadow-[0_16px_40px_rgba(15,23,42,0.10)]"
-              />
+              <Reveal variant="right">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={event.landing.venue.imageUrl}
+                  alt={event.landing.venue.name}
+                  className="rounded-2xl w-full aspect-video object-cover border border-[#e5eaf1] shadow-[0_16px_40px_rgba(15,23,42,0.10)]"
+                />
+              </Reveal>
             )}
           </section>
         )}
@@ -353,21 +379,22 @@ export default function EventLanding({ event, remaining }: Props) {
         {/* ---- FAQs (kept last, after every other detail section) ---- */}
         {event.faqs.length > 0 && (
           <section className="max-w-3xl">
-            <SectionTitle>Frequently asked questions</SectionTitle>
+            <SectionTitle>
+              <RevealText as="span">Frequently asked questions</RevealText>
+            </SectionTitle>
             <div className="space-y-3">
               {event.faqs.map((faq, i) => (
-                <details
-                  key={i}
-                  className="bg-white border border-slate-200 rounded-xl px-5 py-4 group"
-                >
-                  <summary className="cursor-pointer font-medium list-none flex items-center gap-3">
-                    <span className="wrap-break-word min-w-0">{faq.question}</span>
-                    <span className="ml-auto text-slate-500 group-open:rotate-45 transition-transform">
-                      +
-                    </span>
-                  </summary>
-                  <p className="text-sm text-slate-600 mt-3 wrap-break-word">{faq.answer}</p>
-                </details>
+                <Reveal key={i} delay={i * 90}>
+                  <details className="bg-white border border-slate-200 rounded-xl px-5 py-4 group">
+                    <summary className="cursor-pointer font-medium list-none flex items-center gap-3">
+                      <span className="wrap-break-word min-w-0">{faq.question}</span>
+                      <span className="ml-auto text-slate-500 group-open:rotate-45 transition-transform">
+                        +
+                      </span>
+                    </summary>
+                    <p className="text-sm text-slate-600 mt-3 wrap-break-word">{faq.answer}</p>
+                  </details>
+                </Reveal>
               ))}
             </div>
           </section>
@@ -377,15 +404,17 @@ export default function EventLanding({ event, remaining }: Props) {
       {/* ---- Bottom CTA band ---- */}
       <section className={`relative overflow-hidden bg-linear-to-br ${event.poster}`}>
         <div className="absolute inset-0 bg-white/90" />
-        <div className="section-y relative max-w-6xl mx-auto px-4 text-center">
+        <Reveal variant="scale" className="section-y relative max-w-6xl mx-auto px-4 text-center">
           <h2 className="text-2xl sm:text-3xl font-extrabold mb-2">
-            {soldOut ? "This one's full — see you at the next one!" : "Don't miss it."}
+            <RevealText as="span">
+              {soldOut ? "This one's full — see you at the next one!" : "Don't miss it."}
+            </RevealText>
           </h2>
           <p className="text-slate-700 mb-6">
             {formatDateIST(event.startsAt)} · {event.venue}, {event.city}
           </p>
           {cta}
-        </div>
+        </Reveal>
       </section>
     </div>
   );

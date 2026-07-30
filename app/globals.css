@@ -7,7 +7,7 @@
    consistency requirement) for both body copy and headings.
 --------------------------------------------------------------------------- */
 :root {
-  --background: #ffffff; /* page canvas */
+  --background: #faf9f6; /* page canvas — off-white */
   --foreground: #0f172a; /* slate-900 — primary text */
   --muted: #64748b; /* slate-500 — secondary text */
   --surface: #ffffff; /* raised cards */
@@ -240,6 +240,24 @@ h3 {
   transform: none;
 }
 
+/* Locomotive-style headline reveal — driven by the <RevealText> client
+   component: each word sits in an `overflow-hidden` mask so it appears to
+   rise up from behind a clean edge, staggered word-by-word via an inline
+   `transition-delay`, rather than the whole heading fading in as one block. */
+.reveal-word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(100%);
+  transition:
+    opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.reveal-word-in {
+  opacity: 1;
+  transform: none;
+}
+
 /* Soft floating drift for decorative hero/section ornaments */
 @keyframes float-slow {
   0%,
@@ -280,7 +298,8 @@ h3 {
   .gradient-pan {
     animation: none !important;
   }
-  .reveal {
+  .reveal,
+  .reveal-word {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;

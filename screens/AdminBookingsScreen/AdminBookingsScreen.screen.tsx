@@ -170,7 +170,7 @@ export async function AdminBookingsScreen({
         </div>
       ) : (
         <>
-          <div className="max-h-[70vh] overflow-y-auto overflow-x-auto border border-slate-200 rounded-xl">
+          <div className="max-h-[70vh] overflow-y-auto overflow-x-auto border border-slate-200 rounded-xl bg-white">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-white bg-[#1d4ed8] sticky top-0 z-10">

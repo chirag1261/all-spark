@@ -46,6 +46,7 @@ export * from "./ScanConsole";
 export * from "./AttendanceBoard";
 export * from "./PasswordInput";
 export * from "./Reveal";
+export * from "./RevealText";
 export * from "./CountUp";
 export * from "./EventFactStrip";
 export * from "./OrganizerForm";
