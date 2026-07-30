@@ -34,7 +34,7 @@ export default function AccountTabs({ active }: { active: string }) {
             ref={isActive ? activeRef : undefined}
             className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium border transition-all duration-200 ${
               isActive
-                ? "bg-linear-to-r from-[#1d4ed8] to-[#3b82f6] border-transparent text-white"
+                ? "bg-[#081A3A] border-transparent text-[#F8F4E8]"
                 : "bg-white border-[#e5eaf1] text-slate-600 hover:text-slate-900 hover:border-slate-400"
             }`}
           >

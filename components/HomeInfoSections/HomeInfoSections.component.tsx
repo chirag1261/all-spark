@@ -1,5 +1,9 @@
 import { HeartHandshake, type LucideIcon, Music, Sparkles } from "lucide-react";
 
+import Parallax from "@/components/Parallax";
+import Reveal from "@/components/Reveal";
+import RevealText from "@/components/RevealText";
+
 /**
  * Devotional marketing sections for the public homepage, mirroring
  * utsavevents.live: an "About Utsav Events" intro, a "Why Attend" trio, and a
@@ -30,7 +34,7 @@ export default function HomeInfoSections() {
     <>
       {/* About Utsav Events */}
       <section className="section-y max-w-6xl mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center">
-        <div className="relative">
+        <Reveal variant="left" className="relative">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,w_1600/utsav-events/audience"
@@ -38,11 +42,11 @@ export default function HomeInfoSections() {
             className="rounded-3xl w-full aspect-4/3 object-cover border border-[#e5eaf1] shadow-[0_16px_40px_rgba(15,23,42,0.10)]"
           />
           <div className="absolute inset-0 rounded-3xl ring-1 ring-inset ring-[#1d4ed8]/10" />
-        </div>
-        <div>
+        </Reveal>
+        <Reveal variant="right">
           <p className="font-heading text-[#1d4ed8] text-lg mb-2">About Utsav Events</p>
           <h2 className="font-heading text-3xl sm:text-5xl font-semibold leading-tight mb-5">
-            Sacred experiences in music &amp; devotion
+            <RevealText as="span">Sacred experiences in music &amp; devotion</RevealText>
           </h2>
           <p className="text-slate-700/90 leading-relaxed text-lg">
             Utsav Events is a Bangalore-based cultural organisation dedicated to bringing
@@ -50,24 +54,25 @@ export default function HomeInfoSections() {
             experiences that honour tradition, uplift the spirit, and create lasting memories for
             every devotee who walks through our doors.
           </p>
-        </div>
+        </Reveal>
       </section>
 
       {/* Why Attend */}
       <section className="border-y border-slate-200 bg-[#f5f8ff]">
         <div className="section-y max-w-6xl mx-auto px-4">
-          <div className="text-center max-w-2xl mx-auto mb-12">
+          <Reveal className="text-center max-w-2xl mx-auto mb-12">
             <p className="font-heading text-[#1d4ed8] text-lg mb-1">Why Attend</p>
             <h2 className="font-heading text-3xl sm:text-5xl font-semibold">
-              An experience that touches the soul
+              <RevealText as="span">An experience that touches the soul</RevealText>
             </h2>
-          </div>
+          </Reveal>
           <div className="grid sm:grid-cols-3 gap-6">
-            {WHY.map((f) => {
+            {WHY.map((f, i) => {
               const Icon = f.icon;
               return (
-                <div
+                <Reveal
                   key={f.title}
+                  delay={i * 90}
                   className="text-center bg-white border border-[#e5eaf1] rounded-3xl p-8 hover:border-[#1d4ed8]/40 hover:-translate-y-1 transition-all duration-300"
                 >
                   <div className="w-14 h-14 rounded-full bg-[#1d4ed8]/10 text-[#1d4ed8] flex items-center justify-center mx-auto mb-5">
@@ -75,7 +80,7 @@ export default function HomeInfoSections() {
                   </div>
                   <h3 className="font-heading text-2xl font-semibold mb-2">{f.title}</h3>
                   <p className="text-sm text-slate-600 leading-relaxed">{f.body}</p>
-                </div>
+                </Reveal>
               );
             })}
           </div>
@@ -84,23 +89,25 @@ export default function HomeInfoSections() {
 
       {/* Closing CTA */}
       <section className="relative overflow-hidden">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,w_1600/utsav-events/artist"
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
+        <Parallax speed={0.12} max={32} className="absolute -inset-y-12 inset-x-0">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,w_1600/utsav-events/artist"
+            alt=""
+            aria-hidden="true"
+            className="w-full h-full object-cover"
+          />
+        </Parallax>
         <div className="absolute inset-0 bg-[#0d0a1f]/85" />
-        <div className="section-y relative max-w-3xl mx-auto px-4 text-center text-white">
+        <Reveal variant="scale" className="section-y relative max-w-3xl mx-auto px-4 text-center text-white">
           <h2 className="font-heading text-3xl sm:text-5xl font-semibold mb-4">
-            Be part of a divine evening
+            <RevealText as="span">Be part of a divine evening</RevealText>
           </h2>
           <p className="text-white/80 text-lg leading-relaxed">
             Seats are limited. Reserve yours today and join a gathering of hearts united in
             devotion.
           </p>
-        </div>
+        </Reveal>
       </section>
     </>
   );

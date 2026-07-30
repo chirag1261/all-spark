@@ -106,7 +106,7 @@ export default function AdminPromoCodesPanel({ codes, events }: Props) {
         usage cap. A redemption is counted only when a payment is confirmed.
       </p>
 
-      <div className="overflow-x-auto border border-slate-200 rounded-xl">
+      <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-white bg-[#1d4ed8]">

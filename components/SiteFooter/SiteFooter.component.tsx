@@ -12,13 +12,13 @@ export default function SiteFooter() {
     <footer className="bg-[#081A3A] text-[#F8F4E8]/80">
       <div className="max-w-6xl mx-auto px-4 py-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
         <div className="lg:col-span-2 max-w-sm">
-          <p className="font-heading text-2xl font-semibold tracking-tight text-[#F8F4E8]">
+          <p className="font-heading text-2xl font-semibold tracking-tight text-transparent bg-clip-text bg-linear-to-r from-[#B68A2E] to-[#E6C35C]">
             Utsav{" "}
             <span className="text-transparent bg-clip-text bg-linear-to-r from-[#B68A2E] to-[#E6C35C]">
               Events
             </span>
           </p>
-          <p className="font-heading text-lg text-[#E6C35C] mt-2">॥ संगीत ही ईश्वर है ॥</p>
+          <p className="font-heading text-lg text-white mt-2">॥ संगीत ही ईश्वर है ॥</p>
           <p className="text-sm text-[#F8F4E8]/85 mt-3 leading-relaxed">
             A Bangalore-based cultural organisation bringing communities together through the
             timeless power of music and devotion — pick your exact seat, book securely and receive

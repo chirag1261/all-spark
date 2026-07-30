@@ -16,10 +16,10 @@ export async function AccountTransactionsScreen() {
       {bookings.length === 0 ? (
         <p className="text-slate-500 py-16 text-center">No transactions yet.</p>
       ) : (
-        <div className="overflow-x-auto border border-slate-200 rounded-xl">
+        <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-slate-500 border-b border-slate-200 bg-slate-50">
+              <tr className="text-left text-[#F8F4E8] bg-[#081A3A]">
                 <th className="px-4 py-3 font-medium">Date</th>
                 <th className="px-4 py-3 font-medium">Event</th>
                 <th className="px-4 py-3 font-medium">Reference</th>

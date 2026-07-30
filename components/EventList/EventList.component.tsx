@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { MapPin, Zap } from "lucide-react";
 import Link from "next/link";
 
+import Reveal from "@/components/Reveal";
 import { minPrice, registrationState, totalSeats } from "@/lib/domain/events";
 import { EventItem } from "@/types";
 import { formatDateIST, inr } from "@/utils";
@@ -93,7 +94,7 @@ export default function EventList({
         </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((event) => {
+          {filtered.map((event, i) => {
             const left = remaining[event.id] ?? 0;
             const total = totalSeats(event);
             const soldOut = left <= 0;
@@ -101,10 +102,10 @@ export default function EventList({
             const reg = registrationState(event);
             const fromPrice = minPrice(event);
             return (
+              <Reveal key={event.id} delay={i * 90}>
               <Link
-                key={event.id}
                 href={`/events/${event.id}`}
-                className="group rounded-2xl bg-white border border-[#e5eaf1] hover:border-[#1d4ed8]/40 overflow-hidden shadow-lg hover:shadow-[0_12px_30px_rgba(15,23,42,0.10)] hover:-translate-y-1 transition-all duration-300"
+                className="group block rounded-2xl bg-white border border-[#e5eaf1] hover:border-[#1d4ed8]/40 overflow-hidden shadow-lg hover:shadow-[0_12px_30px_rgba(15,23,42,0.10)] hover:-translate-y-1 transition-all duration-300"
               >
                 <div
                   className={`relative aspect-video overflow-hidden bg-linear-to-br ${event.poster}`}
@@ -158,6 +159,7 @@ export default function EventList({
                   </span>
                 </div>
               </Link>
+              </Reveal>
             );
           })}
         </div>

@@ -44,7 +44,7 @@ export default function AdminOrganizersPanel({ organizers, cloudinaryEnabled }: 
         instead of removing to hide someone without losing their details.
       </p>
 
-      <div className="overflow-x-auto border border-slate-200 rounded-xl">
+      <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-white bg-[#1d4ed8]">

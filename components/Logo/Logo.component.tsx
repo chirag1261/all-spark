@@ -20,7 +20,7 @@ export default function Logo({ href = "/", admin = false, onDark = false }: Prop
       />
       <span
         className={`font-heading text-2xl font-semibold tracking-tight leading-none ${
-          onDark ? "text-[#F8F4E8]" : ""
+          onDark ? "text-transparent bg-clip-text bg-linear-to-r from-[#B68A2E] to-[#E6C35C]" : ""
         }`}
       >
         Utsav{" "}

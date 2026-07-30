@@ -1,11 +1,19 @@
 import { HeartHandshake, type LucideIcon, ShieldCheck, Sparkles, Users2 } from "lucide-react";
 import Link from "next/link";
 
+
+
 import CountUp from "@/components/CountUp";
+import Parallax from "@/components/Parallax";
 import Reveal from "@/components/Reveal";
+import RevealText from "@/components/RevealText";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import { getFeaturedEvent } from "@/lib/db";
+
+
+
+
 
 const VALUES: { icon: LucideIcon; title: string; body: string }[] = [
   {
@@ -66,17 +74,20 @@ export async function AboutScreen() {
           <Reveal className="max-w-4xl mx-auto px-4 text-center">
             <p className="font-heading text-[#1d4ed8] text-lg mb-3">About Utsav Events</p>
             <h1 className="font-heading text-4xl sm:text-6xl font-semibold leading-tight">
-              Born from devotion. Built on community.
-              <br className="hidden sm:block" /> Dedicated to the divine.
+              <RevealText as="span">Born from devotion. Built on community.</RevealText>
+              <br className="hidden sm:block" />{" "}
+              <RevealText as="span">Dedicated to the divine.</RevealText>
             </h1>
           </Reveal>
           <Reveal variant="scale" delay={120} className="max-w-4xl mx-auto px-4 mt-10">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,w_1600/utsav-events/hero"
-              alt="Utsav Events devotional gathering"
-              className="w-full aspect-video object-cover rounded-3xl border border-[#e5eaf1] shadow-[0_16px_40px_rgba(15,23,42,0.10)]"
-            />
+            <Parallax speed={0.12} max={28}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="https://res.cloudinary.com/cih7cika/image/upload/f_auto,q_auto,w_1600/utsav-events/hero"
+                alt="Utsav Events devotional gathering"
+                className="w-full aspect-video object-cover rounded-3xl border border-[#e5eaf1] shadow-[0_16px_40px_rgba(15,23,42,0.10)]"
+              />
+            </Parallax>
           </Reveal>
         </section>
 
@@ -111,7 +122,7 @@ export async function AboutScreen() {
             <Reveal variant="right" className="order-1 lg:order-2">
               <p className="font-heading text-[#1d4ed8] text-lg mb-2">Who We Are</p>
               <h2 className="font-heading text-3xl sm:text-5xl font-semibold leading-tight mb-5">
-                About Utsav Events
+                <RevealText as="span">About Utsav Events</RevealText>
               </h2>
               <p className="text-slate-700/90 leading-relaxed text-lg">
                 Utsav Events is a Bangalore-based cultural organisation dedicated to bringing
@@ -159,7 +170,9 @@ export async function AboutScreen() {
           <div className="section-y max-w-6xl mx-auto px-4">
             <div className="text-center max-w-2xl mx-auto mb-12">
               <p className="font-heading text-[#1d4ed8] text-lg mb-1">What we stand for</p>
-              <h2 className="font-heading text-3xl sm:text-5xl font-semibold">Our values</h2>
+              <h2 className="font-heading text-3xl sm:text-5xl font-semibold">
+                <RevealText as="span">Our values</RevealText>
+              </h2>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {VALUES.map((v, i) => {
@@ -188,7 +201,9 @@ export async function AboutScreen() {
           <div className="max-w-6xl mx-auto px-4">
             <div className="text-center max-w-2xl mx-auto mb-12">
               <p className="font-heading text-[#1d4ed8] text-lg mb-1">The people behind it</p>
-              <h2 className="font-heading text-3xl sm:text-5xl font-semibold">Our team</h2>
+              <h2 className="font-heading text-3xl sm:text-5xl font-semibold">
+                <RevealText as="span">Our team</RevealText>
+              </h2>
             </div>
             <div className="grid sm:grid-cols-3 gap-5">
               {TEAM.map((t, i) => (
@@ -209,8 +224,8 @@ export async function AboutScreen() {
         {/* Closing CTA */}
         <section className="border-t border-slate-200 bg-[#f5f8ff]">
           <Reveal variant="scale" className="section-y max-w-3xl mx-auto px-4 text-center">
-            <h2 className="font-heading text-3xl sm:text-5xl font-semibold mb-4">
-              Join us at our next gathering
+            <h2 className="font-heading leading-14 text-3xl sm:text-5xl font-semibold mb-4">
+              <RevealText as="span">Join us at our next gathering</RevealText>
             </h2>
             <p className="text-slate-700 text-lg leading-relaxed mb-8">
               {featured
