@@ -1,10 +1,16 @@
 import { Resend } from "resend";
 
+
+
 import { EVENT_GUIDELINES, TICKET_NOTICES } from "@/constants";
 import { getEvent } from "@/lib/db";
 import { ticketQrDataUrl } from "@/lib/domain/tickets";
 import { Booking, TicketRecord } from "@/types";
 import { inr } from "@/utils";
+
+
+
+
 
 /**
  * Resend (https://resend.com) instead of raw SMTP: it authenticates with an
@@ -74,7 +80,18 @@ export async function sendOtpEmail(to: string, code: string): Promise<{ sent: bo
 }
 
 /** Where public contact-form messages are delivered. */
-const CONTACT_TO = () => process.env.ADMIN_EMAIL || "utsavevents.tech@gmail.com";
+const CONTACT_TO = () => process.env.CONTACT_EMAIL || "contact@utsavevents.live";
+
+/** This form is public + unauthenticated, so its fields are attacker-controlled
+ *  free text — escape before interpolating into the HTML email below. */
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
 
 /**
  * Relays a public "contact us" message to the team inbox. Never throws — the
@@ -101,6 +118,34 @@ export async function sendContactMessage(msg: {
     console.log(`[email:dev] Contact message:\n${lines}`);
     return { sent: true }; // dev delivery — the server console is the inbox
   }
+
+  const detailRow = (label: string, valueHtml: string) => `
+                <tr>
+                  <td style="padding:7px 0;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;vertical-align:top">${label}</td>
+                  <td style="padding:7px 0 7px 18px;font-size:14px;color:#0f172a;font-weight:600">${valueHtml}</td>
+                </tr>`;
+
+  const html = `
+    <div style="background:#f5f8ff;padding:32px 16px">
+      <div style="max-width:540px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;background:#ffffff;color:#0f172a;border:1px solid #e5eaf1;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,0.06)">
+        <div style="background:#1d4ed8;padding:22px 28px">
+          <p style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#bfdbfe">Utsav Events · Contact form</p>
+          <h1 style="margin:0;font-size:20px;color:#ffffff">New message from ${escapeHtml(msg.name)}</h1>
+        </div>
+        <div style="padding:26px 28px">
+          <table style="width:100%;border-collapse:collapse;margin-bottom:22px">
+            ${detailRow("Name", escapeHtml(msg.name))}
+            ${detailRow("Email", `<a href="mailto:${encodeURIComponent(msg.email)}" style="color:#1d4ed8;text-decoration:none">${escapeHtml(msg.email)}</a>`)}
+            ${msg.phone ? detailRow("Phone", escapeHtml(msg.phone)) : ""}
+            ${msg.topic ? detailRow("Topic", escapeHtml(msg.topic)) : ""}
+          </table>
+          <p style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin:0 0 8px">Message</p>
+          <div style="background:#f5f8ff;border:1px solid #e5eaf1;border-radius:12px;padding:16px 18px;font-size:14px;line-height:1.6;color:#0f172a;white-space:pre-wrap">${escapeHtml(msg.message)}</div>
+          <p style="font-size:12px;color:#94a3b8;margin:22px 0 0">Reply directly to this email to respond to ${escapeHtml(msg.name)}.</p>
+        </div>
+      </div>
+    </div>`;
+
   try {
     const { error } = await client().emails.send({
       from: FROM(),
@@ -108,6 +153,7 @@ export async function sendContactMessage(msg: {
       replyTo: msg.email,
       subject: `Contact form: ${msg.topic || "General enquiry"} — ${msg.name}`,
       text: lines,
+      html,
     });
     if (error) {
       console.error("Contact email failed:", error);
