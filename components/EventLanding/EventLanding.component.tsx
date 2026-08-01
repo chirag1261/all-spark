@@ -181,7 +181,7 @@ export default function EventLanding({ event, remaining }: Props) {
           <Reveal
             as="section"
             variant="scale"
-            className="relative overflow-hidden rounded-4xl border border-[#1d4ed8]/15 bg-linear-to-br from-[#0f1e4d] via-[#12245b] to-[#1d3a86] gradient-pan text-white px-6 sm:px-10 lg:px-14 py-10 sm:py-14 shadow-[0_24px_60px_rgba(15,23,42,0.18)]"
+            className="relative overflow-hidden rounded-3xl border border-[#1d4ed8]/15 bg-linear-to-br from-[#0f1e4d] via-[#12245b] to-[#1d3a86] gradient-pan text-white px-6 sm:px-10 lg:px-14 py-10 sm:py-14 shadow-[0_24px_60px_rgba(15,23,42,0.18)]"
           >
             {/* Decorative glow ornaments */}
             <span

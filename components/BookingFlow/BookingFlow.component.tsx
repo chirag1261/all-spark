@@ -176,21 +176,27 @@ export default function BookingFlow({
   // server recomputes authoritatively in /api/orders).
   const payable = Math.max(0, totalAmount - (appliedPromo?.discount ?? 0));
 
-  const toggleSeat = (seatId: string) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(seatId)) {
-        next.delete(seatId);
-      } else {
-        if (next.size >= MAX_SEATS_PER_BOOKING) {
-          showToast(`You can book at most ${MAX_SEATS_PER_BOOKING} seats`, "error");
-          return prev;
+  // Stable identity (functional setState, no `selected` closure) so it can be
+  // passed through to <SeatMap>'s memoized seat buttons without invalidating
+  // all ~thousands of them on every single toggle during a drag-select.
+  const toggleSeat = useCallback(
+    (seatId: string) => {
+      setSelected((prev) => {
+        const next = new Set(prev);
+        if (next.has(seatId)) {
+          next.delete(seatId);
+        } else {
+          if (next.size >= MAX_SEATS_PER_BOOKING) {
+            showToast(`You can book at most ${MAX_SEATS_PER_BOOKING} seats`, "error");
+            return prev;
+          }
+          next.add(seatId);
         }
-        next.add(seatId);
-      }
-      return next;
-    });
-  };
+        return next;
+      });
+    },
+    [showToast]
+  );
 
   const splitName = (full: string) => {
     const parts = full.trim().split(/\s+/).filter(Boolean);
@@ -627,7 +633,10 @@ export default function BookingFlow({
               onToggle={toggleSeat}
             />
           </div>
-          <div className="sticky z-10 bottom-0 mt-6 bg-white border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+          <div
+            data-seatmap-obstruction
+            className="sticky z-10 bottom-0 mt-6 bg-white border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center"
+          >
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium">
                 {selected.size > 0 ? (
