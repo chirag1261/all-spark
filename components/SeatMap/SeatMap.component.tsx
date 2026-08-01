@@ -1,12 +1,68 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { createPortal } from "react-dom";
 
 import { buildVenue, Venue } from "@/lib/domain/venue";
 import { EventItem, Seat } from "@/types";
 import { inr } from "@/utils";
+
+const ARROW_LONG_PRESS_MS = 350;
+const ARROW_NUDGE_PX = 220;
+const ARROW_SLIDE_PX_PER_TICK = 14;
+const ARROW_SLIDE_TICK_MS = 16;
+
+/** Powers one scroll-arrow button: a short tap smoothly nudges the seat map
+ *  a fixed distance; pressing and holding slides it continuously (like
+ *  dragging a scrollbar) until released. */
+function useArrowScroll(scrollRef: React.RefObject<HTMLDivElement | null>, direction: 1 | -1) {
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const slideInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+  const sliding = useRef(false);
+
+  const stop = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+    if (slideInterval.current) {
+      clearInterval(slideInterval.current);
+      slideInterval.current = null;
+    }
+  };
+
+  // Belt-and-braces: stop any in-flight press if the button unmounts mid-hold.
+  useEffect(() => stop, []);
+
+  const onPointerDown = () => {
+    sliding.current = false;
+    longPressTimer.current = setTimeout(() => {
+      sliding.current = true;
+      slideInterval.current = setInterval(() => {
+        scrollRef.current?.scrollBy({ left: direction * ARROW_SLIDE_PX_PER_TICK });
+      }, ARROW_SLIDE_TICK_MS);
+    }, ARROW_LONG_PRESS_MS);
+  };
+
+  const onPointerUp = () => {
+    const wasSliding = sliding.current;
+    stop();
+    sliding.current = false;
+    // The long-press timer never fired — that's a short tap, not a hold.
+    if (!wasSliding) {
+      scrollRef.current?.scrollBy({ left: direction * ARROW_NUDGE_PX, behavior: "smooth" });
+    }
+  };
+
+  const onPointerLeave = () => {
+    stop();
+    sliding.current = false;
+  };
+
+  return { onPointerDown, onPointerUp, onPointerLeave, onPointerCancel: onPointerLeave };
+}
 
 interface Props {
   event: EventItem;
@@ -28,7 +84,96 @@ const TIER_STYLES = [
 ];
 
 export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onToggle }: Props) {
-  const venue = buildVenue(event);
+  // Memoized per event object — a venue can be a few thousand seats, and this
+  // component re-renders on every single selection change (esp. mid-drag), so
+  // rebuilding the section/row/seat tree every time would be real, visible
+  // jank on slower devices. (buildVenue also has its own WeakMap cache, but
+  // useMemo additionally skips the lookup/recompute-check itself.)
+  const venue = useMemo(() => buildVenue(event), [event]);
+
+  // `selected` changes on every toggle, so referencing it directly inside
+  // startDrag/visitSeat would force those callbacks to get a new identity on
+  // every render — which would defeat <SeatButton>'s memoization below (its
+  // onDragStart/onDragEnter props would never be reference-equal). Mirror it
+  // into a ref instead, read fresh at drag-start time, so the callbacks
+  // themselves can stay referentially stable across renders.
+  const selectedRef = useRef(selected);
+  useEffect(() => {
+    selectedRef.current = selected;
+  }, [selected]);
+
+  // Mouse drag-select: press on one seat and drag across others to toggle
+  // the whole range in one gesture, like a spreadsheet. Scoped to actual
+  // mouse input (pointerType check) so touch tapping/scrolling is untouched.
+  // The first seat's current state decides the drag's direction (select vs
+  // deselect); every seat crossed only toggles if it doesn't already match
+  // that direction. Tracks its own optimistic copy of `selected` (not just
+  // the prop) since pointer events can fire faster than React re-renders
+  // mid-drag, which would otherwise let the same seat re-toggle mid-gesture.
+  const dragRef = useRef<{ active: boolean; targetSelect: boolean; copy: Set<string> } | null>(
+    null
+  );
+  // A real mouse click still fires its own native `click` after pointerdown
+  // + pointerup on the same seat when there was no drag — suppress that
+  // one follow-up toggle since pointerdown already performed it below.
+  const suppressClickRef = useRef(false);
+  // Mirrors `dragRef.current?.active` into real React state purely so the
+  // mini-map can show/live-update WHILE dragging, the same way it already
+  // does while scrolling — dragRef itself is a plain ref and wouldn't
+  // trigger a re-render on its own.
+  const [isDragging, setIsDragging] = useState(false);
+
+  const visitSeat = useCallback(
+    (seatId: string) => {
+      const drag = dragRef.current;
+      if (!drag || !drag.active) return;
+      const isSelected = drag.copy.has(seatId);
+      if (isSelected !== drag.targetSelect) {
+        onToggle(seatId);
+        if (drag.targetSelect) drag.copy.add(seatId);
+        else drag.copy.delete(seatId);
+      }
+    },
+    [onToggle]
+  );
+
+  const startDrag = useCallback(
+    (seatId: string) => {
+      dragRef.current = {
+        active: true,
+        targetSelect: !selectedRef.current.has(seatId),
+        copy: new Set(selectedRef.current),
+      };
+      suppressClickRef.current = true;
+      setIsDragging(true);
+      visitSeat(seatId);
+    },
+    [visitSeat]
+  );
+
+  const handleSeatClick = useCallback(
+    (seatId: string) => {
+      if (suppressClickRef.current) {
+        suppressClickRef.current = false;
+        return;
+      }
+      onToggle(seatId);
+    },
+    [onToggle]
+  );
+
+  useEffect(() => {
+    const endDrag = () => {
+      if (dragRef.current) dragRef.current.active = false;
+      setIsDragging(false);
+    };
+    window.addEventListener("pointerup", endDrag);
+    window.addEventListener("pointercancel", endDrag);
+    return () => {
+      window.removeEventListener("pointerup", endDrag);
+      window.removeEventListener("pointercancel", endDrag);
+    };
+  }, []);
 
   // BookMyShow-style scroll affordances for a wide seat grid on narrow
   // screens: edge-fade hints, plus a mini-map (shown WHILE actively
@@ -36,6 +181,8 @@ export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onT
   // with the currently-visible slice boxed off — all hidden once everything
   // fits on screen already.
   const scrollRef = useRef<HTMLDivElement>(null);
+  const leftArrow = useArrowScroll(scrollRef, -1);
+  const rightArrow = useArrowScroll(scrollRef, 1);
   const [scrolling, setScrolling] = useState(false);
   const scrollIdleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [scrollState, setScrollState] = useState({
@@ -50,7 +197,13 @@ export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onT
     const el = scrollRef.current;
     if (!el) return;
     const max = el.scrollWidth - el.clientWidth;
-    const thumbWidthPct = Math.max(15, Math.min(100, (el.clientWidth / el.scrollWidth) * 100));
+    // True proportion of the venue actually in view — no artificial floor
+    // here (a wide venue's real visible slice can be well under 15%, and
+    // inflating it makes the mini-map's "you are here" box far less useful
+    // for pinpointing position). A visible-pixel floor is applied via
+    // `minWidth` on the box itself instead, so it stays accurate at any
+    // size and only gets a usability floor for the literal rendered pixels.
+    const thumbWidthPct = Math.max(1, Math.min(100, (el.clientWidth / el.scrollWidth) * 100));
     const pct = max > 0 ? el.scrollLeft / max : 0;
     const canLeft = el.scrollLeft > 4;
     const canRight = el.scrollLeft < max - 4;
@@ -86,6 +239,67 @@ export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onT
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [venue]);
 
+  // The arrow buttons need to stay centred on whatever slice of this (often
+  // much taller than one screen) seat grid is actually visible right now —
+  // NOT on the grid's own true midpoint (could be well below the fold) and
+  // NOT on the raw viewport midpoint either (if only a sliver of the grid has
+  // scrolled into view, e.g. its top edge just peeking up from behind the
+  // sticky footer, centring on the whole screen would land the arrow on
+  // whatever OTHER content fills the rest of the screen). Tracked here via
+  // the card's on-screen rect (updated on page scroll/resize) and rendered
+  // through a portal with `position: fixed`, the same escape-the-local-
+  // stacking-context approach already used for the mini-map below.
+  const arrowsBoxRef = useRef<HTMLDivElement>(null);
+  const [arrowsBoxRect, setArrowsBoxRect] = useState<{
+    left: number;
+    right: number;
+    top: number;
+    bottom: number;
+    // The real bottom edge of usable viewport — clamped against any element
+    // marked `data-seatmap-obstruction` (e.g. the booking flow's sticky
+    // "Continue" bar), which visually covers part of the screen without
+    // actually scrolling it out of the viewport's own bounds.
+    viewportBottom: number;
+  } | null>(null);
+
+  useEffect(() => {
+    const measure = () => {
+      const el = arrowsBoxRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const obstruction = document.querySelector<HTMLElement>("[data-seatmap-obstruction]");
+      const viewportBottom = obstruction
+        ? Math.min(window.innerHeight, obstruction.getBoundingClientRect().top)
+        : window.innerHeight;
+      setArrowsBoxRect({ left: r.left, right: r.right, top: r.top, bottom: r.bottom, viewportBottom });
+    };
+    measure();
+    window.addEventListener("scroll", measure, { passive: true });
+    window.addEventListener("resize", measure);
+    return () => {
+      window.removeEventListener("scroll", measure);
+      window.removeEventListener("resize", measure);
+    };
+    // Re-measure whenever the venue changes shape (its height depends on it).
+  }, [venue]);
+
+  // The vertical span of the seat grid that's actually visible (and not
+  // covered by a sticky footer) right now — clamped at both ends, so this is
+  // 0 (or negative) once the grid has scrolled fully out of view either way.
+  const arrowsVisibleHeight = arrowsBoxRect
+    ? Math.min(arrowsBoxRect.bottom, arrowsBoxRect.viewportBottom) - Math.max(arrowsBoxRect.top, 0)
+    : 0;
+  // Require enough visible height to comfortably fit the button — a couple of
+  // pixels peeking into view shouldn't be enough to pop an arrow in.
+  const arrowsInViewport = arrowsVisibleHeight >= 80;
+  // The arrow's fixed-position `top`, in viewport pixels: the midpoint of
+  // just the visible (unobstructed) slice above, so it tracks the on-screen
+  // portion of the grid exactly rather than jumping to mid-screen regardless
+  // of how much of the grid is actually showing.
+  const arrowCenterY = arrowsBoxRect
+    ? (Math.max(arrowsBoxRect.top, 0) + Math.min(arrowsBoxRect.bottom, arrowsBoxRect.viewportBottom)) / 2
+    : 0;
+
   // Assign a colour per price, priciest first, shared across sections at the
   // same price so the colour reads as the ticket class everywhere.
   const prices = [...new Set(venue.seats.map((s) => s.price))].sort((a, b) => b - a);
@@ -99,14 +313,52 @@ export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onT
         </p>
       )}
 
-      <div className="relative">
+      <div ref={arrowsBoxRef} className="relative">
         {scrollState.canLeft && (
           <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-linear-to-r from-[#0d0a1f] to-transparent z-10" />
         )}
         {scrollState.canRight && (
           <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-linear-to-l from-[#0d0a1f] to-transparent z-10" />
         )}
-        {scrollState.hasOverflow && scrolling && (
+        {scrollState.canLeft &&
+          arrowsInViewport &&
+          arrowsBoxRect &&
+          typeof document !== "undefined" &&
+          createPortal(
+            <button
+              type="button"
+              aria-label="Scroll seats left — tap to nudge, hold to slide"
+              onPointerDown={leftArrow.onPointerDown}
+              onPointerUp={leftArrow.onPointerUp}
+              onPointerLeave={leftArrow.onPointerLeave}
+              onPointerCancel={leftArrow.onPointerCancel}
+              style={{ left: arrowsBoxRect.left + 8, top: arrowCenterY }}
+              className="fixed -translate-y-1/2 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#0d0a1f]/85 hover:bg-[#0d0a1f] active:scale-95 backdrop-blur-sm flex items-center justify-center text-slate-400 hover:text-white shadow-lg transition-all select-none touch-none"
+            >
+              <ChevronLeft className="w-5 h-5" aria-hidden="true" />
+            </button>,
+            document.body
+          )}
+        {scrollState.canRight &&
+          arrowsInViewport &&
+          arrowsBoxRect &&
+          typeof document !== "undefined" &&
+          createPortal(
+            <button
+              type="button"
+              aria-label="Scroll seats right — tap to nudge, hold to slide"
+              onPointerDown={rightArrow.onPointerDown}
+              onPointerUp={rightArrow.onPointerUp}
+              onPointerLeave={rightArrow.onPointerLeave}
+              onPointerCancel={rightArrow.onPointerCancel}
+              style={{ right: window.innerWidth - arrowsBoxRect.right + 8, top: arrowCenterY }}
+              className="fixed -translate-y-1/2 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#0d0a1f]/85 hover:bg-[#0d0a1f] active:scale-95 backdrop-blur-sm flex items-center justify-center text-slate-400 hover:text-white shadow-lg transition-all select-none touch-none"
+            >
+              <ChevronRight className="w-5 h-5" aria-hidden="true" />
+            </button>,
+            document.body
+          )}
+        {scrollState.hasOverflow && (scrolling || isDragging) && (
           <SeatMiniMap
             venue={venue}
             bookedSeats={bookedSeats}
@@ -211,7 +463,9 @@ export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onT
                                           ? "locked"
                                           : "available"
                                 }
-                                onToggle={onToggle}
+                                onToggle={handleSeatClick}
+                                onDragStart={startDrag}
+                                onDragEnter={visitSeat}
                               />
                             ));
                             return (
@@ -279,7 +533,7 @@ export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onT
  *  square per seat (coloured the same as the real map — available/selected/
  *  sold/held), with a red-boxed window over whichever horizontal slice is
  *  currently in view. Shown WHILE actively scrolling, floated near the top. */
-function SeatMiniMap({
+const SeatMiniMap = memo(function SeatMiniMap({
   venue,
   bookedSeats,
   lockedSeats,
@@ -294,8 +548,15 @@ function SeatMiniMap({
   thumbWidthPct: number;
   thumbLeftPct: number;
 }) {
-  const rows = venue.sections.flatMap((s) => s.rows);
-  const maxSeats = Math.max(1, ...rows.map((r) => r.groups.reduce((n, g) => n + g.seats.length, 0)));
+  // This re-renders on every selection change while shown (that's the point —
+  // it's meant to live-sync with dragging), so only the row/shape structure
+  // is memoized here; only recomputed when the venue itself changes, not on
+  // every drag-step re-render.
+  const { rows, maxSeats } = useMemo(() => {
+    const rows = venue.sections.flatMap((s) => s.rows);
+    const maxSeats = Math.max(1, ...rows.map((r) => r.groups.reduce((n, g) => n + g.seats.length, 0)));
+    return { rows, maxSeats };
+  }, [venue]);
 
   const colorFor = (seat: Seat) => {
     if (seat.bookMyShowOnly) return "bg-black";
@@ -333,29 +594,42 @@ function SeatMiniMap({
             </div>
           );
         })}
-        {/* The currently-visible horizontal slice, boxed off like BookMyShow's own thumbnail. */}
+        {/* The currently-visible horizontal slice, boxed off like BookMyShow's own thumbnail.
+            `minWidth` is a pixel floor purely so the box never disappears on a huge venue —
+            the percentage itself stays true to the real visible proportion (see measureScroll),
+            so this stays an accurate "you are here", not just a decorative sliver. */}
         <div
           className="pointer-events-none absolute inset-y-0 border-2 border-red-500 rounded-xs"
-          style={{ left: `${thumbLeftPct}%`, width: `${thumbWidthPct}%` }}
+          style={{ left: `${thumbLeftPct}%`, width: `${thumbWidthPct}%`, minWidth: "6px" }}
         />
       </div>
     </div>,
     document.body
   );
-}
+});
 
 type SeatUiState = "available" | "selected" | "locked" | "booked" | "bookMyShow";
 
-function SeatButton({
+// Memoized — a venue can be a few thousand seats, and only ever 1-2 change
+// state per interaction, so without this every toggle (esp. mid-drag) would
+// re-render every single seat button in the whole map. Relies on `onToggle`/
+// `onDragStart`/`onDragEnter` staying referentially stable across renders
+// (see the useCallback wiring in <SeatMap>) — otherwise the shallow prop
+// comparison below would never actually skip a re-render.
+const SeatButton = memo(function SeatButton({
   seat,
   state,
   availClass,
   onToggle,
+  onDragStart,
+  onDragEnter,
 }: {
   seat: Seat;
   state: SeatUiState;
   availClass: string;
   onToggle: (seatId: string) => void;
+  onDragStart: (seatId: string) => void;
+  onDragEnter: (seatId: string) => void;
 }) {
   const unavailable = state === "booked" || state === "locked" || state === "bookMyShow";
   const label = seat.side ? `${seat.side}${seat.number}` : String(seat.number);
@@ -364,10 +638,16 @@ function SeatButton({
     <button
       disabled={unavailable}
       onClick={() => onToggle(seat.id)}
+      onPointerDown={(e) => {
+        if (e.pointerType === "mouse") onDragStart(seat.id);
+      }}
+      onPointerEnter={(e) => {
+        if (e.pointerType === "mouse") onDragEnter(seat.id);
+      }}
       aria-label={`Seat ${seat.rowLabel}${label} · ${description}`}
       title={`${seat.rowLabel}${label} · ${description}`}
       className={[
-        "w-5 h-5 sm:w-6 sm:h-6 rounded-t text-[7px] sm:text-[9px] font-medium transition-all shrink-0",
+        "w-5 h-5 sm:w-6 sm:h-6 rounded-t text-[7px] sm:text-[9px] font-medium transition-all shrink-0 select-none",
         state === "bookMyShow"
           ? "bg-black text-white/60 cursor-not-allowed"
           : state === "booked"
@@ -382,4 +662,4 @@ function SeatButton({
       {label}
     </button>
   );
-}
+});
