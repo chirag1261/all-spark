@@ -3,16 +3,23 @@ import EventList from "@/components/EventList";
 import HomeInfoSections from "@/components/HomeInfoSections";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
-import { getBookedSeatCounts, listPublishedEvents } from "@/lib/db";
+import { getBookedSeatCounts, getLockedSeatCounts, listPublishedEvents } from "@/lib/db";
 import { totalSeats } from "@/lib/domain/events";
 
 /** Public landing page: a featured event takes over, otherwise a discovery grid. */
 export async function HomeScreen() {
   // One aggregate query for all seat counts (not one per event) keeps this fast.
-  const [events, sold] = await Promise.all([listPublishedEvents(), getBookedSeatCounts()]);
+  const [events, sold, locked] = await Promise.all([
+    listPublishedEvents(),
+    getBookedSeatCounts(),
+    getLockedSeatCounts(),
+  ]);
   const remaining: Record<string, number> = {};
   for (const event of events) {
-    remaining[event.id] = totalSeats(event) - (sold[event.id] ?? 0);
+    // Seats someone else is mid-checkout on (locked) aren't actually
+    // bookable right now either, even though they're not yet confirmed.
+    remaining[event.id] =
+      totalSeats(event) - (sold[event.id] ?? 0) - (locked[event.id] ?? 0);
   }
 
   // A featured event takes over the landing page (admin-controlled).

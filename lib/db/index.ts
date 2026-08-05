@@ -642,6 +642,26 @@ export async function getLockedSeats(eventId: string): Promise<string[]> {
 }
 
 /**
+ * Locked-seat counts for every event at once — mirrors getBookedSeatCounts(),
+ * but reads the in-memory hold map instead of the DB (cheap, synchronous
+ * under the hood). List/grid views must subtract BOTH booked and locked
+ * seats from capacity: a seat someone else is mid-checkout on isn't actually
+ * bookable right now even though it's not in `booked_seats` yet, and
+ * disagreeing with that (showing it as "available" in a stat while the
+ * live seat map correctly disables it) is exactly the kind of mismatch this
+ * exists to prevent.
+ */
+export async function getLockedSeatCounts(): Promise<Record<string, number>> {
+  const counts: Record<string, number> = {};
+  for (const [eventId, locks] of locksByEvent()) {
+    liveLocks(eventId); // mutates `locks` in place, purging its expired entries
+    if (locks.size > 0) counts[eventId] = locks.size;
+    else locksByEvent().delete(eventId); // drop now-empty per-event maps
+  }
+  return counts;
+}
+
+/**
  * Atomically lock all requested seats for an order.
  * Fails (returns the conflicting seats) if ANY seat is already locked, booked
  * or admin-blocked — partial locks are never left behind.

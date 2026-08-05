@@ -1,6 +1,6 @@
 import { CalendarDays, type LucideIcon, MapPin, Ticket, Users } from "lucide-react";
 
-import { minPrice, totalSeats } from "@/lib/domain/events";
+import { minPrice, totalPhysicalSeats } from "@/lib/domain/events";
 import { EventItem } from "@/types";
 import { formatDateIST, inr } from "@/utils";
 
@@ -15,7 +15,9 @@ interface Props {
  * the same at-a-glance event context follows the customer everywhere.
  */
 export default function EventFactStrip({ event, remaining }: Props) {
-  const total = totalSeats(event);
+  // The full venue capacity, not the sellable-only count — a blocked seat is
+  // still a seat that exists, just one `remaining` already accounts for.
+  const total = totalPhysicalSeats(event);
   const soldOut = remaining <= 0;
   const fromPrice = minPrice(event);
 

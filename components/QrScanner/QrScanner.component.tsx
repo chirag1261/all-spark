@@ -37,6 +37,10 @@ export default function QrScanner({ onDecode, paused }: Props) {
     };
 
     (async () => {
+      // Clear any error from a previous attempt — otherwise resuming after a
+      // fixed camera issue (e.g. closing the app that was holding it) still
+      // shows the stale error overlay on top of the now-working video feed.
+      setError(null);
       if (!navigator.mediaDevices?.getUserMedia) {
         throw new DOMException("Camera requires a secure context", "SecurityError");
       }

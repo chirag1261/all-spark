@@ -1,16 +1,23 @@
 import EventList from "@/components/EventList";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
-import { getBookedSeatCounts, listPublishedEvents } from "@/lib/db";
+import { getBookedSeatCounts, getLockedSeatCounts, listPublishedEvents } from "@/lib/db";
 import { totalSeats } from "@/lib/domain/events";
 
 /** Full discovery grid — every published event as a card (incl. the featured one). */
 export async function EventsScreen() {
   // One aggregate query for all seat counts (not one per event) keeps this fast.
-  const [events, sold] = await Promise.all([listPublishedEvents(), getBookedSeatCounts()]);
+  const [events, sold, locked] = await Promise.all([
+    listPublishedEvents(),
+    getBookedSeatCounts(),
+    getLockedSeatCounts(),
+  ]);
   const remaining: Record<string, number> = {};
   for (const event of events) {
-    remaining[event.id] = totalSeats(event) - (sold[event.id] ?? 0);
+    // Seats someone else is mid-checkout on (locked) aren't actually
+    // bookable right now either, even though they're not yet confirmed.
+    remaining[event.id] =
+      totalSeats(event) - (sold[event.id] ?? 0) - (locked[event.id] ?? 0);
   }
 
   const cities = new Set(events.map((e) => e.city).filter(Boolean));

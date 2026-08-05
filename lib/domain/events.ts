@@ -22,9 +22,19 @@ export function getSeatLayout(event: EventItem): Seat[] {
   return buildVenue(event).seats;
 }
 
-/** Seats actually on sale (physical capacity minus blocked). */
+/** Seats actually on sale (physical capacity minus blocked). Use this for
+ *  availability MATH (remaining = totalSeats() - booked - locked). */
 export function totalSeats(event: EventItem): number {
   return buildVenue(event).sellable;
+}
+
+/** Every physical seat in the venue, including admin-blocked ones. Use this
+ *  for the "of N" DISPLAY total shown to customers — blocked seats are still
+ *  part of the venue, so the "remaining" count (which already subtracts them
+ *  via totalSeats()) is what conveys their unavailability, not a shrunken
+ *  total. */
+export function totalPhysicalSeats(event: EventItem): number {
+  return buildVenue(event).seats.length;
 }
 
 /** Price bands for display (deduped by price), premium first. */

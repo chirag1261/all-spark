@@ -2,19 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-
-
 import { AlertTriangle, Check, Tag, Users } from "lucide-react";
 import Link from "next/link";
-
-
 
 import { MAX_SEATS_PER_BOOKING } from "@/constants";
 import { getSeatLayout, seatPrice, totalSeats } from "@/lib/domain/events";
 import { AttendeeGender, EventItem } from "@/types";
 import { formatDateIST, inr } from "@/utils";
-
-
 
 import BackLink from "../BackLink";
 import Confetti from "../Confetti";
@@ -23,9 +17,6 @@ import Loader from "../Loader";
 import { useRouteLoader } from "../RouteLoader";
 import SeatMap from "../SeatMap";
 import { useToast } from "../Toast";
-
-
-
 
 
 interface TicketView {
@@ -157,9 +148,12 @@ export default function BookingFlow({
 
   const selectedSeats = useMemo(() => [...selected].sort(), [selected]);
 
-  // For the fact strip + the attendee step's per-seat tier label.
+  // For the fact strip + the attendee step's per-seat tier label. Seats
+  // someone else is mid-checkout on (locked) aren't actually bookable right
+  // now either, even though they're not yet confirmed — the seat map itself
+  // already disables them, so the headline count needs to agree with it.
   const totalSeatCount = useMemo(() => totalSeats(event), [event]);
-  const remainingSeats = Math.max(0, totalSeatCount - bookedSeats.size);
+  const remainingSeats = Math.max(0, totalSeatCount - bookedSeats.size - lockedSeats.size);
   const tierBySeatId = useMemo(() => {
     const map = new Map<string, string>();
     for (const seat of getSeatLayout(event)) map.set(seat.id, seat.tierName);
