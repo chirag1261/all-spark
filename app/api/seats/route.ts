@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getBookedSeats, getEvent, getLockedSeats } from "@/lib/db";
-import { blockedSeatIds } from "@/lib/domain/events";
 
 /** GET /api/seats?eventId=... — current seat availability for an event. */
 export async function GET(req: NextRequest) {
@@ -14,9 +13,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Event not found" }, { status: 404 });
   }
   const [booked, locked] = await Promise.all([getBookedSeats(eventId), getLockedSeats(eventId)]);
-  return NextResponse.json({
-    // Blocked seats (layout-level + ad-hoc holds) present as sold to the public.
-    booked: [...new Set([...booked, ...blockedSeatIds(event)])],
-    locked,
-  });
+  // Confirmed-sold seats ONLY — blocked seats are already rendered as
+  // unavailable independently via each seat's own `blocked` flag (see
+  // SeatMap), so folding them in here too would double them up wherever a
+  // caller subtracts this count from totalSeats() (which already excludes
+  // blocked seats).
+  return NextResponse.json({ booked, locked });
 }

@@ -2,7 +2,7 @@ import AccessDenied from "@/components/AccessDenied";
 import AdminEventsPanel, { EventRow } from "@/components/AdminEventsPanel";
 import AdminShell from "@/components/AdminShell";
 import { hasPermission, requireDashboardPage } from "@/lib/auth/admin";
-import { getBookedSeatCounts, listBookings, listEvents } from "@/lib/db";
+import { getBookedSeatCounts, getLockedSeatCounts, listBookings, listEvents } from "@/lib/db";
 import { registrationState, totalSeats } from "@/lib/domain/events";
 import { cloudinaryConfigured } from "@/lib/integrations/cloudinary";
 
@@ -18,10 +18,11 @@ export async function AdminEventsScreen() {
     );
   }
 
-  const [events, bookings, sold] = await Promise.all([
+  const [events, bookings, sold, locked] = await Promise.all([
     listEvents(),
     listBookings(),
     getBookedSeatCounts(),
+    getLockedSeatCounts(),
   ]);
 
   const rows: EventRow[] = events.map((event) => {
@@ -32,7 +33,9 @@ export async function AdminEventsScreen() {
       registrationOpen: registrationState(event),
       registrations: confirmed.length,
       revenue: confirmed.reduce((sum, b) => sum + b.amount, 0),
-      remaining: total - (sold[event.id] ?? 0),
+      // Seats someone else is mid-checkout on (locked) aren't actually
+      // bookable right now either, even though they're not yet confirmed.
+      remaining: total - (sold[event.id] ?? 0) - (locked[event.id] ?? 0),
       total,
     };
   });

@@ -8,17 +8,27 @@ import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import WhatsAppShare from "@/components/WhatsAppShare";
 import { BOOKMYSHOW_LOGO_URL } from "@/constants";
-import { getBookedSeats, getEvent } from "@/lib/db";
-import { minPrice, registrationState, ticketTiers, totalSeats } from "@/lib/domain/events";
+import { getBookedSeats, getEvent, getLockedSeats } from "@/lib/db";
+import {
+  minPrice,
+  registrationState,
+  ticketTiers,
+  totalPhysicalSeats,
+  totalSeats,
+} from "@/lib/domain/events";
 import { formatDateIST, inr } from "@/utils";
 
 export async function EventDetailScreen({ id }: { id: string }) {
   const event = await getEvent(id);
   if (!event || !event.published) notFound();
 
-  const booked = (await getBookedSeats(event.id)).length;
-  const total = totalSeats(event);
-  const left = total - booked;
+  const [booked, locked] = await Promise.all([getBookedSeats(event.id), getLockedSeats(event.id)]);
+  // Seats someone else is mid-checkout on (locked) aren't actually bookable
+  // right now either, even though they're not yet confirmed.
+  const left = totalSeats(event) - booked.length - locked.length;
+  // The full venue capacity is what's DISPLAYED as "of N" — blocked seats are
+  // still seats, just ones `left` already accounts for as unavailable.
+  const total = totalPhysicalSeats(event);
   const soldOut = left <= 0;
   const reg = registrationState(event);
   const bookable = reg === "open" && !soldOut;

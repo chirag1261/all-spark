@@ -4,7 +4,7 @@ import BookingFlow from "@/components/BookingFlow";
 import SiteHeader from "@/components/SiteHeader";
 import { requireCustomerPage } from "@/lib/auth/customer";
 import { getBookedSeats, getEvent, getLockedSeats } from "@/lib/db";
-import { blockedSeatIds, registrationState, totalSeats } from "@/lib/domain/events";
+import { registrationState, totalSeats } from "@/lib/domain/events";
 
 export async function BookingScreen({ id }: { id: string }) {
   // Booking requires a signed-in customer — also enforced in /api/orders.
@@ -19,8 +19,10 @@ export async function BookingScreen({ id }: { id: string }) {
   const [booked, locked] = await Promise.all([getBookedSeats(event.id), getLockedSeats(event.id)]);
 
   // Registration window / sold-out are re-checked server-side in /api/orders;
-  // this just keeps people off a dead seat map.
-  const soldOut = totalSeats(event) - booked.length <= 0;
+  // this just keeps people off a dead seat map. Locked (mid-checkout) seats
+  // count toward "sold out" here too — if every remaining seat is currently
+  // held by someone else, there's nothing this customer could actually pick.
+  const soldOut = totalSeats(event) - booked.length - locked.length <= 0;
   if (registrationState(event) !== "open" || soldOut) redirect(`/events/${event.id}`);
 
   return (
@@ -30,7 +32,11 @@ export async function BookingScreen({ id }: { id: string }) {
         <BookingFlow
           event={event}
           customer={{ name: customer.name, email: customer.email, phone: customer.phone }}
-          initialBookedSeats={[...new Set([...booked, ...blockedSeatIds(event)])]}
+          // Confirmed-sold seats ONLY — blocked seats are already rendered as
+          // unavailable independently via each seat's own `blocked` flag (see
+          // SeatMap), so folding them in here too would double-subtract them
+          // from the "remaining" count (totalSeats() already excludes them).
+          initialBookedSeats={booked}
           initialLockedSeats={locked}
         />
       </main>

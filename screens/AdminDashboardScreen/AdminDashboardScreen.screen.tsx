@@ -6,6 +6,7 @@ import InfoTip from "@/components/InfoTip";
 import { requireDashboardPage } from "@/lib/auth/admin";
 import {
   getBookedSeatCounts,
+  getLockedSeatCounts,
   listAudit,
   listBookings,
   listEvents,
@@ -124,11 +125,12 @@ export async function AdminDashboardScreen() {
   const currentUser = await requireDashboardPage();
 
   await sweepStalePending(); // reconcile abandoned checkouts before reporting
-  const [events, bookings, recentActivity, soldByEvent] = await Promise.all([
+  const [events, bookings, recentActivity, soldByEvent, lockedByEvent] = await Promise.all([
     listEvents(),
     listBookings(),
     listAudit(8),
     getBookedSeatCounts(),
+    getLockedSeatCounts(),
   ]);
 
   // Aggregate totals across all events (event management now lives at /admin/events).
@@ -139,7 +141,9 @@ export async function AdminDashboardScreen() {
     totals.registrations += confirmed.length;
     totals.revenue += confirmed.reduce((sum, b) => sum + b.amount, 0);
     totals.ticketsSold += sold;
-    totals.remaining += totalSeats(event) - sold;
+    // Seats someone else is mid-checkout on (locked) aren't actually
+    // bookable right now either, even though they're not yet confirmed.
+    totals.remaining += totalSeats(event) - sold - (lockedByEvent[event.id] ?? 0);
   }
 
   const refunded = bookings.filter((b) => b.status === "REFUNDED");
