@@ -28,7 +28,21 @@
   --font-mono: var(--font-roboto);
 }
 
+/* The `.reveal-left`/`.reveal-right` scroll-reveal variants offset elements
+   by translateX(±28px) before they scroll into view (see `.reveal-left`/
+   `.reveal-right` below) — on mobile, an element already flush against the
+   viewport edge can push past it while still in that pre-reveal state,
+   opening up real horizontal scroll room. Clipping it here means that never
+   becomes visible/scrollable, regardless of what transient offset any
+   animation applies; it also self-resolves as each element reveals and its
+   transform resets to none, which is why the extra space seems to "fix
+   itself" while scrolling down past everything. */
+html {
+  overflow-x: hidden;
+}
+
 body {
+  overflow-x: hidden;
   background:
     radial-gradient(1200px 500px at 50% -220px, rgba(29, 78, 216, 0.05), transparent 70%),
     var(--background);
@@ -222,8 +236,8 @@ h3 {
   opacity: 0;
   transform: translateY(24px);
   transition:
-    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: opacity, transform;
 }
 .reveal-left {
@@ -249,8 +263,8 @@ h3 {
   opacity: 0;
   transform: translateY(100%);
   transition:
-    opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: opacity, transform;
 }
 .reveal-word-in {
