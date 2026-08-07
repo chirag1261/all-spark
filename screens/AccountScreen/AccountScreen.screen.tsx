@@ -15,7 +15,6 @@ export async function AccountScreen() {
           phone: customer.phone,
           emailVerified: customer.emailVerified,
           phoneVerified: customer.phoneVerified,
-          hasPassword: Boolean(customer.passwordHash),
         }}
       />
     </AccountShell>

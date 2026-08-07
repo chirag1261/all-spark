@@ -267,6 +267,7 @@ export interface Booking {
   createdAt: number;
   ticketId?: string; // first ticket's id, kept for legacy links; see tickets table
   emailSent?: boolean;
+  whatsappSent?: boolean;
   /** Applied promo code (UPPERCASE), if any. Subtotal = amount + discountAmount. */
   promoCode?: string;
   discountAmount?: number; // paise knocked off by the promo (0/undefined if none)

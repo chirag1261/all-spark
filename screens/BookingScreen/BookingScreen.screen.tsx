@@ -2,13 +2,16 @@ import { notFound, redirect } from "next/navigation";
 
 import BookingFlow from "@/components/BookingFlow";
 import SiteHeader from "@/components/SiteHeader";
-import { requireCustomerPage } from "@/lib/auth/customer";
+import { getCurrentCustomer } from "@/lib/auth/customer";
 import { getBookedSeats, getEvent, getLockedSeats } from "@/lib/db";
 import { registrationState, totalSeats } from "@/lib/domain/events";
 
 export async function BookingScreen({ id }: { id: string }) {
-  // Booking requires a signed-in customer — also enforced in /api/orders.
-  const customer = await requireCustomerPage(`/events/${id}/book`);
+  // Seat selection no longer requires being signed in — auth is only asked
+  // for at the "Proceed to checkout" step (see BookingFlow). Actual purchase
+  // is still enforced server-side in /api/orders regardless of what the
+  // client claims here.
+  const customer = await getCurrentCustomer();
 
   const event = await getEvent(id);
   if (!event || !event.published) notFound();
@@ -31,7 +34,9 @@ export async function BookingScreen({ id }: { id: string }) {
       <main className="max-w-6xl mx-auto px-4 py-8">
         <BookingFlow
           event={event}
-          customer={{ name: customer.name, email: customer.email, phone: customer.phone }}
+          customer={
+            customer ? { name: customer.name, email: customer.email, phone: customer.phone } : null
+          }
           // Confirmed-sold seats ONLY — blocked seats are already rendered as
           // unavailable independently via each seat's own `blocked` flag (see
           // SeatMap), so folding them in here too would double-subtract them

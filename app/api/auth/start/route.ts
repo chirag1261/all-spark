@@ -36,6 +36,5 @@ export async function POST(req: NextRequest) {
     identifier: normalized.identifier,
     channel: normalized.channel,
     exists: Boolean(customer),
-    hasPassword: Boolean(customer?.passwordHash),
   });
 }

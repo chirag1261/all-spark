@@ -1,7 +1,7 @@
 import BackLink from "@/components/BackLink";
 import EventsCarousel from "@/components/EventsCarousel";
-import LoginWizard from "@/components/LoginWizard";
 import Logo from "@/components/Logo";
+import { LoginPageAuth } from "@/components/PhoneAuth";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import { listPublishedEvents } from "@/lib/db";
@@ -72,7 +72,7 @@ export async function LoginScreen({ next, idleExpired }: { next: string; idleExp
                   </p>
                 )}
 
-                <LoginWizard next={next} />
+                <LoginPageAuth next={next} />
 
                 <p className="flex justify-center mt-6">
                   <BackLink href="/" className="text-slate-500 hover:text-slate-700">

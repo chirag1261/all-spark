@@ -12,7 +12,6 @@ export async function GET() {
       name: customer.name,
       email: customer.email,
       phone: customer.phone,
-      hasPassword: Boolean(customer.passwordHash),
       emailVerified: customer.emailVerified,
       phoneVerified: customer.phoneVerified,
     },

@@ -14,6 +14,7 @@ import {
 } from "@/lib/db";
 import { ensureTicketsForBooking } from "@/lib/domain/tickets";
 import { sendTicketEmail } from "@/lib/notifications/email";
+import { sendTicketWhatsApp } from "@/lib/notifications/whatsapp";
 
 /**
  * POST /api/webhooks/razorpay — the AUTHORITATIVE payment signal.
@@ -101,11 +102,16 @@ export async function POST(req: NextRequest) {
       confirmed.ticketId = tickets[0]?.ticketId; // legacy pointer to the first ticket
       await saveBooking(confirmed);
 
+      const origin = process.env.NEXT_PUBLIC_BASE_URL ?? req.nextUrl.origin;
       if (!booking.emailSent) {
-        const origin = process.env.NEXT_PUBLIC_BASE_URL ?? req.nextUrl.origin;
         const email = await sendTicketEmail(confirmed, tickets, origin);
-        await saveBooking({ ...confirmed, emailSent: email.sent });
+        confirmed.emailSent = email.sent;
       }
+      if (!booking.whatsappSent) {
+        const whatsapp = await sendTicketWhatsApp(confirmed, tickets, origin);
+        confirmed.whatsappSent = whatsapp.sent;
+      }
+      await saveBooking(confirmed);
       await logPaymentEvent(eventType, "confirmed", { orderId, paymentId });
       break;
     }

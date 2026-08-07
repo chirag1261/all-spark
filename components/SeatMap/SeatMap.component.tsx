@@ -313,6 +313,18 @@ export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onT
         </p>
       )}
 
+      {/* Price-tier colour key — kept outside the horizontally-scrollable seat
+          grid so it wraps against the actual viewport width instead of the
+          (much wider) seat chart's intrinsic width. */}
+      <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 mb-4 text-[11px] sm:text-xs">
+        {venue.tiers.map((tier) => (
+          <span key={tier.id + tier.price} className="flex items-center gap-1.5 text-slate-200">
+            <i className={`w-3 h-3 rounded-sm inline-block ${styleForPrice(tier.price).swatch}`} />
+            {tier.name} · <span className="font-semibold">{inr(tier.price)}</span>
+          </span>
+        ))}
+      </div>
+
       <div ref={arrowsBoxRef} className="relative">
         {scrollState.canLeft && (
           <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-linear-to-r from-[#0d0a1f] to-transparent z-10" />
@@ -371,21 +383,6 @@ export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onT
 
         <div ref={scrollRef} className="overflow-x-auto pb-4">
           <div className="min-w-fit mx-auto flex flex-col items-center gap-1">
-            {/* Price-tier colour key */}
-            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 mb-4 text-[11px] sm:text-xs">
-              {venue.tiers.map((tier) => (
-                <span
-                  key={tier.id + tier.price}
-                  className="flex items-center gap-1.5 text-slate-200"
-                >
-                  <i
-                    className={`w-3 h-3 rounded-sm inline-block ${styleForPrice(tier.price).swatch}`}
-                  />
-                  {tier.name} · <span className="font-semibold">{inr(tier.price)}</span>
-                </span>
-              ))}
-            </div>
-
             {/* Stage — a big curved "screen" bar, BookMyShow-style */}
             <div className="w-11/12 sm:w-4/5 mb-6">
               <div className="h-3 sm:h-4 rounded-t-[100%] bg-linear-to-r from-transparent via-[#60a5fa] to-transparent shadow-[0_12px_36px_rgba(96,165,250,0.55)]" />

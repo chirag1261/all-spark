@@ -117,6 +117,7 @@ function rowToBooking(r: any): Booking {
     createdAt: Number(r.created_at),
     ticketId: r.ticket_id ?? undefined,
     emailSent: r.email_sent ?? undefined,
+    whatsappSent: r.whatsapp_sent ?? undefined,
     promoCode: r.promo_code ?? undefined,
     discountAmount: r.discount_amount ?? undefined,
   };
@@ -731,8 +732,8 @@ export async function saveBooking(booking: Booking): Promise<void> {
       booking_id, event_id, customer_id, seat_ids, attendees, amount,
       razorpay_order_id, razorpay_payment_id, razorpay_refund_id, status,
       attendee_name, customer_email, customer_phone, created_at, ticket_id, email_sent,
-      promo_code, discount_amount
-    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+      promo_code, discount_amount, whatsapp_sent
+    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
     ON CONFLICT (razorpay_order_id) DO UPDATE SET
       booking_id = EXCLUDED.booking_id,
       event_id = EXCLUDED.event_id,
@@ -749,7 +750,8 @@ export async function saveBooking(booking: Booking): Promise<void> {
       ticket_id = EXCLUDED.ticket_id,
       email_sent = EXCLUDED.email_sent,
       promo_code = EXCLUDED.promo_code,
-      discount_amount = EXCLUDED.discount_amount`,
+      discount_amount = EXCLUDED.discount_amount,
+      whatsapp_sent = EXCLUDED.whatsapp_sent`,
     [
       booking.bookingId,
       booking.eventId,
@@ -769,6 +771,7 @@ export async function saveBooking(booking: Booking): Promise<void> {
       booking.emailSent ?? null,
       booking.promoCode ?? null,
       booking.discountAmount ?? null,
+      booking.whatsappSent ?? null,
     ]
   );
 }

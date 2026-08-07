@@ -223,6 +223,8 @@ const SCHEMA = `
   -- Applied promo code + rupee discount, added after initial release.
   ALTER TABLE bookings ADD COLUMN IF NOT EXISTS promo_code TEXT;
   ALTER TABLE bookings ADD COLUMN IF NOT EXISTS discount_amount INTEGER;
+  -- WhatsApp ticket delivery, added after initial release.
+  ALTER TABLE bookings ADD COLUMN IF NOT EXISTS whatsapp_sent BOOLEAN;
 
   CREATE TABLE IF NOT EXISTS promo_codes (
     id TEXT PRIMARY KEY,
