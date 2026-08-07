@@ -1,6 +1,5 @@
 import { getEvent } from "@/lib/db";
 import { Booking, TicketRecord } from "@/types";
-import { formatDateIST, inr } from "@/utils";
 
 /**
  * WhatsApp ticket delivery via Meta's WhatsApp Cloud API directly (Graph
@@ -8,15 +7,25 @@ import { formatDateIST, inr } from "@/utils";
  * shape: a configured() gate, a dev-mode console fallback, never throws —
  * a failed WhatsApp send must never fail a paid booking.
  *
- * Carries the SAME details as the ticket email (booking id, event, venue,
- * date, amount paid, seat, ticket id, a link to view/share the ticket) —
- * packed into 4 body variables since an approved WhatsApp template has a
- * FIXED variable count/shape (Meta rejects anything that doesn't match
- * exactly), but doesn't care what text a variable actually contains. If the
- * real approved template has a different variable COUNT than 4, adjust the
- * `components` array below and re-split the fields accordingly — Meta's API
- * error message names exactly which part disagreed.
+ * The approved "utsav_qr" template's own static copy (guidelines, entry
+ * rules, etc.) already eats ~978 of Meta's 1024-character-per-message cap —
+ * confirmed live: a body carrying the same richness as the ticket email
+ * (venue, date, amount, booking id, a full ticket URL) reliably triggers
+ * Meta error #132005 "Translated text too long", so every send silently
+ * failed (email still went out, since a WhatsApp failure must never fail a
+ * paid booking — the failure just never surfaced). There is only ~46
+ * characters of headroom left, combined, across all 4 body variables — not
+ * enough for a full ticket URL (51+ characters alone) no matter how the
+ * rest is trimmed, so each field is hard-clipped via `clip()` and slot 4
+ * (the template's "View / share this ticket" line) carries a short
+ * reference rather than a link. If the template is ever re-approved with
+ * shorter static copy, these caps can be relaxed.
+ *
+ * Body variable order matches the approved template's own field labels —
+ * confirmed by inspecting a real delivered message: {{1}} Attendee,
+ * {{2}} Seat, {{3}} Ticket ID, {{4}} the "View / share this ticket" line.
  */
+const clip = (s: string, max: number) => (s.length > max ? `${s.slice(0, max - 1)}…` : s);
 
 export function whatsappConfigured(): boolean {
   return Boolean(process.env.META_WHATSAPP_PHONE_ID && process.env.META_WHATSAPP_ACCESS_TOKEN);
@@ -80,10 +89,11 @@ async function sendTemplate(params: {
 /**
  * Sends every ticket in a confirmed booking to the purchaser's WhatsApp
  * number — one templated message per ticket (one QR each), same "one per
- * attendee" shape as the ticket email, carrying the same facts (booking id,
- * event, venue, date, amount paid, seat, ticket id, ticket link). `origin`
- * is the site's own public base URL, used to build the QR image link Meta's
- * servers fetch and the ticket link included in the body text.
+ * attendee" shape as the ticket email. The QR header image is the actual
+ * functional ticket; the body text just fills the template's Attendee/
+ * Seat/Ticket ID/share-line fields well enough to tell messages apart in a
+ * multi-seat booking. `origin` is the site's own public base URL, used to
+ * build the QR image link Meta's servers fetch.
  */
 export async function sendTicketWhatsApp(
   booking: Booking,
@@ -96,9 +106,6 @@ export async function sendTicketWhatsApp(
 
   const event = await getEvent(booking.eventId);
   const eventTitle = event?.title ?? "your event";
-  const eventWhen = event ? formatDateIST(event.startsAt) : "";
-  const venue = event ? `${event.venue}, ${event.city}` : "";
-  const amountPaid = inr(booking.amount);
 
   if (!whatsappConfigured()) {
     console.log(
@@ -111,15 +118,15 @@ export async function sendTicketWhatsApp(
   let lastError: string | undefined;
   for (const ticket of tickets) {
     const imageUrl = `${origin}/api/tickets/${encodeURIComponent(ticket.ticketId)}/qr.png`;
-    const ticketUrl = `${origin}/ticket/${encodeURIComponent(ticket.ticketId)}`;
+    const ticketRef = ticket.ticketId.split("-").pop() ?? ticket.ticketId;
     const result = await sendTemplate({
       to: booking.customerPhone,
       imageUrl,
       bodyParams: [
-        ticket.attendeeName,
-        [eventTitle, venue, eventWhen].filter(Boolean).join(" · "),
-        `Seat ${ticket.seatId} · ${amountPaid} paid · Booking ${booking.bookingId}`,
-        `Ticket ${ticket.ticketId} · ${ticketUrl}`,
+        clip(ticket.attendeeName, 16),
+        clip(ticket.seatId, 10),
+        clip(ticketRef, 8),
+        clip(ticketRef, 8),
       ],
     });
     if (!result.sent) {
