@@ -155,7 +155,14 @@ export async function POST(req: NextRequest) {
 
   // ---- Lock seats BEFORE creating the payment order ----
   // A provisional lock key ties the lock to the order we're about to create.
-  const provisionalId = `prov_${crypto.randomUUID()}`;
+  // If the client already holds these seats from an anonymous pre-auth hold
+  // (see POST /api/seats/hold, called while picking seats before sign-in),
+  // reuse that SAME lock id here instead of a fresh one — lockSeats treats a
+  // re-lock under an id it already holds as a no-op, so the hold carries
+  // straight through into the real order with no gap where the seats could
+  // be taken by someone else.
+  const bodyHoldId = typeof body.holdId === "string" ? body.holdId.trim() : "";
+  const provisionalId = bodyHoldId || `prov_${crypto.randomUUID()}`;
   const lock = await lockSeats(eventId, seatIds, provisionalId);
   if (!lock.ok) {
     return NextResponse.json(

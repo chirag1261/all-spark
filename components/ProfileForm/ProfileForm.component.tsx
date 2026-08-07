@@ -4,7 +4,6 @@ import { useState } from "react";
 
 import { useRouter } from "next/navigation";
 
-import PasswordInput from "../PasswordInput";
 import { useToast } from "../Toast";
 
 interface Props {
@@ -14,14 +13,11 @@ interface Props {
     phone: string | null;
     emailVerified: boolean;
     phoneVerified: boolean;
-    hasPassword: boolean;
   };
 }
 
 const inputCls =
   "w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#1d4ed8]";
-const passwordCls =
-  "w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus-within:border-[#1d4ed8]";
 
 /** Best-effort split of a stored full name into first/last for pre-filling
  *  the two inputs — the account still stores (and the API still expects) a
@@ -38,8 +34,6 @@ export default function ProfileForm({ profile }: Props) {
   const [firstName, setFirstName] = useState(initialName.first);
   const [lastName, setLastName] = useState(initialName.last);
   const [email, setEmail] = useState(profile.email ?? "");
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
   const emailChanged = email.trim().toLowerCase() !== (profile.email ?? "");
@@ -68,36 +62,8 @@ export default function ProfileForm({ profile }: Props) {
     }
   };
 
-  const savePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setBusy(true);
-    try {
-      const res = await fetch("/api/account/password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          newPassword,
-          ...(profile.hasPassword ? { currentPassword } : {}),
-        }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setCurrentPassword("");
-        setNewPassword("");
-        showToast("Your password has been updated");
-        router.refresh();
-      } else {
-        showToast(data.error ?? "Could not update your password", "error");
-      }
-    } catch {
-      showToast("Could not reach the server", "error");
-    } finally {
-      setBusy(false);
-    }
-  };
-
   return (
-    <div className="grid md:grid-cols-2 gap-6 items-start">
+    <div className="max-w-md">
       <form
         onSubmit={saveProfile}
         className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4"
@@ -110,7 +76,7 @@ export default function ProfileForm({ profile }: Props) {
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               required
-              minLength={2}
+              minLength={1}
               maxLength={80}
               className={inputCls}
             />
@@ -153,55 +119,10 @@ export default function ProfileForm({ profile }: Props) {
         </div>
         <button
           type="submit"
-          disabled={busy || firstName.trim().length < 2}
+          disabled={busy || firstName.trim().length < 1}
           className="bg-linear-to-r from-[#D4AF37] to-[#E6C35C] hover:brightness-105 text-[#081A3A] disabled:opacity-40 rounded-full px-5 py-2.5 font-semibold text-sm transition-all"
         >
           Save profile
-        </button>
-      </form>
-
-      <form
-        onSubmit={savePassword}
-        className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4"
-      >
-        <h2 className="font-semibold">
-          {profile.hasPassword ? "Change password" : "Set a password"}
-        </h2>
-        <p className="text-xs text-slate-500">
-          {profile.hasPassword
-            ? "You can sign in with your password or a one-time code."
-            : "Optional — you can always sign in with a one-time code instead."}
-        </p>
-        {profile.hasPassword && (
-          <div>
-            <Label>Current password</Label>
-            <PasswordInput
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              autoComplete="current-password"
-              required
-              className={passwordCls}
-            />
-          </div>
-        )}
-        <div>
-          <Label>New password (min 8 characters)</Label>
-          <PasswordInput
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            autoComplete="new-password"
-            required
-            minLength={8}
-            maxLength={128}
-            className={passwordCls}
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={busy || newPassword.length < 8}
-          className="bg-slate-100 hover:bg-slate-200 disabled:opacity-40 rounded-full px-5 py-2.5 font-semibold text-sm transition-colors"
-        >
-          {profile.hasPassword ? "Change password" : "Set password"}
         </button>
       </form>
       {toast}

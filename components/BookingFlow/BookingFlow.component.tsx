@@ -2,22 +2,29 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+
+
 import { AlertTriangle, Check, Tag, Users } from "lucide-react";
 import Link from "next/link";
+import { createPortal } from "react-dom";
+
+
 
 import { MAX_SEATS_PER_BOOKING } from "@/constants";
 import { getSeatLayout, seatPrice, totalSeats } from "@/lib/domain/events";
 import { AttendeeGender, EventItem } from "@/types";
 import { formatDateIST, inr } from "@/utils";
 
+
+
 import BackLink from "../BackLink";
 import Confetti from "../Confetti";
 import EventFactStrip from "../EventFactStrip";
 import Loader from "../Loader";
+import PhoneAuth, { AuthedCustomer } from "../PhoneAuth";
 import { useRouteLoader } from "../RouteLoader";
 import SeatMap from "../SeatMap";
 import { useToast } from "../Toast";
-
 
 interface TicketView {
   ticketId: string;
@@ -30,6 +37,7 @@ interface Confirmation {
   bookingId: string;
   tickets: TicketView[];
   emailSent: boolean;
+  whatsappSent: boolean;
   amount: number;
 }
 
@@ -56,8 +64,9 @@ const PAYMENT_ISSUE_COPY: Record<PaymentIssueReason, { title: string; body: stri
 
 interface Props {
   event: EventItem;
-  /** The signed-in customer (booking is gated on login server-side). */
-  customer: { name: string; email: string | null; phone: string | null };
+  /** Null when the visitor hasn't signed in yet — seat selection is open to
+   *  anyone; auth is only asked for at the "Proceed to checkout" step. */
+  customer: { name: string; email: string | null; phone: string | null } | null;
   /** Server-fetched seat availability so the map is accurate on first paint. */
   initialBookedSeats: string[];
   initialLockedSeats: string[];
@@ -84,10 +93,28 @@ function loadRazorpay(): Promise<boolean> {
 
 export default function BookingFlow({
   event,
-  customer,
+  customer: initialCustomer,
   initialBookedSeats,
   initialLockedSeats,
 }: Props) {
+  // Updated in place once the checkout-time auth step succeeds (see
+  // handleAuthSuccess) — everything below just reads `customer`.
+  const [customer, setCustomer] = useState(initialCustomer);
+  // Shown when an anonymous visitor clicks "Proceed to checkout".
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  // One id per booking session, reused as the seat-lock key across the whole
+  // anonymous-hold → sign-in → real-order lifecycle (see holdSeats/pay).
+  // Mirrored into sessionStorage (keyed by event) so a reload mid-auth
+  // doesn't orphan the hold under an id nothing remembers anymore.
+  const [holdId] = useState<string>(() => {
+    if (typeof window === "undefined") return ""; // SSR placeholder, unused
+    const key = `seat-hold:${event.id}`;
+    const existing = sessionStorage.getItem(key);
+    if (existing) return existing;
+    const fresh = crypto.randomUUID();
+    sessionStorage.setItem(key, fresh);
+    return fresh;
+  });
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bookedSeats, setBookedSeats] = useState<Set<string>>(new Set(initialBookedSeats));
   const [lockedSeats, setLockedSeats] = useState<Set<string>>(new Set(initialLockedSeats));
@@ -198,17 +225,61 @@ export default function BookingFlow({
   };
 
   const firstNameForSeat = (seatId: string, index: number) =>
-    attendeeFirstNames[seatId] ?? (index === 0 ? splitName(customer.name).first : "");
+    attendeeFirstNames[seatId] ?? (index === 0 ? splitName(customer?.name ?? "").first : "");
   const lastNameForSeat = (seatId: string, index: number) =>
-    attendeeLastNames[seatId] ?? (index === 0 ? splitName(customer.name).last : "");
+    attendeeLastNames[seatId] ?? (index === 0 ? splitName(customer?.name ?? "").last : "");
   const fullNameForSeat = (seatId: string, index: number) => {
     const first = firstNameForSeat(seatId, index).trim();
     const last = lastNameForSeat(seatId, index).trim();
     return last ? `${first} ${last}` : first;
   };
 
-  const goToAttendees = () => {
+  // Reserve the selected seats anonymously so they can't be scooped by
+  // someone else while this visitor completes the checkout-time auth step
+  // (see holdId below) — /api/orders reuses this exact hold once signed in.
+  const holdSeats = async (): Promise<boolean> => {
+    try {
+      const res = await fetch("/api/seats/hold", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventId: event.id, seatIds: selectedSeats, holdId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(data.error ?? "Some seats were just taken — please reselect", "error");
+        if (data.conflicts) {
+          setSelected((prev) => {
+            const next = new Set(prev);
+            for (const c of data.conflicts) next.delete(c);
+            return next;
+          });
+        }
+        refreshSeats();
+        return false;
+      }
+      return true;
+    } catch {
+      showToast("Could not reach the server", "error");
+      return false;
+    }
+  };
+
+  const goToAttendees = async () => {
     if (selected.size === 0) return showToast("Select at least one seat to continue", "error");
+    if (!customer) {
+      if (!(await holdSeats())) return;
+      setShowAuthModal(true);
+      return;
+    }
+    setStep("attendees");
+  };
+
+  // Called once the checkout-time auth step succeeds (sign-in or new
+  // account) — the seats are already held under `holdId`, so this just
+  // records who's buying and continues straight into naming attendees.
+  const handleAuthSuccess = (authed: AuthedCustomer) => {
+    setCustomer({ name: authed.name, email: authed.email, phone: authed.phone });
+    setShowAuthModal(false);
     setStep("attendees");
   };
 
@@ -277,6 +348,7 @@ export default function BookingFlow({
           eventId: event.id,
           attendees,
           promoCode: appliedPromo?.code,
+          holdId,
         }),
       });
       const data = await res.json();
@@ -354,6 +426,7 @@ export default function BookingFlow({
                 bookingId: verifyData.bookingId,
                 tickets,
                 emailSent: verifyData.emailSent ?? false,
+                whatsappSent: verifyData.whatsappSent ?? false,
                 amount: verifyData.amount,
               });
             } else {
@@ -446,9 +519,13 @@ export default function BookingFlow({
                 : "Show this QR at the venue gate."}
             </p>
             <p className="text-slate-500 text-sm mt-1">
-              {confirmed.emailSent
-                ? `Tickets were emailed to ${customer.email}.`
-                : "Save your tickets — they're also in My Tickets in your account."}
+              {confirmed.whatsappSent && confirmed.emailSent
+                ? `Tickets were sent to your WhatsApp and emailed to ${customer?.email}.`
+                : confirmed.whatsappSent
+                  ? "Tickets were sent to your WhatsApp."
+                  : confirmed.emailSent
+                    ? `Tickets were emailed to ${customer?.email}.`
+                    : "Save your tickets — they're also in My Tickets in your account."}
             </p>
           </div>
         </div>
@@ -468,7 +545,9 @@ export default function BookingFlow({
               <div className="min-w-0">
                 <p className="font-bold wrap-break-word">{t.name}</p>
                 <p className="text-sm text-slate-600">Seat {t.seatId}</p>
-                <p className="font-mono text-xs text-slate-500 mt-1 wrap-break-word">{t.ticketId}</p>
+                <p className="font-mono text-xs text-slate-500 mt-1 wrap-break-word">
+                  {t.ticketId}
+                </p>
                 <Link
                   href={`/ticket/${t.ticketId}`}
                   className="inline-block mt-2 text-sm text-[#1d4ed8] hover:underline"
@@ -608,10 +687,12 @@ export default function BookingFlow({
 
       <EventFactStrip event={event} remaining={remainingSeats} />
 
-      <p className="text-xs text-slate-500 mt-4 mb-6">
-        Booking as <span className="text-slate-700">{customer.name}</span> (
-        {customer.email ?? customer.phone}).
-      </p>
+      {customer && (
+        <p className="text-xs text-slate-500 mt-4 mb-6">
+          Booking as <span className="text-slate-700">{customer.name}</span> (
+          {customer.email ?? customer.phone}).
+        </p>
+      )}
 
       <Stepper current={step} />
 
@@ -650,7 +731,7 @@ export default function BookingFlow({
               disabled={selected.size === 0}
               className="bg-linear-to-r from-[#D4AF37] to-[#E6C35C] hover:brightness-105 text-[#081A3A] disabled:opacity-40 disabled:cursor-not-allowed rounded-full px-6 py-2.5 font-semibold text-sm transition-all"
             >
-              Continue
+              Proceed to checkout
             </button>
           </div>
         </div>
@@ -750,7 +831,10 @@ export default function BookingFlow({
           </div>
 
           <div className="flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 mt-4">
-            <AlertTriangle className="w-4.5 h-4.5 shrink-0 text-amber-700 mt-0.5" aria-hidden="true" />
+            <AlertTriangle
+              className="w-4.5 h-4.5 shrink-0 text-amber-700 mt-0.5"
+              aria-hidden="true"
+            />
             <p className="text-sm text-amber-800">
               Please carry a valid Government-issued ID proof for verification at the venue.
             </p>
@@ -787,10 +871,13 @@ export default function BookingFlow({
       {step === "summary" && (
         <div className="mt-6 max-w-2xl">
           <div className="flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 mb-4">
-            <AlertTriangle className="w-4.5 h-4.5 shrink-0 text-amber-700 mt-0.5" aria-hidden="true" />
+            <AlertTriangle
+              className="w-4.5 h-4.5 shrink-0 text-amber-700 mt-0.5"
+              aria-hidden="true"
+            />
             <p className="text-sm text-amber-800">
-              Please verify your seat selection and attendee details before proceeding with
-              payment. Changes may not be possible after booking confirmation.
+              Please verify your seat selection and attendee details before proceeding with payment.
+              Changes may not be possible after booking confirmation.
             </p>
           </div>
 
@@ -807,7 +894,9 @@ export default function BookingFlow({
                   <span className="shrink-0 whitespace-nowrap text-[11px] font-mono font-semibold tracking-wide text-[#1d4ed8] bg-[#1d4ed8]/10 border border-[#1d4ed8]/25 rounded-lg px-2.5 py-1">
                     {seatId}
                   </span>
-                  <span className="min-w-0 flex-1 truncate text-sm">{fullNameForSeat(seatId, i)}</span>
+                  <span className="min-w-0 flex-1 truncate text-sm">
+                    {fullNameForSeat(seatId, i)}
+                  </span>
                   <span className="shrink-0 text-sm text-slate-600">
                     {inr(seatPrice(event, seatId) ?? 0)}
                   </span>
@@ -898,6 +987,32 @@ export default function BookingFlow({
           </div>
         </div>
       )}
+      {showAuthModal &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-[fade-in_.15s_ease-out]" />
+            <div className="relative w-full max-w-sm bg-white border border-slate-200 rounded-2xl p-6 shadow-2xl animate-[dialog-in_.15s_ease-out]">
+              <button
+                onClick={() => setShowAuthModal(false)}
+                aria-label="Close"
+                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-xl leading-none"
+              >
+                ×
+              </button>
+              <h2 className="font-bold text-lg mb-1">Sign in to continue</h2>
+              <p className="text-sm text-slate-500 mb-5">
+                Your seats are held — sign in or create an account to finish booking.
+              </p>
+              <PhoneAuth onSuccess={handleAuthSuccess} />
+            </div>
+          </div>,
+          document.body
+        )}
       {toast}
     </div>
   );
@@ -912,7 +1027,7 @@ const STEPS: { key: "seats" | "attendees" | "summary"; label: string }[] = [
 function Stepper({ current }: { current: "seats" | "attendees" | "summary" }) {
   const currentIdx = STEPS.findIndex((s) => s.key === current);
   return (
-    <ol className="flex items-center gap-2 sm:gap-3">
+    <ol className="flex mt-5 items-center gap-2 sm:gap-3">
       {STEPS.map((s, i) => {
         const done = i < currentIdx;
         const active = i === currentIdx;
