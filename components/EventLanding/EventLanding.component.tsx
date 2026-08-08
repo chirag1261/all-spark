@@ -46,7 +46,7 @@ export default function EventLanding({ event, remaining }: Props) {
   );
 
   return (
-    <div>
+    <div className="pb-24 sm:pb-0">
       {/* ---- Hero: auto-playing media canvas ---- */}
       <section
         className={`relative min-h-[78vh] flex items-end overflow-hidden bg-linear-to-br ${event.poster}`}
@@ -84,7 +84,9 @@ export default function EventLanding({ event, remaining }: Props) {
           <p className="text-sm sm:text-base text-white/80 mt-4">
             {formatDateIST(event.startsAt)} · {event.venue}, {event.city}
           </p>
-          <div className="mt-8">{cta}</div>
+          {/* Hidden on mweb — the fixed bottom bar already surfaces this CTA
+              there, so showing it here too would just be a duplicate. */}
+          <div className="hidden sm:block mt-8">{cta}</div>
         </div>
       </section>
 
@@ -374,6 +376,14 @@ export default function EventLanding({ event, remaining }: Props) {
           {cta}
         </div>
       </section>
+
+      {/* ---- Mobile-only persistent booking bar — desktop already has the
+          CTA inline in three places (hero, tickets, closing band), which is
+          plenty of visibility on a wide screen; mweb needs it reachable
+          without scrolling back up. */}
+      <div className="sm:hidden fixed inset-x-0 bottom-0 z-50 bg-white border-t border-slate-200 shadow-[0_-8px_24px_rgba(15,23,42,0.08)] px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+        {cta}
+      </div>
     </div>
   );
 }

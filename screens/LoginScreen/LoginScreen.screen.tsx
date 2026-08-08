@@ -66,6 +66,14 @@ export async function LoginScreen({ next, idleExpired }: { next: string; idleExp
                   <EventsCarousel events={events} compact />
                 </div>
 
+                <h1 className="font-heading text-2xl font-bold text-slate-900 mb-1.5">
+                  Sign in or create an account
+                </h1>
+                <p className="text-sm text-slate-500 mb-6">
+                  Enter your mobile number — we&apos;ll text you a one-time code, no password
+                  needed.
+                </p>
+
                 {idleExpired && (
                   <p className="text-xs text-amber-700 bg-amber-50 border border-amber-400/20 rounded-lg px-3 py-2 mb-5">
                     Your session expired due to inactivity. Please sign in again.

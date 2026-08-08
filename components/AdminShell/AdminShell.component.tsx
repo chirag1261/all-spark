@@ -269,8 +269,17 @@ export default function AdminShell({ user, children }: Props) {
 
   return (
     <div className="min-h-screen flex text-slate-900">
-      {/* Desktop sidebar */}
-      <aside className="hidden lg:block w-[260px] shrink-0 sticky top-0 h-screen">{sidebar}</aside>
+      {/* Desktop sidebar — fixed (not sticky) so it stays pinned to the left
+          edge for the full height of the viewport regardless of how far the
+          content column scrolls. `sticky` here was unreliable: with an
+          explicit `h-screen` height inside a flex row, it would stop
+          following the scroll partway down instead of staying glued to the
+          top. `inset-y-0` replaces `h-screen` so it always spans exactly the
+          viewport height at its fixed position. */}
+      <aside className="hidden lg:block fixed inset-y-0 left-0 z-40 w-[260px]">{sidebar}</aside>
+      {/* Spacer — reserves the fixed sidebar's width in the flex layout so
+          the content column starts after it instead of underneath it. */}
+      <div className="hidden lg:block w-[260px] shrink-0" aria-hidden="true" />
 
       {/* Mobile drawer */}
       {open && (
@@ -286,8 +295,11 @@ export default function AdminShell({ user, children }: Props) {
 
       {/* Content column */}
       <div className="flex-1 min-w-0 flex flex-col">
-        {/* Topbar */}
-        <header className="h-16 shrink-0 sticky top-0 z-30 flex items-center gap-3 px-4 sm:px-6 bg-[#081A3A] border-b border-white/15">
+        {/* Topbar — fixed rather than sticky, so it stays in place regardless
+            of how the content column scrolls. Offset by the sidebar's width
+            on desktop (`lg:left-[260px]`) so it doesn't render over it; full
+            width below `lg`, where the sidebar is a drawer instead. */}
+        <header className="fixed inset-x-0 lg:left-[260px] top-0 z-30 h-16 flex items-center gap-3 px-4 sm:px-6 bg-[#081A3A] border-b border-white/15">
           <button
             onClick={() => setOpen(true)}
             aria-label="Open menu"
@@ -350,6 +362,9 @@ export default function AdminShell({ user, children }: Props) {
             )}
           </div>
         </header>
+        {/* Spacer — the topbar above is `fixed`, so it's out of flow; this
+            reserves its height so content doesn't render underneath it. */}
+        <div className="h-16 shrink-0" aria-hidden="true" />
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8">
           <div className="max-w-6xl mx-auto">{children}</div>
