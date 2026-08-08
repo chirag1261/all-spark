@@ -71,8 +71,21 @@ export default function RouteLoaderProvider({ children }: { children: React.Reac
       show(next);
       router.push(href);
       router.refresh();
+      // The effect below is what normally schedules hide() — but it only
+      // fires on an actual pathname CHANGE. If the destination's pathname is
+      // the same as the current one (e.g. logging out from "/" back to "/",
+      // or re-navigating to a route you're already on), that effect never
+      // re-runs, so without this the overlay hangs until the 15s
+      // SAFETY_TIMEOUT_MS fallback in show() — which reads as "logout is
+      // stuck" for exactly as long as that timeout. Schedule the normal
+      // minimum-visible hide directly for that case.
+      const targetPath = href.split(/[?#]/)[0];
+      if (targetPath === pathname) {
+        if (timerRef.current) clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(() => setPending(false), MIN_VISIBLE_MS);
+      }
     },
-    [router, show]
+    [router, show, pathname]
   );
 
   // Navigation finished once the pathname changes — drop the overlay, but not

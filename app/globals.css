@@ -93,18 +93,25 @@ h3 {
    Motion system
 --------------------------------------------------------------------------- */
 
-/* Route transition — applied by src/app/template.tsx on every navigation */
+/* Route transition — applied by src/app/template.tsx on every navigation.
+   Opacity-only: a `transform` here (even the identity `translateY(0)` this
+   settles on) creates a new containing block for every `position: fixed`
+   descendant on every page, silently breaking fixed bottom bars/footers
+   site-wide once the animation completes and holds its end state (`both`).
+   Confirmed live via CDP — a fixed element under this wrapper reported
+   `getBoundingClientRect().top` in the thousands of pixels (document-
+   relative, as if not fixed at all) instead of a small viewport-relative
+   value. Portaled elements (rendered straight to document.body, e.g. modals)
+   were never affected, only plain in-tree fixed elements. */
 .page-transition {
   animation: page-in 0.2s ease-out both;
 }
 @keyframes page-in {
   from {
     opacity: 0;
-    transform: translateY(6px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 

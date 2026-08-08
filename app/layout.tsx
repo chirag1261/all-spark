@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Roboto } from "next/font/google";
 
 import RouteLoaderProvider from "@/components/RouteLoader";
@@ -18,6 +18,16 @@ export const metadata: Metadata = {
   title: "Utsav Events — Sacred Experiences in Music & Devotion",
   description:
     "Bangalore-based cultural organisation bringing communities together through the timeless power of music and devotion. Book seats for Rudrotsav and more.",
+};
+
+// Blocks pinch-to-zoom on mobile web, site-wide — a deliberate product
+// choice for this ticketing app's fixed layout, not an accessibility
+// default (it does trade off zoom access for low-vision mobile users).
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({

@@ -254,17 +254,17 @@ export default function AdminEventsPanel({ rows, cloudinaryEnabled }: Props) {
         </p>
       ) : (
         <>
-          <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white">
+          <div className="max-h-[70vh] overflow-y-auto overflow-x-auto border border-slate-200 rounded-xl bg-white">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-white bg-[#1d4ed8]">
+                <tr className="text-left text-white bg-[#1d4ed8] sticky top-0 z-10">
                   <Th sortKey="title" active={sortKey} dir={sortDir} onSort={toggleSort}>
                     Event
                   </Th>
                   <Th sortKey="startsAt" active={sortKey} dir={sortDir} onSort={toggleSort}>
                     Starts
                   </Th>
-                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium bg-[#1d4ed8]">Status</th>
                   <Th
                     sortKey="registrations"
                     active={sortKey}
@@ -289,7 +289,7 @@ export default function AdminEventsPanel({ rows, cloudinaryEnabled }: Props) {
                   <Th sortKey="updatedAt" active={sortKey} dir={sortDir} onSort={toggleSort}>
                     Last updated
                   </Th>
-                  <th className="px-4 py-3 font-medium text-right">Actions</th>
+                  <th className="px-4 py-3 font-medium text-right bg-[#1d4ed8]">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -484,7 +484,9 @@ function Th({
 }) {
   const isActive = active === sortKey;
   return (
-    <th className={`px-4 py-3 font-medium ${align === "right" ? "text-right" : "text-left"}`}>
+    <th
+      className={`px-4 py-3 font-medium bg-[#1d4ed8] ${align === "right" ? "text-right" : "text-left"}`}
+    >
       <button
         onClick={() => onSort(sortKey)}
         className={`inline-flex items-center gap-1 hover:text-white transition-colors ${

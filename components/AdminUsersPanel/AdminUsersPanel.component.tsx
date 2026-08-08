@@ -95,16 +95,16 @@ export default function AdminUsersPanel({ users, currentUserId }: Props) {
         restricted to super admins only.
       </p>
 
-      <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white">
+      <div className="max-h-[70vh] overflow-y-auto overflow-x-auto border border-slate-200 rounded-xl bg-white">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-white bg-[#1d4ed8]">
-              <th className="px-4 py-3 font-medium">Name</th>
-              <th className="px-4 py-3 font-medium">Role</th>
-              <th className="px-4 py-3 font-medium">Permissions</th>
-              <th className="px-4 py-3 font-medium">Status</th>
-              <th className="px-4 py-3 font-medium">Last login</th>
-              <th className="px-4 py-3" />
+            <tr className="text-left text-white bg-[#1d4ed8] sticky top-0 z-10">
+              <th className="px-4 py-3 font-medium bg-[#1d4ed8]">Name</th>
+              <th className="px-4 py-3 font-medium bg-[#1d4ed8]">Role</th>
+              <th className="px-4 py-3 font-medium bg-[#1d4ed8]">Permissions</th>
+              <th className="px-4 py-3 font-medium bg-[#1d4ed8]">Status</th>
+              <th className="px-4 py-3 font-medium bg-[#1d4ed8]">Last login</th>
+              <th className="px-4 py-3 bg-[#1d4ed8]" />
             </tr>
           </thead>
           <tbody>

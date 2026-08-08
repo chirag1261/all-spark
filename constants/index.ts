@@ -4,6 +4,13 @@ export const MAX_SEATS_PER_BOOKING = 10;
 export const MAX_TOTAL_ROWS = 26; // rows are lettered A–Z
 export const MAX_GALLERY_PHOTOS = 12;
 
+/** How long an anonymous/order seat lock lasts (lib/db's lockSeats) before
+ *  the seats are released back to the pool. Also the ceiling for how long a
+ *  visitor's in-progress booking (selected seats, attendee details) can be
+ *  resumed client-side after navigating away — see BookingFlow's
+ *  sessionStorage persistence. One shared constant so the two can't drift. */
+export const SEAT_LOCK_TTL_MS = 8 * 60 * 1000;
+
 // ---------- Image uploads ----------
 // Admins may only upload small, modern-format images. Enforced on the server
 // (authoritative) and mirrored in the UI for instant feedback.

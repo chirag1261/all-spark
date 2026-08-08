@@ -106,17 +106,17 @@ export default function AdminPromoCodesPanel({ codes, events }: Props) {
         usage cap. A redemption is counted only when a payment is confirmed.
       </p>
 
-      <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white">
+      <div className="max-h-[70vh] overflow-y-auto overflow-x-auto border border-slate-200 rounded-xl bg-white">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-white bg-[#1d4ed8]">
-              <th className="px-4 py-3 font-medium">Code</th>
-              <th className="px-4 py-3 font-medium">Discount</th>
-              <th className="px-4 py-3 font-medium">Event</th>
-              <th className="px-4 py-3 font-medium">Used / Limit</th>
-              <th className="px-4 py-3 font-medium">Valid</th>
-              <th className="px-4 py-3 font-medium">Status</th>
-              <th className="px-4 py-3" />
+            <tr className="text-left text-white bg-[#1d4ed8] sticky top-0 z-10">
+              <th className="px-4 py-3 font-medium bg-[#1d4ed8]">Code</th>
+              <th className="px-4 py-3 font-medium bg-[#1d4ed8]">Discount</th>
+              <th className="px-4 py-3 font-medium bg-[#1d4ed8]">Event</th>
+              <th className="px-4 py-3 font-medium bg-[#1d4ed8]">Used / Limit</th>
+              <th className="px-4 py-3 font-medium bg-[#1d4ed8]">Valid</th>
+              <th className="px-4 py-3 font-medium bg-[#1d4ed8]">Status</th>
+              <th className="px-4 py-3 bg-[#1d4ed8]" />
             </tr>
           </thead>
           <tbody>

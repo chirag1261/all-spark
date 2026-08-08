@@ -10,7 +10,7 @@ import { createPortal } from "react-dom";
 
 
 
-import { MAX_SEATS_PER_BOOKING } from "@/constants";
+import { MAX_SEATS_PER_BOOKING, SEAT_LOCK_TTL_MS } from "@/constants";
 import { getSeatLayout, seatPrice, totalSeats } from "@/lib/domain/events";
 import { AttendeeGender, EventItem } from "@/types";
 import { formatDateIST, inr } from "@/utils";
@@ -91,6 +91,65 @@ function loadRazorpay(): Promise<boolean> {
   });
 }
 
+/**
+ * Resuming a booking in progress: a visitor who picks seats, wanders off to
+ * another page (or just refreshes), then comes back shouldn't have to
+ * reselect seats or retype attendee details. Mirrors the existing `holdId`
+ * sessionStorage pattern (keyed per event) — restoring is purely a
+ * client-side convenience; the actual seat lock is re-validated against the
+ * server the moment they hit "Proceed to checkout" again (holdSeats already
+ * prunes any seat someone else grabbed meanwhile).
+ *
+ * Only valid for SEAT_LOCK_TTL_MS (the same 8-minute window the server-side
+ * seat lock itself lasts, see lib/db's lockSeats) — past that, the hold is
+ * long gone and the selected seats may already belong to someone else, so
+ * resuming would show a stale, misleading "still selected" state. `savedAt`
+ * is stamped on every write and checked on every read; once it's past the
+ * TTL the snapshot (and the now-pointless seat hold id) are dropped and the
+ * visitor gets a fresh seat map instead.
+ */
+interface PersistedBookingState {
+  savedAt?: number;
+  selected?: string[];
+  step?: "seats" | "attendees" | "summary";
+  attendeeFirstNames?: Record<string, string>;
+  attendeeLastNames?: Record<string, string>;
+  attendeePhones?: Record<string, string>;
+  attendeeEmails?: Record<string, string>;
+  attendeeGenders?: Record<string, AttendeeGender | "">;
+  appliedPromo?: { code: string; discount: number } | null;
+}
+
+function bookingStateKey(eventId: string): string {
+  return `booking-state:${eventId}`;
+}
+
+function readPersistedBookingState(eventId: string): PersistedBookingState {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = sessionStorage.getItem(bookingStateKey(eventId));
+    if (!raw) return {};
+    const parsed: PersistedBookingState = JSON.parse(raw);
+    if (!parsed.savedAt || Date.now() - parsed.savedAt >= SEAT_LOCK_TTL_MS) {
+      // Hold's definitely expired server-side by now — don't resurrect it.
+      clearPersistedBooking(eventId);
+      return {};
+    }
+    return parsed;
+  } catch {
+    return {};
+  }
+}
+
+/** Called once a booking actually completes — resuming a *finished* booking
+ *  makes no sense, and would otherwise resurrect stale seats/details the
+ *  next time this visitor starts a fresh booking for the same event. */
+function clearPersistedBooking(eventId: string) {
+  if (typeof window === "undefined") return;
+  sessionStorage.removeItem(bookingStateKey(eventId));
+  sessionStorage.removeItem(`seat-hold:${eventId}`);
+}
+
 export default function BookingFlow({
   event,
   customer: initialCustomer,
@@ -115,18 +174,39 @@ export default function BookingFlow({
     sessionStorage.setItem(key, fresh);
     return fresh;
   });
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  // Anchors the resumable-booking window to when this seat selection first
+  // started, not to the last edit — otherwise typing attendee details would
+  // keep sliding the 8-minute window forward past what the server-side seat
+  // lock actually honors. Reused as-is on every persist write below. (A
+  // lazy useState initializer, not useRef(Date.now()) — the latter would
+  // evaluate Date.now() on every render, which React's purity rules forbid.)
+  const [bookingSavedAt] = useState<number>(
+    () => readPersistedBookingState(event.id).savedAt ?? Date.now()
+  );
+  const [selected, setSelected] = useState<Set<string>>(
+    () => new Set(readPersistedBookingState(event.id).selected)
+  );
   const [bookedSeats, setBookedSeats] = useState<Set<string>>(new Set(initialBookedSeats));
   const [lockedSeats, setLockedSeats] = useState<Set<string>>(new Set(initialLockedSeats));
   // seatId -> attendee first/last name; the first seat defaults to the
   // purchaser's own name (split best-effort on the first space). First name
   // is mandatory per seat, last name is optional.
-  const [attendeeFirstNames, setAttendeeFirstNames] = useState<Record<string, string>>({});
-  const [attendeeLastNames, setAttendeeLastNames] = useState<Record<string, string>>({});
+  const [attendeeFirstNames, setAttendeeFirstNames] = useState<Record<string, string>>(
+    () => readPersistedBookingState(event.id).attendeeFirstNames ?? {}
+  );
+  const [attendeeLastNames, setAttendeeLastNames] = useState<Record<string, string>>(
+    () => readPersistedBookingState(event.id).attendeeLastNames ?? {}
+  );
   // seatId -> optional extra contact details for that attendee
-  const [attendeePhones, setAttendeePhones] = useState<Record<string, string>>({});
-  const [attendeeEmails, setAttendeeEmails] = useState<Record<string, string>>({});
-  const [attendeeGenders, setAttendeeGenders] = useState<Record<string, AttendeeGender | "">>({});
+  const [attendeePhones, setAttendeePhones] = useState<Record<string, string>>(
+    () => readPersistedBookingState(event.id).attendeePhones ?? {}
+  );
+  const [attendeeEmails, setAttendeeEmails] = useState<Record<string, string>>(
+    () => readPersistedBookingState(event.id).attendeeEmails ?? {}
+  );
+  const [attendeeGenders, setAttendeeGenders] = useState<Record<string, AttendeeGender | "">>(
+    () => readPersistedBookingState(event.id).attendeeGenders ?? {}
+  );
   const [paying, setPaying] = useState(false);
   // True from the moment payment succeeds until the tickets are confirmed and
   // we've navigated / rendered them — drives the full-screen loader.
@@ -142,13 +222,55 @@ export default function BookingFlow({
   );
   const [paymentIssue, setPaymentIssue] = useState<PaymentIssueReason | null>(null);
   // Guided checkout journey: pick seats → name attendees → review → pay.
-  const [step, setStep] = useState<"seats" | "attendees" | "summary">("seats");
+  // Only trust a resumed later step if there are actually seats to go with
+  // it — otherwise land back on "seats" rather than showing an empty review.
+  const [step, setStep] = useState<"seats" | "attendees" | "summary">(() => {
+    const persisted = readPersistedBookingState(event.id);
+    return persisted.selected && persisted.selected.length > 0 ? (persisted.step ?? "seats") : "seats";
+  });
   // Promo code applied on the summary step (server-validated preview).
   const [promoInput, setPromoInput] = useState("");
   const [applyingPromo, setApplyingPromo] = useState(false);
-  const [appliedPromo, setAppliedPromo] = useState<{ code: string; discount: number } | null>(null);
+  const [appliedPromo, setAppliedPromo] = useState<{ code: string; discount: number } | null>(
+    () => readPersistedBookingState(event.id).appliedPromo ?? null
+  );
   const routeLoader = useRouteLoader();
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Keep the resumable snapshot in sync so a visitor who wanders off to
+  // another page (or refreshes) mid-booking comes back to exactly where
+  // they left off, instead of re-picking seats and retyping every attendee.
+  useEffect(() => {
+    if (typeof window === "undefined" || confirmed) return;
+    const data: PersistedBookingState = {
+      savedAt: bookingSavedAt,
+      selected: [...selected],
+      step,
+      attendeeFirstNames,
+      attendeeLastNames,
+      attendeePhones,
+      attendeeEmails,
+      attendeeGenders,
+      appliedPromo,
+    };
+    try {
+      sessionStorage.setItem(bookingStateKey(event.id), JSON.stringify(data));
+    } catch {
+      /* storage full/unavailable — resuming just won't work, not fatal */
+    }
+  }, [
+    event.id,
+    confirmed,
+    bookingSavedAt,
+    selected,
+    step,
+    attendeeFirstNames,
+    attendeeLastNames,
+    attendeePhones,
+    attendeeEmails,
+    attendeeGenders,
+    appliedPromo,
+  ]);
 
   const refreshSeats = useCallback(async () => {
     try {
@@ -411,6 +533,10 @@ export default function BookingFlow({
             const verifyData = await verifyRes.json();
             if (verifyRes.ok && verifyData.status === "CONFIRMED") {
               const tickets: TicketView[] = verifyData.tickets ?? [];
+              // Booking's done — nothing left to resume, and keeping this
+              // around would resurrect these exact seats/details the next
+              // time this visitor starts a fresh booking for the event.
+              clearPersistedBooking(event.id);
               // Single ticket → straight to its ticket screen. Multiple → show
               // the all-tickets confirmation (each attendee's QR at once).
               if (tickets.length === 1) {
@@ -698,7 +824,7 @@ export default function BookingFlow({
 
       {/* ---- Step 1: choose seats ---- */}
       {step === "seats" && (
-        <div className="mt-6">
+        <div className="mt-6 pb-28">
           <div className="rounded-2xl bg-linear-to-b from-slate-900 to-slate-950 border border-slate-800 p-4 sm:p-6 shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
             <SeatMap
               event={event}
@@ -708,10 +834,9 @@ export default function BookingFlow({
               onToggle={toggleSeat}
             />
           </div>
-          <div
-            data-seatmap-obstruction
-            className="sticky z-10 bottom-0 mt-6 bg-white border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center"
-          >
+          {/* `pb-28` above keeps the last seat rows from hiding behind the
+              fixed bar's height + safe-area inset on notched phones. */}
+          <FixedActionBar obstruction>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium">
                 {selected.size > 0 ? (
@@ -729,17 +854,17 @@ export default function BookingFlow({
             <button
               onClick={goToAttendees}
               disabled={selected.size === 0}
-              className="bg-linear-to-r from-[#D4AF37] to-[#E6C35C] hover:brightness-105 text-[#081A3A] disabled:opacity-40 disabled:cursor-not-allowed rounded-full px-6 py-2.5 font-semibold text-sm transition-all"
+              className="bg-linear-to-r from-[#D4AF37] to-[#E6C35C] hover:brightness-105 text-[#081A3A] disabled:opacity-40 disabled:cursor-not-allowed rounded-full px-6 py-2.5 font-semibold text-sm transition-all sm:shrink-0"
             >
               Proceed to checkout
             </button>
-          </div>
+          </FixedActionBar>
         </div>
       )}
 
       {/* ---- Step 2: attendee names ---- */}
       {step === "attendees" && (
-        <div className="mt-6 max-w-3xl">
+        <div className="mt-6 max-w-3xl pb-28">
           <div className="flex items-start gap-3 rounded-xl bg-[#eff4ff] border border-[#1d4ed8]/15 px-4 py-3 mb-5">
             <Users className="w-4.5 h-4.5 shrink-0 text-[#1d4ed8] mt-0.5" aria-hidden="true" />
             <p className="text-sm text-slate-700">
@@ -847,7 +972,7 @@ export default function BookingFlow({
             <span className="font-semibold text-slate-900">{inr(totalAmount)}</span>
           </div>
 
-          <div className="flex gap-3 mt-5">
+          <FixedActionBar>
             <button
               onClick={() => {
                 clearPromo(); // seats may change → any previewed discount is stale
@@ -859,17 +984,17 @@ export default function BookingFlow({
             </button>
             <button
               onClick={goToSummary}
-              className="flex-1 sm:flex-none bg-linear-to-r from-[#D4AF37] to-[#E6C35C] hover:brightness-105 text-[#081A3A] rounded-full px-6 py-2.5 font-semibold text-sm transition-all"
+              className="flex-1 bg-linear-to-r from-[#D4AF37] to-[#E6C35C] hover:brightness-105 text-[#081A3A] rounded-full px-6 py-2.5 font-semibold text-sm transition-all"
             >
               Continue
             </button>
-          </div>
+          </FixedActionBar>
         </div>
       )}
 
       {/* ---- Step 3: review & pay ---- */}
       {step === "summary" && (
-        <div className="mt-6 max-w-2xl">
+        <div className="mt-6 max-w-2xl pb-28">
           <div className="flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 mb-4">
             <AlertTriangle
               className="w-4.5 h-4.5 shrink-0 text-amber-700 mt-0.5"
@@ -969,7 +1094,7 @@ export default function BookingFlow({
             Your seats are held for 8 minutes once you proceed to payment.
           </p>
 
-          <div className="flex gap-3 mt-5">
+          <FixedActionBar>
             <button
               onClick={() => setStep("attendees")}
               disabled={paying}
@@ -984,7 +1109,7 @@ export default function BookingFlow({
             >
               {paying ? "Processing…" : `Proceed to payment · ${inr(payable)}`}
             </button>
-          </div>
+          </FixedActionBar>
         </div>
       )}
       {showAuthModal &&
@@ -1014,6 +1139,33 @@ export default function BookingFlow({
           document.body
         )}
       {toast}
+    </div>
+  );
+}
+
+/**
+ * A persistent, full-width fixed bottom bar for a step's primary action —
+ * used on all three booking steps so the CTA never requires scrolling to
+ * reach, on both web and mweb. Content is constrained to the same max-w-6xl
+ * column as the rest of the page so it stays aligned on wide screens; the
+ * bar itself spans the full viewport width edge to edge.
+ */
+function FixedActionBar({
+  children,
+  obstruction,
+}: {
+  children: React.ReactNode;
+  /** Marks this bar for SeatMap's arrow-position math (see SeatMap.component.tsx) — only the seats step needs it, since SeatMap only renders then. */
+  obstruction?: boolean;
+}) {
+  return (
+    <div
+      data-seatmap-obstruction={obstruction ? true : undefined}
+      className="fixed inset-x-0 bottom-0 z-20 bg-white border-t border-slate-200 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]"
+    >
+      <div className="max-w-6xl mx-auto px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+        {children}
+      </div>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import crypto from "crypto";
 import type { PoolClient } from "pg";
 import { cache } from "react";
 
+import { SEAT_LOCK_TTL_MS } from "@/constants";
 import { hashPassword } from "@/lib/auth/password";
 import { blockedSeatIds, posterForIndex } from "@/lib/domain/events";
 import { logger } from "@/lib/logger";
@@ -34,8 +35,6 @@ import { db, ready } from "./pg";
  * Seat lifecycle: available -> locked (order created, 8 min TTL) -> booked
  * (payment verified). Failed payments and expired locks free the seats.
  */
-
-export const SEAT_LOCK_TTL_MS = 8 * 60 * 1000;
 
 interface SeatLock {
   orderId: string;
