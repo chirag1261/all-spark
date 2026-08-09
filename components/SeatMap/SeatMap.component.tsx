@@ -5,6 +5,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { createPortal } from "react-dom";
 
+import { BOOKMYSHOW_LOGO_URL } from "@/constants";
 import { buildVenue, Venue } from "@/lib/domain/venue";
 import { EventItem, Seat } from "@/types";
 import { inr } from "@/utils";
@@ -404,6 +405,12 @@ export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onT
                     // Tier divider whenever the price changes down the section.
                     const showTier = row.price !== lastPrice;
                     lastPrice = row.price;
+                    // Rows holding BookMyShow-reserved seats get a logo badge so
+                    // the red seats are attributable at a glance, without having
+                    // to cross-reference the legend at the bottom of the map.
+                    const hasBookMyShowSeats = row.groups.some((g) =>
+                      g.seats.some((s) => s.bookMyShowOnly)
+                    );
                     return (
                       <div
                         key={section.id + row.label}
@@ -450,12 +457,23 @@ export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onT
                                 seat={seat}
                                 availClass={styleForPrice(seat.price).avail}
                                 state={
+                                  // Order matters. Anything PERMANENTLY off-sale
+                                  // (BookMyShow-reserved, admin-blocked, already
+                                  // sold) must outrank "selected" — otherwise a
+                                  // seat that became unavailable after it was
+                                  // picked keeps rendering as a green selection
+                                  // AND stays clickable, because `unavailable`
+                                  // below deliberately excludes "selected".
+                                  // `locked` stays BELOW "selected" on purpose:
+                                  // once this visitor holds their own seats, the
+                                  // poll reports them as locked, and they should
+                                  // still read as *their* selection.
                                   seat.bookMyShowOnly
                                     ? "bookMyShow"
-                                    : selected.has(seat.id)
-                                      ? "selected"
-                                      : seat.blocked || bookedSeats.has(seat.id)
-                                        ? "booked"
+                                    : seat.blocked || bookedSeats.has(seat.id)
+                                      ? "booked"
+                                      : selected.has(seat.id)
+                                        ? "selected"
                                         : lockedSeats.has(seat.id)
                                           ? "locked"
                                           : "available"
@@ -491,6 +509,43 @@ export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onT
                               </div>
                             );
                           })}
+                          {hasBookMyShowSeats && (
+                            // Zero-width slot: the pill is absolutely positioned
+                            // so it contributes no layout width. Without that,
+                            // a badged row's seats would shift left relative to
+                            // the rows above/below and break the grid's column
+                            // alignment (same reason the row label lives in its
+                            // own fixed-width shrink-0 slot).
+                            // `-ml-1` cancels the parent's `gap-1`: the slot is
+                            // w-0, but flex gap still inserts 4px before it,
+                            // which nudged a badged row's seats ~2px out of
+                            // column with its neighbours (the exact drift the
+                            // zero-width slot exists to avoid).
+                            <span className="relative w-0 -ml-1 shrink-0 self-stretch">
+                              <span
+                                title="These seats are reserved for BookMyShow"
+                                // `w-max` is load-bearing: an absolutely-
+                                // positioned box inside a width:0 containing
+                                // block is shrink-to-fit against ZERO available
+                                // width, so without it the pill collapses to
+                                // about the logo's width and the label spills
+                                // out past the border. `self-stretch` above
+                                // gives this a full-row-height box to centre
+                                // against, instead of just a line-box.
+                                className="absolute left-2 top-1/2 w-max -translate-y-1/2 inline-flex items-center gap-1 whitespace-nowrap rounded border border-red-500/50 bg-red-600/20 px-1.5 py-0.5"
+                              >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={BOOKMYSHOW_LOGO_URL}
+                                  alt="BookMyShow"
+                                  className="h-3 w-auto rounded-xs bg-white px-0.5"
+                                />
+                                <span className="text-[8px] font-semibold uppercase tracking-wide text-red-300">
+                                  Reserved
+                                </span>
+                              </span>
+                            </span>
+                          )}
                           </div>
                         </div>
                       </div>
@@ -516,7 +571,14 @@ export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onT
                 <i className="w-3 h-3 rounded-sm bg-slate-600 inline-block" /> Sold / blocked
               </span>
               <span className="flex items-center gap-1.5">
-                <i className="w-3 h-3 rounded-sm bg-black inline-block" /> Book via BookMyShow
+                <i className="w-3 h-3 rounded-sm bg-red-600 inline-block" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={BOOKMYSHOW_LOGO_URL}
+                  alt=""
+                  className="h-3 w-auto rounded-xs bg-white px-0.5"
+                />
+                Reserved for BookMyShow
               </span>
             </div>
           </div>
@@ -528,8 +590,10 @@ export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onT
 
 /** BookMyShow-style scroll thumbnail: the whole layout shrunk to one tiny
  *  square per seat (coloured the same as the real map — available/selected/
- *  sold/held), with a red-boxed window over whichever horizontal slice is
- *  currently in view. Shown WHILE actively scrolling, floated near the top. */
+ *  sold/held/BookMyShow-reserved), with a white-boxed window over whichever
+ *  horizontal slice is currently in view (white, not red, so it can't be
+ *  confused with the red BookMyShow-reserved seats). Shown WHILE actively
+ *  scrolling, floated near the top. */
 const SeatMiniMap = memo(function SeatMiniMap({
   venue,
   bookedSeats,
@@ -556,7 +620,7 @@ const SeatMiniMap = memo(function SeatMiniMap({
   }, [venue]);
 
   const colorFor = (seat: Seat) => {
-    if (seat.bookMyShowOnly) return "bg-black";
+    if (seat.bookMyShowOnly) return "bg-red-600";
     if (selected.has(seat.id)) return "bg-emerald-500";
     if (seat.blocked || bookedSeats.has(seat.id)) return "bg-slate-600";
     if (lockedSeats.has(seat.id)) return "bg-amber-400";
@@ -596,7 +660,7 @@ const SeatMiniMap = memo(function SeatMiniMap({
             the percentage itself stays true to the real visible proportion (see measureScroll),
             so this stays an accurate "you are here", not just a decorative sliver. */}
         <div
-          className="pointer-events-none absolute inset-y-0 border-2 border-red-500 rounded-xs"
+          className="pointer-events-none absolute inset-y-0 border-2 border-white rounded-xs"
           style={{ left: `${thumbLeftPct}%`, width: `${thumbWidthPct}%`, minWidth: "6px" }}
         />
       </div>
@@ -630,7 +694,10 @@ const SeatButton = memo(function SeatButton({
 }) {
   const unavailable = state === "booked" || state === "locked" || state === "bookMyShow";
   const label = seat.side ? `${seat.side}${seat.number}` : String(seat.number);
-  const description = state === "bookMyShow" ? "Book via BookMyShow" : `${inr(seat.price)} · ${state}`;
+  // Wording matches the row badge + legend ("Reserved"), while still telling
+  // the customer where these seats can actually be bought.
+  const description =
+    state === "bookMyShow" ? "Reserved — book via BookMyShow" : `${inr(seat.price)} · ${state}`;
   return (
     <button
       disabled={unavailable}
@@ -646,7 +713,7 @@ const SeatButton = memo(function SeatButton({
       className={[
         "w-5 h-5 sm:w-6 sm:h-6 rounded-t text-[7px] sm:text-[9px] font-medium transition-all shrink-0 select-none",
         state === "bookMyShow"
-          ? "bg-black text-white/60 cursor-not-allowed"
+          ? "bg-red-600 text-white/80 cursor-not-allowed"
           : state === "booked"
             ? "bg-slate-700 text-slate-500 cursor-not-allowed"
             : state === "locked"

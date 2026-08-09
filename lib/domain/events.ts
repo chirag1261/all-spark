@@ -220,6 +220,11 @@ export function validateLayout(
           count,
           ...(side ? { side } : {}),
           ...(segRaw?.blocked ? { blocked: true } : {}),
+          // Must be carried through: this sanitizer rebuilds every row/segment
+          // from scratch, so any field not explicitly copied here is silently
+          // dropped on save. Omitting it made the admin's "BMS" reservation
+          // toggle appear to work and then revert on reload.
+          ...(segRaw?.bookMyShowOnly ? { bookMyShowOnly: true } : {}),
         });
         seatTotal += count;
       }
@@ -227,6 +232,7 @@ export function validateLayout(
         label,
         tierId,
         ...(rRaw?.blocked ? { blocked: true } : {}),
+        ...(rRaw?.bookMyShowOnly ? { bookMyShowOnly: true } : {}),
         segments,
       });
     }

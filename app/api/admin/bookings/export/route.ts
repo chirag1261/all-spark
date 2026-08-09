@@ -29,36 +29,54 @@ export async function GET(req: NextRequest) {
     return `"${s.replaceAll('"', '""')}"`;
   };
 
+  // One row per seat/attendee, not per booking — a multi-seat booking can
+  // have a different name/phone/email/gender per attendee, none of which a
+  // single purchaser-level row could show. Falls back to the purchaser's own
+  // details for a seat with no attendee record (shouldn't happen post-
+  // booking, but PENDING/FAILED rows may predate that seat being filled in).
   const header = [
     "Booking ID",
-    "Ticket ID",
     "Status",
     "Event",
-    "Attendee",
-    "Email",
-    "Phone",
-    "Seats",
-    "Amount (INR)",
+    "Seat",
+    "Attendee Name",
+    "Attendee Phone",
+    "Attendee Email",
+    "Attendee Gender",
+    "Purchaser Email",
+    "Purchaser Phone",
+    "Booking Amount (INR)",
     "Payment ID",
     "Booked At (IST)",
   ];
   const lines = [header.map(cell).join(",")];
   for (const b of rows) {
-    lines.push(
-      [
-        cell(b.bookingId),
-        cell(b.ticketId ?? ""),
-        cell(b.status),
-        cell(eventTitleById.get(b.eventId) ?? b.eventId),
-        cell(b.attendeeName),
-        cell(b.customerEmail),
-        cell(b.customerPhone),
-        cell(b.seatIds.join(" ")),
-        cell((b.amount / 100).toFixed(2)),
-        cell(b.razorpayPaymentId ?? ""),
-        cell(new Date(b.createdAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })),
-      ].join(",")
-    );
+    const attendeeBySeat = new Map(b.attendees.map((a) => [a.seatId, a]));
+    const bookedAt = new Date(b.createdAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+    b.seatIds.forEach((seatId, seatIndex) => {
+      const attendee = attendeeBySeat.get(seatId);
+      lines.push(
+        [
+          cell(b.bookingId),
+          cell(b.status),
+          cell(eventTitleById.get(b.eventId) ?? b.eventId),
+          cell(seatId),
+          cell(attendee?.name ?? b.attendeeName),
+          cell(attendee?.phone ?? ""),
+          cell(attendee?.email ?? ""),
+          cell(attendee?.gender ?? ""),
+          cell(b.customerEmail),
+          cell(b.customerPhone),
+          // Booking-level total, so it belongs to the BOOKING, not the seat.
+          // Emit it once (first seat row) and leave it blank on the rest —
+          // repeating it per seat made the column sum to several times the
+          // real revenue for any multi-seat booking.
+          cell(seatIndex === 0 ? (b.amount / 100).toFixed(2) : ""),
+          cell(b.razorpayPaymentId ?? ""),
+          cell(bookedAt),
+        ].join(",")
+      );
+    });
   }
 
   return new NextResponse(lines.join("\r\n"), {

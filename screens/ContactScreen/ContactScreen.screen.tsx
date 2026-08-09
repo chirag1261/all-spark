@@ -4,6 +4,7 @@ import Link from "next/link";
 import ContactForm from "@/components/ContactForm";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
+import { BOOKMYSHOW_LOGO_URL } from "@/constants";
 import { getFeaturedEvent } from "@/lib/db";
 import { formatDateIST } from "@/utils";
 
@@ -80,8 +81,14 @@ export async function ContactScreen() {
                     rel="noopener noreferrer"
                     className="mt-5 flex items-center justify-center gap-2 bg-[#f84464] hover:brightness-110 text-white font-semibold rounded-full px-5 py-2.5 text-sm transition-all"
                   >
-                    Tickets are also available on BookMyShow
-                    <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={BOOKMYSHOW_LOGO_URL}
+                      alt="BookMyShow"
+                      className="h-4 w-auto shrink-0 rounded bg-white px-1 py-0.5"
+                    />
+                    Tickets are also available
+                    <ExternalLink className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                   </a>
                 )}
                 <Link
