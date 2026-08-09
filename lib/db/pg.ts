@@ -51,7 +51,17 @@ function createPool(): Pool {
   // a listener here that surfaces as an unhandled 'error' event on the pool —
   // at best a scary log, at worst a process crash — so always drain it.
   p.on("error", (err) => {
-    logger.server.error("Postgres pool idle client error", { err: String(err) });
+    // INFO, not error/warn, on purpose. This is an expected, self-healing
+    // event with hosted Postgres (Neon & co. drop connections that have sat
+    // idle, which surfaces as `read ETIMEDOUT`): `pg` discards the dead client
+    // and the retry wrapper below re-runs the next query on a fresh one, so
+    // nothing is actually lost. Logging it at warn/error fired a WhatsApp AND
+    // an email alert (see lib/logger — both trigger on warn|error) every time
+    // a connection went idle, which is pure alert noise for a condition that
+    // needs no human attention.
+    logger.server.info("Postgres idle client dropped — pool will reconnect", {
+      err: String(err),
+    });
   });
 
   // The very next query over that now-dead connection still fails outright
@@ -81,6 +91,11 @@ function isConnectionLossError(err: unknown): boolean {
     message.includes("Connection terminated") ||
     message.includes("terminating connection") ||
     message.includes("ECONNRESET") ||
+    // A silently-dropped socket (hosted Postgres reaping an idle connection,
+    // NAT/firewall timing one out) surfaces as a read timeout rather than a
+    // clean reset. It was missing here, so the one error the pool sees most
+    // often was the one case the retry below did NOT cover.
+    message.includes("ETIMEDOUT") ||
     message.includes("Client has encountered a connection error")
   );
 }

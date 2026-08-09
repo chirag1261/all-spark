@@ -16,6 +16,7 @@ import {
   ScanLine,
   Tag,
   Ticket,
+  UserCheck,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -63,6 +64,7 @@ const NAV: NavSection[] = [
         ],
       },
       { title: "Bookings", href: "/admin/bookings", icon: Ticket },
+      { title: "Registrations", href: "/admin/registrations", icon: UserCheck },
       {
         title: "Promo codes",
         icon: Tag,

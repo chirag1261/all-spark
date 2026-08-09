@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getCurrentAdmin, hasPermission } from "@/lib/auth/admin";
 import { audit, deleteEvent, getBookedSeats, getEvent, listEvents, updateEvent } from "@/lib/db";
-import { isValidSeatId, validateEventInput } from "@/lib/domain/events";
+import { getSeatLayout, isValidSeatId, validateEventInput } from "@/lib/domain/events";
 import { logger } from "@/lib/logger";
 
 /** GET /api/admin/events/[id] */
@@ -73,6 +73,30 @@ export async function PUT(req: NextRequest, ctx: RouteContext<"/api/admin/events
       logger.be.warn("Event update blocked — tried to block already-sold seats", { eventId: id, clash });
       return NextResponse.json(
         { error: `Cannot block seats that are already sold: ${clash.join(", ")}` },
+        { status: 409 }
+      );
+    }
+    // ...nor by reserving it for BookMyShow. The check above only looks at the
+    // ad-hoc `blockedSeats` array, so it can't see blocking that comes from the
+    // LAYOUT (a row/segment marked BookMyShow-only). Without this, an admin
+    // could flag a row whose seats are already sold and those seats would
+    // render as off-sale RED "reserved for BookMyShow" even though a real
+    // customer holds a ticket for them.
+    const bmsReserved = new Set(
+      getSeatLayout(draft)
+        .filter((s) => s.bookMyShowOnly)
+        .map((s) => s.id)
+    );
+    const bmsClash = booked.filter((s) => bmsReserved.has(s));
+    if (bmsClash.length > 0) {
+      logger.be.warn("Event update blocked — tried to reserve already-sold seats for BookMyShow", {
+        eventId: id,
+        bmsClash,
+      });
+      return NextResponse.json(
+        {
+          error: `Cannot reserve seats for BookMyShow that are already sold: ${bmsClash.join(", ")}`,
+        },
         { status: 409 }
       );
     }

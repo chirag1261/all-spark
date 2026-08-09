@@ -3,6 +3,7 @@ export * from "./AccountScreen";
 export * from "./AccountTicketsScreen";
 export * from "./AccountTransactionsScreen";
 export * from "./AdminBookingsScreen";
+export * from "./AdminRegistrationsScreen";
 export * from "./AdminDashboardScreen";
 export * from "./AdminLoginScreen";
 export * from "./AdminUsersScreen";

@@ -150,6 +150,26 @@ function clearPersistedBooking(eventId: string) {
   sessionStorage.removeItem(`seat-hold:${eventId}`);
 }
 
+/**
+ * The persisted seats that are STILL selectable right now — anything sold, or
+ * put off-sale (admin-blocked / BookMyShow-reserved), since the snapshot was
+ * taken is dropped. Shared by BOTH the `selected` and `step` initializers on
+ * purpose: if `step` were derived from the raw snapshot instead, a restore
+ * that pruned every seat would still land the visitor on an empty "summary"
+ * showing ₹0.
+ */
+function restorableSeats(event: EventItem, initialBookedSeats: string[]): string[] {
+  const restored = readPersistedBookingState(event.id).selected ?? [];
+  if (restored.length === 0) return [];
+  const sold = new Set(initialBookedSeats);
+  const offSale = new Set(
+    getSeatLayout(event)
+      .filter((s) => s.blocked) // buildVenue folds bookMyShowOnly into blocked
+      .map((s) => s.id)
+  );
+  return restored.filter((id) => !sold.has(id) && !offSale.has(id));
+}
+
 export default function BookingFlow({
   event,
   customer: initialCustomer,
@@ -184,7 +204,7 @@ export default function BookingFlow({
     () => readPersistedBookingState(event.id).savedAt ?? Date.now()
   );
   const [selected, setSelected] = useState<Set<string>>(
-    () => new Set(readPersistedBookingState(event.id).selected)
+    () => new Set(restorableSeats(event, initialBookedSeats))
   );
   const [bookedSeats, setBookedSeats] = useState<Set<string>>(new Set(initialBookedSeats));
   const [lockedSeats, setLockedSeats] = useState<Set<string>>(new Set(initialLockedSeats));
@@ -225,8 +245,11 @@ export default function BookingFlow({
   // Only trust a resumed later step if there are actually seats to go with
   // it — otherwise land back on "seats" rather than showing an empty review.
   const [step, setStep] = useState<"seats" | "attendees" | "summary">(() => {
-    const persisted = readPersistedBookingState(event.id);
-    return persisted.selected && persisted.selected.length > 0 ? (persisted.step ?? "seats") : "seats";
+    // Keyed off the seats that actually SURVIVED the restore prune, not the raw
+    // snapshot — otherwise a visitor whose seats were all sold or blocked while
+    // they were away resumes straight into an empty summary at ₹0.
+    if (restorableSeats(event, initialBookedSeats).length === 0) return "seats";
+    return readPersistedBookingState(event.id).step ?? "seats";
   });
   // Promo code applied on the summary step (server-validated preview).
   const [promoInput, setPromoInput] = useState("");
@@ -236,6 +259,25 @@ export default function BookingFlow({
   );
   const routeLoader = useRouteLoader();
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Mirrors `selected` so the seat poll can read the live selection without
+  // taking `selected` as a dependency — that would rebuild refreshSeats (and
+  // restart the polling interval) on every single seat toggle.
+  const selectedRef = useRef(selected);
+  useEffect(() => {
+    selectedRef.current = selected;
+  }, [selected]);
+  // True from "Pay" until the transaction is fully resolved. The seat poll must
+  // NOT prune while this is set: /api/verify writes booked_seats (confirmSeats)
+  // and only then does QR generation, email and WhatsApp before responding, so
+  // for several seconds the poll legitimately sees THIS customer's own seats as
+  // booked. Pruning there told a paying customer their seats "were just booked
+  // by someone else", and on the network_error path it emptied the selection so
+  // the retry screen offered "Retry payment · ₹0" that could never succeed.
+  // A ref, not a dep, so toggling it doesn't tear down and restart the poll.
+  const txInFlightRef = useRef(false);
+  useEffect(() => {
+    txInFlightRef.current = paying || finalizing || paymentIssue !== null;
+  }, [paying, finalizing, paymentIssue]);
 
   // Keep the resumable snapshot in sync so a visitor who wanders off to
   // another page (or refreshes) mid-booking comes back to exactly where
@@ -277,12 +319,35 @@ export default function BookingFlow({
       const res = await fetch(`/api/seats?eventId=${encodeURIComponent(event.id)}`);
       if (!res.ok) return;
       const data = await res.json();
-      setBookedSeats(new Set(data.booked));
+      const booked = new Set<string>(data.booked);
+      setBookedSeats(booked);
       setLockedSeats(new Set(data.locked));
+      // If a seat this visitor had selected was just sold to someone else,
+      // drop it rather than leaving it in the selection — otherwise it keeps
+      // counting toward the total and gets sent to checkout, where the server
+      // rejects the whole order. (Deliberately NOT pruning on `locked`: once
+      // this visitor holds their own seats, the poll reports those as locked
+      // too, and they must stay selected.) Read through a ref and toast OUT
+      // of the updater — React may invoke an updater more than once, so it
+      // has to stay pure or the toast fires twice.
+      const stale = txInFlightRef.current
+        ? []
+        : [...selectedRef.current].filter((id) => booked.has(id));
+      if (stale.length > 0) {
+        setSelected((prev) => {
+          const next = new Set(prev);
+          for (const id of stale) next.delete(id);
+          return next;
+        });
+        showToast(
+          `${stale.length} of your seats ${stale.length > 1 ? "were" : "was"} just booked by someone else — removed from your selection`,
+          "error"
+        );
+      }
     } catch {
       /* transient network error — keep last known state */
     }
-  }, [event.id]);
+  }, [event.id, showToast]);
 
   // Poll seat availability so other users' locks show up in near-real-time.
   useEffect(() => {
@@ -308,6 +373,7 @@ export default function BookingFlow({
     for (const seat of getSeatLayout(event)) map.set(seat.id, seat.tierName);
     return map;
   }, [event]);
+
 
   const totalAmount = useMemo(() => {
     let sum = 0;

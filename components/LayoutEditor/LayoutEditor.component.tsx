@@ -29,6 +29,10 @@ export default function LayoutEditor({ value, onChange }: Props) {
     blockedSeats: [],
   } as unknown as EventItem);
   const physical = venue.seats.length;
+  // Surfaced in the readout below so an admin can tell at a glance how much of
+  // the house is held back for BookMyShow — these are already excluded from
+  // `venue.sellable` (buildVenue marks them blocked), this just names them.
+  const bmsReserved = venue.seats.reduce((n, s) => n + (s.bookMyShowOnly ? 1 : 0), 0);
 
   const mutate = (fn: (draft: EventLayout) => void) => {
     const draft = clone(value);
@@ -55,6 +59,12 @@ export default function LayoutEditor({ value, onChange }: Props) {
           <span className="font-semibold">{venue.sellable.toLocaleString("en-IN")}</span>
           <span className="text-slate-800"> on sale</span>
           <span className="text-slate-700"> · {physical.toLocaleString("en-IN")} total</span>
+          {bmsReserved > 0 && (
+            <span className="ml-2 inline-flex items-center gap-1.5 rounded bg-red-50 text-red-700 font-semibold px-2 py-0.5">
+              <i className="w-2.5 h-2.5 rounded-sm bg-red-600 inline-block" aria-hidden="true" />
+              {bmsReserved.toLocaleString("en-IN")} reserved for BookMyShow
+            </span>
+          )}
         </div>
         <div className="ml-auto flex gap-2">
           <button
@@ -292,14 +302,16 @@ function RowEditor({
         Block row
       </label>
       <label
-        className="flex items-center gap-1 text-sm text-slate-600 px-1"
-        title="Reserved for the BookMyShow channel — off-sale here, shown as a black seat"
+        className={`flex items-center gap-1 text-sm px-1 ${
+          row.bookMyShowOnly ? "font-semibold text-red-700" : "text-slate-600"
+        }`}
+        title="Reserve this whole row for the BookMyShow channel — off-sale here, shown as a RED seat on the seat map"
       >
         <input
           type="checkbox"
           checked={Boolean(row.bookMyShowOnly)}
           onChange={(e) => patch((d) => (d.bookMyShowOnly = e.target.checked || undefined))}
-          className="accent-black"
+          className="accent-red-600"
         />
         BookMyShow only
       </label>
@@ -347,7 +359,10 @@ function RowEditor({
               )
             }
             title={seg.blocked ? "Blocked — click to unblock" : "On sale — click to block"}
-            className={`text-sm px-1 rounded ${seg.blocked ? "text-red-700" : "text-slate-700 hover:text-slate-900"}`}
+            // Slate, not red — red is reserved for BookMyShow blocks below so
+            // the two kinds of off-sale seat stay tellable apart at a glance
+            // (matches the slate "sold / blocked" seat the map actually renders).
+            className={`text-sm px-1 rounded ${seg.blocked ? "font-semibold text-slate-900 bg-slate-200" : "text-slate-700 hover:text-slate-900"}`}
           >
             {seg.blocked ? "blocked" : "open"}
           </button>
@@ -364,10 +379,10 @@ function RowEditor({
             }
             title={
               seg.bookMyShowOnly
-                ? "Reserved for BookMyShow — click to release"
+                ? "Reserved for BookMyShow — off-sale here, shown as a RED seat. Click to release."
                 : "Click to reserve this block for the BookMyShow channel"
             }
-            className={`text-sm px-1 rounded ${seg.bookMyShowOnly ? "font-semibold text-black" : "text-slate-700 hover:text-slate-900"}`}
+            className={`text-sm px-1 rounded ${seg.bookMyShowOnly ? "font-semibold text-red-700 bg-red-50" : "text-slate-700 hover:text-slate-900"}`}
           >
             {seg.bookMyShowOnly ? "BMS only" : "BMS"}
           </button>

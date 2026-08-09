@@ -212,6 +212,7 @@ export async function AdminBookingsScreen({
                       <BookingSeatsCell
                         bookingId={b.bookingId}
                         seatIds={b.seatIds}
+                        attendees={b.attendees}
                         hasTickets={b.status === "CONFIRMED"}
                       />
                     </td>
