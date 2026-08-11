@@ -55,3 +55,4 @@ export * from "./BookedSeatsDiagram";
 export * from "./TicketTransferButton";
 export * from "./Parallax";
 export * from "./BookingSeatsCell";
+export * from "./MetaPixel";
