@@ -1454,24 +1454,35 @@ export async function renameTicketAttendee(
 }
 
 /** All tickets for an event (attendance list), newest-scanned surfaced first. */
+/** Every ticket for an event whose booking is still CONFIRMED — a refunded or
+ *  otherwise-cancelled booking's tickets stay in the table (nothing deletes
+ *  them) but must disappear from the live attendance/entry views immediately,
+ *  same as `listTicketsForCustomer`'s existing status filter below. */
 export async function listTicketsForEvent(eventId: string): Promise<TicketRecord[]> {
   await initOnce();
   const { rows } = await db().query(
-    "SELECT * FROM tickets WHERE event_id = $1 ORDER BY scanned_at DESC NULLS LAST, seat_id ASC",
+    `SELECT t.* FROM tickets t
+     JOIN bookings b ON b.booking_id = t.booking_id
+     WHERE t.event_id = $1 AND b.status = 'CONFIRMED'
+     ORDER BY t.scanned_at DESC NULLS LAST, t.seat_id ASC`,
     [eventId]
   );
   return rows.map(rowToTicket);
 }
 
-/** Sold (issued tickets) vs. checked-in counts for an event's live dashboard. */
+/** Sold (issued tickets) vs. checked-in counts for an event's live dashboard.
+ *  Same CONFIRMED-only filter as listTicketsForEvent — a refund must drop the
+ *  seat out of "sold" too, not just out of the attendee list. */
 export async function getAttendanceCounts(
   eventId: string
 ): Promise<{ sold: number; checkedIn: number }> {
   await initOnce();
   const { rows } = await db().query(
     `SELECT COUNT(*)::int AS sold,
-            COUNT(scanned_at)::int AS checked_in
-     FROM tickets WHERE event_id = $1`,
+            COUNT(t.scanned_at)::int AS checked_in
+     FROM tickets t
+     JOIN bookings b ON b.booking_id = t.booking_id
+     WHERE t.event_id = $1 AND b.status = 'CONFIRMED'`,
     [eventId]
   );
   return { sold: rows[0]?.sold ?? 0, checkedIn: rows[0]?.checked_in ?? 0 };
