@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Roboto } from "next/font/google";
 
+import MetaPixel from "@/components/MetaPixel";
 import RouteLoaderProvider from "@/components/RouteLoader";
 
 import "./globals.css";
@@ -38,6 +39,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${roboto.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
+        <MetaPixel />
         <RouteLoaderProvider>{children}</RouteLoaderProvider>
       </body>
     </html>
