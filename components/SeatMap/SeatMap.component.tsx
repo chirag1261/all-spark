@@ -345,7 +345,10 @@ export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onT
               onPointerUp={leftArrow.onPointerUp}
               onPointerLeave={leftArrow.onPointerLeave}
               onPointerCancel={leftArrow.onPointerCancel}
-              style={{ left: arrowsBoxRect.left + 8, top: arrowCenterY }}
+              // +32 (not +8) clears the sticky row-letter column at the same
+              // edge — otherwise this button's own circle sits directly on
+              // top of every row's letter, hiding it behind the arrow.
+              style={{ left: arrowsBoxRect.left + 32, top: arrowCenterY }}
               className="fixed -translate-y-1/2 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#0d0a1f]/85 hover:bg-[#0d0a1f] active:scale-95 backdrop-blur-sm flex items-center justify-center text-slate-400 hover:text-white shadow-lg transition-all select-none touch-none"
             >
               <ChevronLeft className="w-5 h-5" aria-hidden="true" />
@@ -432,7 +435,13 @@ export default function SeatMap({ event, bookedSeats, lockedSeats, selected, onT
                             centres its whole label+seats block as one unit
                             and its label ends up nowhere near the rows below. */}
                         <div className="w-full flex items-center gap-1">
-                          <span className="w-3.5 sm:w-4 text-[9px] sm:text-[10px] text-slate-400 text-right mr-0.5 shrink-0">
+                          {/* sticky left-0 pins the row letter to the scroll
+                              container's left edge during horizontal scroll;
+                              the bg (matching the left-edge fade/arrow's own
+                              #0d0a1f, not the card's slate gradient) masks
+                              seats scrolling underneath as one continuous
+                              pill rather than a mismatched slab per row. */}
+                          <span className="sticky left-0 z-10 w-4 sm:w-5 mr-1 shrink-0 rounded-md bg-[#0d0a1f] py-0.5 text-center text-[9px] sm:text-[10px] font-medium text-slate-300 shadow-[0_1px_3px_rgba(0,0,0,0.5)]">
                             {row.label}
                           </span>
                           <div className="flex-1 flex items-center justify-center gap-1">
