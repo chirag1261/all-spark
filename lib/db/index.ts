@@ -1238,6 +1238,15 @@ export async function getCustomerById(id: string): Promise<Customer | undefined>
   return rows[0] ? rowToCustomer(rows[0]) : undefined;
 }
 
+/** Every customer account (site signups, OTP-only) — for the admin
+ *  Registrations screen to surface people who created an account but
+ *  haven't necessarily completed a booking yet. */
+export async function listCustomers(): Promise<Customer[]> {
+  await initOnce();
+  const { rows } = await db().query("SELECT * FROM customers ORDER BY created_at DESC");
+  return rows.map(rowToCustomer);
+}
+
 /** Looks a customer up by lowercased email or normalized phone. */
 export async function getCustomerByIdentifier(identifier: string): Promise<Customer | undefined> {
   await initOnce();

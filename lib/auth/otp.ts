@@ -77,11 +77,12 @@ export async function verifyOtp(identifier: string, code: string): Promise<OtpVe
 
 // ---------- Signup verification proofs ----------
 //
-// Signup requires BOTH email and phone verified before the account exists.
-// Rather than hold half-built state server-side, each verified contact yields
-// a short-lived HMAC-signed proof; the final /api/auth/signup call presents
-// both proofs and the account is created atomically only if both validate.
-// Same construction as the customer session token (lib/auth/customer.ts).
+// Signup requires the phone verified before the account exists (email is
+// optional and never itself OTP-verified — see app/api/auth/signup/route.ts).
+// Rather than hold half-built state server-side, the verified phone yields a
+// short-lived HMAC-signed proof; the final /api/auth/signup call presents it
+// and the account is created only once it validates. Same construction as
+// the customer session token (lib/auth/customer.ts).
 
 const SIGNUP_PROOF_TTL_MS = 15 * 60 * 1000;
 

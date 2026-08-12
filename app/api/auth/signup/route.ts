@@ -14,14 +14,14 @@ import { Customer } from "@/types";
 
 /**
  * POST /api/auth/signup
- * Body: { name, phone, phoneProof, email?, emailProof? }
+ * Body: { name, phone, phoneProof, email? }
  *
  * OTP-only accounts — no password anywhere. Phone is mandatory and must
  * carry a valid signup proof from /api/auth/otp/verify?purpose=signup.
- * Email is optional: if provided it must ALSO carry its own signup proof
- * (same two-proof shape as before); if omitted, the account is simply
- * created without an email on file. See components/PhoneAuth for the
- * matching client-side flow.
+ * Email is optional and, unlike phone, is never itself OTP-verified — the
+ * client (components/PhoneAuth) only ever collects a phone code, so it has
+ * no email proof to send. Stored as unverified contact info when given; if
+ * omitted, the account is simply created without an email on file.
  */
 export async function POST(req: NextRequest) {
   if (!rateLimit(`signup:${clientKey(req)}`, 8, 60_000)) {
@@ -35,7 +35,6 @@ export async function POST(req: NextRequest) {
     name?: unknown;
     email?: unknown;
     phone?: unknown;
-    emailProof?: unknown;
     phoneProof?: unknown;
   };
   try {
@@ -67,14 +66,6 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-  // An email, if given, needs its own proof too.
-  if (emailN && !verifySignupProof(emailN.identifier, body.emailProof)) {
-    return NextResponse.json(
-      { error: "Please verify your email, then try again." },
-      { status: 400 }
-    );
-  }
-
   // Uniqueness (DB UNIQUE on both columns is the final backstop below).
   if (await getCustomerByIdentifier(phoneN.identifier)) {
     return NextResponse.json(
@@ -96,7 +87,7 @@ export async function POST(req: NextRequest) {
     email: emailN?.identifier ?? null,
     phone: phoneN.identifier,
     passwordHash: null, // OTP-only — no passwords
-    emailVerified: Boolean(emailN),
+    emailVerified: false, // email is never OTP-verified in this flow
     phoneVerified: true,
     createdAt: now,
     updatedAt: now,
