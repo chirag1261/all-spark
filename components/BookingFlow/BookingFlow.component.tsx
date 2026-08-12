@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { AlertTriangle, Check, Tag, Users } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 
 
@@ -176,6 +177,7 @@ export default function BookingFlow({
   initialBookedSeats,
   initialLockedSeats,
 }: Props) {
+  const router = useRouter();
   // Updated in place once the checkout-time auth step succeeds (see
   // handleAuthSuccess) — everything below just reads `customer`.
   const [customer, setCustomer] = useState(initialCustomer);
@@ -465,10 +467,15 @@ export default function BookingFlow({
   // Called once the checkout-time auth step succeeds (sign-in or new
   // account) — the seats are already held under `holdId`, so this just
   // records who's buying and continues straight into naming attendees.
+  // router.refresh() re-runs the server-rendered header/account UI (it read
+  // the (until now anonymous) session cookie once, at the initial page
+  // load) so it picks up the new session instead of still showing "Login"
+  // for the rest of this visit.
   const handleAuthSuccess = (authed: AuthedCustomer) => {
     setCustomer({ name: authed.name, email: authed.email, phone: authed.phone });
     setShowAuthModal(false);
     setStep("attendees");
+    router.refresh();
   };
 
   const goToSummary = () => {

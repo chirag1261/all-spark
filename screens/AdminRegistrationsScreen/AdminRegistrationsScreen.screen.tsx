@@ -4,7 +4,7 @@ import Link from "next/link";
 import AccessDenied from "@/components/AccessDenied";
 import AdminShell from "@/components/AdminShell";
 import { hasPermission, requireDashboardPage } from "@/lib/auth/admin";
-import { listBookings, listEvents } from "@/lib/db";
+import { listBookings, listCustomers, listEvents } from "@/lib/db";
 
 const GENDER_LABEL: Record<string, string> = {
   male: "Male",
@@ -14,15 +14,27 @@ const GENDER_LABEL: Record<string, string> = {
   others: "Others",
 };
 
-/** One row per registered attendee (not per booking) — a single booking can
- *  carry several attendees, each with their own name/phone/email/gender.
- *  Only confirmed bookings count as an actual registration — a PENDING or
- *  FAILED checkout attempt for the same person would otherwise show up as a
- *  separate, misleadingly duplicate-looking entry. */
+/** One row per registered attendee identity (not per booking, and not per
+ *  seat) — a single booking can carry several seats, but when they all carry
+ *  the same name/phone/email (the purchaser didn't name each companion
+ *  individually, or genuinely bought several seats for themself) they're the
+ *  same registrant and collapse into one row listing every seat they hold —
+ *  otherwise the same person visibly repeats once per seat. Only confirmed
+ *  bookings count as an actual registration — a PENDING or FAILED checkout
+ *  attempt for the same person would otherwise show up as a separate,
+ *  misleadingly duplicate-looking entry.
+ *
+ *  Also includes plain account signups (OTP-verified, no purchase yet) as
+ *  "account" rows — see the merge in AdminRegistrationsScreen below — so a
+ *  visitor who created an account is visible here even before they book. */
 interface Registration {
+  /** Unique row key — booking rows key off booking+identity, account rows
+   *  off the customer id (bookingId/seatIds are "" / [] for those). */
+  id: string;
+  type: "booking" | "account";
   bookingId: string;
   eventId: string;
-  seatId: string;
+  seatIds: string[];
   name: string;
   phone: string;
   email: string;
@@ -77,27 +89,80 @@ export async function AdminRegistrationsScreen({
     (b) => b.status === "CONFIRMED"
   );
 
-  let registrations: Registration[] = bookings.flatMap((b) => {
+  const bookingRegistrations: Registration[] = bookings.flatMap((b) => {
     const attendeeBySeat = new Map(b.attendees.map((a) => [a.seatId, a]));
-    return b.seatIds.map((seatId) => {
+    // Group this booking's seats by resolved identity first — several seats
+    // sharing the same name+phone+email (case/whitespace insensitive) are
+    // the same registrant and become one row instead of one per seat.
+    const byIdentity = new Map<
+      string,
+      { name: string; phone: string; email: string; gender: string; seatIds: string[] }
+    >();
+    for (const seatId of b.seatIds) {
       const attendee = attendeeBySeat.get(seatId);
-      return {
-        bookingId: b.bookingId,
-        eventId: b.eventId,
-        seatId,
-        name: attendee?.name || b.attendeeName,
-        phone: attendee?.phone || b.customerPhone,
-        email: attendee?.email || b.customerEmail,
-        gender: attendee?.gender ? GENDER_LABEL[attendee.gender] : "",
-        createdAt: b.createdAt,
-      };
-    });
+      const name = attendee?.name || b.attendeeName;
+      const phone = attendee?.phone || b.customerPhone;
+      const email = attendee?.email || b.customerEmail;
+      const key = `${name.trim().toLowerCase()}|${phone.trim()}|${email.trim().toLowerCase()}`;
+      const existing = byIdentity.get(key);
+      if (existing) {
+        existing.seatIds.push(seatId);
+        // First seat with an explicit gender wins if a later seat's own
+        // attendee entry didn't repeat it.
+        if (!existing.gender && attendee?.gender) existing.gender = GENDER_LABEL[attendee.gender];
+      } else {
+        byIdentity.set(key, {
+          name,
+          phone,
+          email,
+          gender: attendee?.gender ? GENDER_LABEL[attendee.gender] : "",
+          seatIds: [seatId],
+        });
+      }
+    }
+    return [...byIdentity.entries()].map(([key, group]) => ({
+      id: `${b.bookingId}-${key}`,
+      type: "booking" as const,
+      bookingId: b.bookingId,
+      eventId: b.eventId,
+      seatIds: group.seatIds,
+      name: group.name,
+      phone: group.phone,
+      email: group.email,
+      gender: group.gender,
+      createdAt: b.createdAt,
+    }));
   });
+
+  // Account-only signups (OTP-verified, no confirmed booking yet) — skipped
+  // when a specific event filter is applied, since they aren't tied to any
+  // event, and skipped for anyone already shown above via a real booking
+  // (matched by phone, the one identifier every account has) so the same
+  // person never appears twice.
+  const phonesWithBooking = new Set(bookingRegistrations.map((r) => r.phone));
+  const accountRegistrations: Registration[] = eventId
+    ? []
+    : (await listCustomers())
+        .filter((c) => !c.phone || !phonesWithBooking.has(c.phone))
+        .map((c) => ({
+          id: c.id,
+          type: "account" as const,
+          bookingId: "",
+          eventId: "",
+          seatIds: [],
+          name: c.name,
+          phone: c.phone ?? "",
+          email: c.email ?? "",
+          gender: "",
+          createdAt: c.createdAt,
+        }));
+
+  let registrations: Registration[] = [...bookingRegistrations, ...accountRegistrations];
 
   const query = q.trim().toLowerCase();
   if (query) {
     registrations = registrations.filter((r) =>
-      [r.name, r.phone, r.email, r.bookingId, r.seatId].join(" ").toLowerCase().includes(query)
+      [r.name, r.phone, r.email, r.bookingId, ...r.seatIds].join(" ").toLowerCase().includes(query)
     );
   }
 
@@ -179,11 +244,12 @@ export async function AdminRegistrationsScreen({
               <thead>
                 <tr className="text-left text-white bg-[#1d4ed8] sticky top-0 z-10">
                   <SortTh sortKey="name" current={sortKey} dir={sortDir} buildHref={buildHref}>
-                    Attendee
+                    Name
                   </SortTh>
+                  <th className="px-4 py-3 font-medium bg-[#1d4ed8]">Type</th>
                   <th className="px-4 py-3 font-medium bg-[#1d4ed8]">Gender</th>
                   <th className="px-4 py-3 font-medium bg-[#1d4ed8]">Event</th>
-                  <th className="px-4 py-3 font-medium bg-[#1d4ed8]">Seat</th>
+                  <th className="px-4 py-3 font-medium bg-[#1d4ed8]">Seat(s)</th>
                   <th className="px-4 py-3 font-medium bg-[#1d4ed8]">Booking</th>
                   <SortTh sortKey="createdAt" current={sortKey} dir={sortDir} buildHref={buildHref}>
                     Registered
@@ -192,32 +258,57 @@ export async function AdminRegistrationsScreen({
               </thead>
               <tbody>
                 {pageRows.map((r) => (
-                  <tr
-                    key={`${r.bookingId}-${r.seatId}`}
-                    className="border-b border-slate-200 last:border-0"
-                  >
+                  <tr key={r.id} className="border-b border-slate-200 last:border-0">
                     <td className="px-4 py-3 whitespace-nowrap">
                       <p className="font-medium">{r.name}</p>
                       <p className="text-sm text-slate-800">
                         {r.email} · {r.phone}
                       </p>
                     </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      {r.type === "booking" ? (
+                        <span className="inline-flex items-center text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
+                          Booked
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
+                          Signed up
+                        </span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
                       {r.gender || <span className="text-slate-400">—</span>}
                     </td>
                     <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
-                      {eventTitleById.get(r.eventId) ?? r.eventId}
+                      {r.eventId ? eventTitleById.get(r.eventId) ?? r.eventId : (
+                        <span className="text-slate-400">—</span>
+                      )}
                     </td>
-                    <td className="px-4 py-3 font-mono text-slate-700 whitespace-nowrap">
-                      {r.seatId}
+                    <td className="px-4 py-3 font-mono text-slate-700 whitespace-nowrap max-w-[16rem] truncate" title={r.seatIds.join(", ")}>
+                      {r.seatIds.length > 0 ? (
+                        <>
+                          {r.seatIds.join(", ")}
+                          {r.seatIds.length > 1 && (
+                            <span className="ml-1.5 font-sans text-xs text-slate-500">
+                              ({r.seatIds.length} seats)
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        <span className="text-slate-400">—</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <Link
-                        href={`/admin/bookings?q=${encodeURIComponent(r.bookingId)}`}
-                        className="font-mono text-sm text-[#1d4ed8] hover:underline"
-                      >
-                        {r.bookingId}
-                      </Link>
+                      {r.bookingId ? (
+                        <Link
+                          href={`/admin/bookings?q=${encodeURIComponent(r.bookingId)}`}
+                          className="font-mono text-sm text-[#1d4ed8] hover:underline"
+                        >
+                          {r.bookingId}
+                        </Link>
+                      ) : (
+                        <span className="text-slate-400">—</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-slate-600 whitespace-nowrap text-sm">
                       {new Date(r.createdAt).toLocaleString("en-IN", {
