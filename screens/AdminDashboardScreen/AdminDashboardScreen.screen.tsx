@@ -143,7 +143,12 @@ export async function AdminDashboardScreen() {
     totals.ticketsSold += sold;
     // Seats someone else is mid-checkout on (locked) aren't actually
     // bookable right now either, even though they're not yet confirmed.
-    totals.remaining += totalSeats(event) - sold - (lockedByEvent[event.id] ?? 0);
+    // Clamped per event at 0 — if an event's layout was edited after seats
+    // sold (e.g. a sold seat's row got blocked/reserved for BookMyShow
+    // afterwards), sold can exceed the event's current sellable count; that
+    // event has 0 seats left to sell, not a negative number that would drag
+    // the whole dashboard's total below what's actually happening elsewhere.
+    totals.remaining += Math.max(0, totalSeats(event) - sold - (lockedByEvent[event.id] ?? 0));
   }
 
   const refunded = bookings.filter((b) => b.status === "REFUNDED");
