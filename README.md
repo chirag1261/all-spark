@@ -1,4 +1,4 @@
-# Utsav Events — Event Booking Platform (Next.js + Razorpay)
+# All-Spark — Event Booking Platform (Next.js + Razorpay)
 
 A multi-event booking platform with an admin dashboard: admins create events with ticket categories, registration windows, banners and FAQs; attendees pick seats on an interactive auditorium map, pay via Razorpay, and get a unique QR ticket by email + a WhatsApp-shareable ticket page.
 
@@ -33,10 +33,10 @@ A multi-event booking platform with an admin dashboard: admins create events wit
 3. Put them in `.env.local`, and set the bootstrap super admin's email/password (only used to create the *first* account — see [Admin accounts & roles](#admin-accounts--roles)):
 
    ```
-   DATABASE_URL=postgres://localhost:5432/utsavevents
+   DATABASE_URL=postgres://localhost:5432/all-spark
    RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxxxx
    RAZORPAY_KEY_SECRET=your_key_secret
-   ADMIN_EMAIL=utsavevents.tech@gmail.com
+   ADMIN_EMAIL=abcde@gmail.com
    ADMIN_PASSWORD=choose_a_password
    ```
 
